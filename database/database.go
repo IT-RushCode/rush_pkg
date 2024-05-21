@@ -2,19 +2,15 @@ package database
 
 import (
 	"sync"
-	"time"
 
-	"gitlab.arvand.tj/conveyor/arvand_pkg/config"
+	"github.com/IT-RushCode/rush_pkg/config"
 	"gorm.io/gorm"
 )
 
 type Storage struct {
-	MSSQL          *gorm.DB
-	MYSQL          *gorm.DB
-	PSQL           *gorm.DB
-	MSSQL_ABS      *gorm.DB
-	MSSQL_CONVEYOR *gorm.DB
-	REDIS          interface{}
+	MYSQL *gorm.DB
+	PSQL  *gorm.DB
+	REDIS interface{}
 }
 
 var (
@@ -25,12 +21,9 @@ var (
 func DB_CONNECT(cfg *config.Config) *Storage {
 	storageOnce.Do(func() {
 		storageInstance = &Storage{
-			MSSQL:          MSSQL_CONNECT(&cfg.DB.MSSQL),
-			MYSQL:          MYSQL_CONNECT(&cfg.DB.MYSQL),
-			PSQL:           PSQL_CONNECT(&cfg.DB.PSQL),
-			MSSQL_ABS:      MSSQL_CONNECT(&cfg.DB.MSSQL_ABS),
-			MSSQL_CONVEYOR: MSSQL_CONNECT(&cfg.DB.MSSQL_CONVEYOR),
-			REDIS:          REDIS_CONNECT(&cfg.REDIS),
+			MYSQL: MYSQL_CONNECT(&cfg.DB.MYSQL),
+			PSQL:  PSQL_CONNECT(&cfg.DB.PSQL),
+			REDIS: REDIS_CONNECT(&cfg.REDIS),
 		}
 	})
 
@@ -38,9 +31,5 @@ func DB_CONNECT(cfg *config.Config) *Storage {
 }
 
 func GetDatabaseInstance(cfg *config.Config) *Storage {
-	if cfg.DB.MSSQL.Host != "localhost" {
-		time.Sleep(7 * time.Second)
-	}
-
 	return DB_CONNECT(cfg)
 }

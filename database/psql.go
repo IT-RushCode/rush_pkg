@@ -3,7 +3,8 @@ package database
 import (
 	"fmt"
 
-	"gitlab.arvand.tj/conveyor/arvand_pkg/config"
+	"github.com/IT-RushCode/rush_pkg/config"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

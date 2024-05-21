@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
-	"gitlab.arvand.tj/conveyor/arvand_pkg/config"
+
+	"github.com/IT-RushCode/rush_pkg/config"
 )
 
 func REDIS_CONNECT(cfg *config.RedisConfig) *redis.Client {

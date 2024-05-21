@@ -3,7 +3,8 @@ package database
 import (
 	"context"
 
-	"gitlab.arvand.tj/conveyor/arvand_pkg/config"
+	"github.com/IT-RushCode/rush_pkg/config"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

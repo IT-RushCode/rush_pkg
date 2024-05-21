@@ -4,46 +4,56 @@ import (
 	"gorm.io/gorm"
 )
 
-type BaseRepository[T any] struct {
+// Repository интерфейс представляет базовый набор методов для работы с сущностями
+type BaseRepository interface {
+	Create(data interface{}) error
+	FindByID(id uint, data interface{}) error
+	Update(data interface{}) error
+	Delete(data interface{}) error
+	UpdateField(id uint, field string, value interface{}, data interface{}) error
+	SoftDelete(data interface{}) error
+	Filter(filters map[string]interface{}, entities interface{}) error
+}
+
+// BaseRepository представляет базовую структуру для репозиториев
+type baseRepository struct {
 	db *gorm.DB
 }
 
-func NewBaseRepository[T any](db *gorm.DB) *BaseRepository[T] {
-	return &BaseRepository[T]{db: db}
+// NewBaseRepository создает новый экземпляр базового репозитория
+func NewBaseRepository(db *gorm.DB) BaseRepository {
+	return &baseRepository{db: db}
 }
 
-func (r *BaseRepository[T]) Create(entity *T) error {
-	return r.db.Create(entity).Error
+// Реализация методов интерфейса Repository
+func (r *baseRepository) Create(data interface{}) error {
+	return r.db.Create(data).Error
 }
 
-func (r *BaseRepository[T]) FindByID(id uint) (*T, error) {
-	var entity T
-	err := r.db.First(&entity, id).Error
-	return &entity, err
+func (r *baseRepository) FindByID(id uint, data interface{}) error {
+	return r.db.First(data, id).Error
 }
 
-func (r *BaseRepository[T]) Update(entity *T) error {
-	return r.db.Save(entity).Error
+func (r *baseRepository) Update(data interface{}) error {
+	return r.db.Save(data).Error
 }
 
-func (r *BaseRepository[T]) Delete(entity *T) error {
-	return r.db.Delete(entity).Error
+func (r *baseRepository) Delete(data interface{}) error {
+	return r.db.Delete(data).Error
 }
 
-func (r *BaseRepository[T]) UpdateField(id uint, field string, value interface{}) error {
-	return r.db.Model(new(T)).Where("id = ?", id).Update(field, value).Error
+func (r *baseRepository) UpdateField(id uint, field string, value interface{}, data interface{}) error {
+	return r.db.Model(data).Where("id = ?", id).Update(field, value).Error
 }
 
-func (r *BaseRepository[T]) SoftDelete(entity *T) error {
-	return r.db.Model(entity).Update("deleted_at", gorm.DeletedAt{}).Error
+func (r *baseRepository) SoftDelete(data interface{}) error {
+	return r.db.Model(data).Update("deleted_at", gorm.DeletedAt{}).Error
 }
 
-func (r *BaseRepository[T]) Filter(filters map[string]interface{}) ([]T, error) {
-	var entities []T
+func (r *baseRepository) Filter(filters map[string]interface{}, entities interface{}) error {
 	query := r.db
 	for key, value := range filters {
 		query = query.Where(key, value)
 	}
-	err := query.Find(&entities).Error
-	return entities, err
+	return query.Find(entities).Error
 }

@@ -1,5 +1,11 @@
 package config
 
+import (
+	"fmt"
+
+	"github.com/spf13/viper"
+)
+
 // ------------ GLOBAL CONFIG ------------
 type Config struct {
 	APP      AppConfig      `json:"app"`
@@ -93,4 +99,22 @@ type DBConfig struct {
 	PSQL           DatabaseConfig `json:"PSQL"`
 	MSSQL_ABS      DatabaseConfig `json:"MSSQL_ABS"`
 	MSSQL_CONVEYOR DatabaseConfig `json:"MSSQL_CONVEYOR"`
+}
+
+func MustLoad(path string) *Config {
+	viper.SetConfigFile(path)
+	viper.SetConfigType("yaml")
+	err := viper.ReadInConfig()
+	if err != nil {
+		fmt.Println(err)
+		panic("failed to read config file")
+	}
+
+	var cfg Config
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
+		panic("failed to unmarshal config")
+	}
+
+	return &cfg
 }

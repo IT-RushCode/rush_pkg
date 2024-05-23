@@ -8,100 +8,75 @@ import (
 
 // ------------ GLOBAL CONFIG ------------
 type Config struct {
-	APP      AppConfig      `json:"app"`
-	DB       DBConfig       `json:"db"`
-	JWT      JwtConfig      `json:"jwt"`
-	SERVICES ServicesConfig `json:"services"`
-	DATETIME DateTimeConfig `json:"datetime"`
-	REDIS    RedisConfig    `json:"redis"`
-	KAFKA    KafKaConfig    `json:"kafka"`
+	APP      AppConfig      `mapstructure:"app"`
+	DB       DBConfig       `mapstructure:"db"`
+	JWT      JwtConfig      `mapstructure:"jwt"`
+	DATETIME DateTimeConfig `mapstructure:"datetime"`
+	REDIS    RedisConfig    `mapstructure:"redis"`
+	KAFKA    KafKaConfig    `mapstructure:"kafka"`
 }
 
 // ------------ SERVICES ------------
 type AppConfig struct {
-	ENV            string `json:"env"`
-	DEBUG          bool   `json:"debug"`
-	NAME           string `json:"name"`
-	HOST           string `json:"host"`
-	PORT           string `json:"port"`
-	MAX_CONNECTION string `json:"max_connection"`
+	ENV            string `mapstructure:"env"`
+	DEBUG          bool   `mapstructure:"debug"`
+	NAME           string `mapstructure:"name"`
+	HOST           string `mapstructure:"host"`
+	PORT           string `mapstructure:"port"`
+	MAX_CONNECTION string `mapstructure:"max_connection"`
 }
 
-type ServiceConfig struct {
-	NAME string `json:"name"`
-	HOST string `json:"host"`
-	PORT string `json:"port"`
-}
-
-type ServicesConfig struct {
-	AUTH         ServiceConfig `json:"auth"`
-	COLLECTIONS  ServiceConfig `json:"collections"`
-	CLIENT       ServiceConfig `json:"client"`
-	PLEDGE       ServiceConfig `json:"pledge"`
-	LOAN         ServiceConfig `json:"loan"`
-	CALCULATOR   ServiceConfig `json:"calculator"`
-	NOTIFICATION ServiceConfig `json:"notification"`
-	STORAGE      ServiceConfig `json:"storage"`
-	SCORING      ServiceConfig `json:"scoring"`
-	BP           ServiceConfig `json:"bp"`
-	FIN_ANALYS   ServiceConfig `json:"fin_analys"`
-}
 
 // ------------ JWT ------------
 type JwtConfig struct {
-	JWT_SECRET  string `json:"jwt_secret"`
-	JWT_TTL     int64  `json:"jwt_ttl"`
-	REFRESH_TTL int64  `json:"refresh_ttl"`
+	JWT_SECRET  string `mapstructure:"jwt_secret"`
+	JWT_TTL     int64  `mapstructure:"jwt_ttl"`
+	REFRESH_TTL int64  `mapstructure:"refresh_ttl"`
 }
 
 // ------------ KAFKA ------------
 type KafKaConfig struct {
-	HOST1 string `json:"host1"`
-	HOST2 string `json:"host2"`
-	HOST3 string `json:"host3"`
+	HOST1 string `mapstructure:"host1"`
+	HOST2 string `mapstructure:"host2"`
+	HOST3 string `mapstructure:"host3"`
 }
 
 // ------------ DATETIME ------------
 type DateTimeConfig struct {
-	Datetime string `json:"datetime"`
-	Date     string `json:"date"`
-	Time     string `json:"time"`
+	Datetime string `mapstructure:"datetime"`
+	Date     string `mapstructure:"date"`
+	Time     string `mapstructure:"time"`
 }
 
 // ------------ REDIS ------------
 type RedisConfig struct {
-	HOST string `json:"host"`
-	PORT string `json:"port"`
-	PASS string `json:"password"`
-	DB   int    `json:"db"`
+	HOST string `mapstructure:"host"`
+	PORT string `mapstructure:"port"`
+	PASS string `mapstructure:"password"`
+	DB   int    `mapstructure:"db"`
 }
 
 // ------------ MONGO DB ------------
 type MongoDBConfig struct {
-	URI string `json:"uri"`
+	URI string `mapstructure:"uri"`
 }
 
 // ------------ DATABASE ------------
 type DatabaseConfig struct {
-	Title            string `json:"title"`
-	MigrationEnabled bool   `json:"migration_enabled"`
-	Host             string `json:"dbhost"`
-	Port             int64  `json:"dbport"`
-	User             string `json:"dbuser"`
-	Pass             string `json:"dbpass"`
-	Name             string `json:"dbname"`
-	CHARSET          string `json:"charset"`
+	Host    string `mapstructure:"dbhost"`
+	Port    int64  `mapstructure:"dbport"`
+	User    string `mapstructure:"dbuser"`
+	Pass    string `mapstructure:"dbpass"`
+	Name    string `mapstructure:"dbname"`
+	CHARSET string `mapstructure:"charset"`
 }
 
 type DBConfig struct {
-	MSSQL          DatabaseConfig `json:"MSSQL"`
-	MYSQL          DatabaseConfig `json:"MYSQL"`
-	PSQL           DatabaseConfig `json:"PSQL"`
-	MSSQL_ABS      DatabaseConfig `json:"MSSQL_ABS"`
-	MSSQL_CONVEYOR DatabaseConfig `json:"MSSQL_CONVEYOR"`
+	MYSQL DatabaseConfig `mapstructure:"MYSQL"`
+	PSQL  DatabaseConfig `mapstructure:"PSQL"`
 }
 
-func MustLoad(path string) *Config {
+func InitConfig(path string) *Config {
 	viper.SetConfigFile(path)
 	viper.SetConfigType("yaml")
 	err := viper.ReadInConfig()

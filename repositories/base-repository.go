@@ -8,11 +8,12 @@ import (
 
 // Repository интерфейс представляет базовый набор методов для работы с сущностями
 type BaseRepository interface {
-	Create(ctx context.Context, data interface{}) error
+	GetAll(ctx context.Context, offset, limit uint, data interface{}) (int64, error)
+	Create(ctx context.Context, data interface{}) (interface{}, error)
 	FindByID(ctx context.Context, id uint, data interface{}) error
-	Update(ctx context.Context, data interface{}) error
+	Update(ctx context.Context, data interface{}) (interface{}, error)
 	Delete(ctx context.Context, data interface{}) error
-	UpdateField(ctx context.Context, id uint, field string, value interface{}, data interface{}) error
+	UpdateField(ctx context.Context, id uint, field string, value interface{}, data interface{}) (interface{}, error)
 	SoftDelete(ctx context.Context, data interface{}) error
 	Filter(ctx context.Context, filters map[string]interface{}, entities interface{}) error
 }
@@ -31,45 +32,86 @@ func NewBaseRepository(db *gorm.DB) BaseRepository {
 
 // ----------- Реализация методов интерфейса Repository -----------
 
-func (r *baseRepository) GetAll(ctx context.Context, limit, offset uint, data interface{}) error {
-	return r.db.WithContext(ctx).
-		Find(data).Error
+// Получение всех или с пагинацией
+func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data interface{}) (int64, error) {
+	var count int64
+	query := r.db.WithContext(ctx).Model(data)
+
+	// Получить общее количество записей
+	if err := query.Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	// Применить пагинацию, если необходимо
+	if limit > 0 || offset > 0 {
+		query = query.Offset(int(offset)).Limit(int(limit))
+	}
+
+	// Получить данные с учетом пагинации
+	if err := query.Find(data).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
-func (r *baseRepository) Create(ctx context.Context, data interface{}) error {
-	return r.db.WithContext(ctx).
-		Create(data).Error
+// Создание записи
+func (r *baseRepository) Create(ctx context.Context, data interface{}) (interface{}, error) {
+	if err := r.db.WithContext(ctx).Create(data).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
+// Поиск записи по ID
 func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}) error {
 	return r.db.WithContext(ctx).
 		First(data, id).Error
 }
 
-func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
-	return r.db.WithContext(ctx).
-		Save(data).Error
+// Полное обновление
+func (r *baseRepository) Update(ctx context.Context, data interface{}) (interface{}, error) {
+	if err := r.db.WithContext(ctx).Save(data).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
+// Частичное обновление
+func (r *baseRepository) UpdateField(
+	ctx context.Context,
+	id uint, field string, value interface{}, data interface{},
+) (interface{}, error) {
+	if err := r.db.WithContext(ctx).
+		Model(data).
+		Where("id = ?", id).
+		Update(field, value).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.WithContext(ctx).First(data, id).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// Перманентное удаление
 func (r *baseRepository) Delete(ctx context.Context, data interface{}) error {
 	return r.db.WithContext(ctx).
 		Delete(data).Error
 }
 
-func (r *baseRepository) UpdateField(ctx context.Context, id uint, field string, value interface{}, data interface{}) error {
-	return r.db.WithContext(ctx).
-		Model(data).
-		Where("id = ?", id).
-		Update(field, value).Error
-}
-
+// Мягкое удаление (устанавливается время deleted_at для записи)
 func (r *baseRepository) SoftDelete(ctx context.Context, data interface{}) error {
 	return r.db.WithContext(ctx).
 		Model(data).
 		Update("deleted_at", gorm.DeletedAt{}).Error
 }
 
-func (r *baseRepository) Filter(ctx context.Context, filters map[string]interface{}, entities interface{}) error {
+// Получение данных по фильтру
+func (r *baseRepository) Filter(
+	ctx context.Context,
+	filters map[string]interface{}, entities interface{},
+) error {
 	query := r.db.WithContext(ctx)
 	for key, value := range filters {
 		query = query.Where(key, value)

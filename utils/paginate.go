@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Paginate(offset int64, limit int64) func(db *gorm.DB) *gorm.DB {
+func Paginate(offset, limit uint) func(db *gorm.DB) *gorm.DB {
 	if offset == 0 {
 		offset = 1
 	}

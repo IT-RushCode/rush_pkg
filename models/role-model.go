@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Роли
+// Роль
 type Role struct {
 	ID          uint           `gorm:"primaryKey"`
 	Name        string         `gorm:"type:varchar(100);uniqueIndex"`
@@ -17,22 +17,9 @@ type Role struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 }
 
+// Роли
 type Roles []Role
 
 func (Role) TableName() string {
 	return "Roles"
-}
-
-// Привилегии ролей
-type RolePermission struct {
-	RoleID       uint `gorm:"primaryKey;autoIncrement:false"`
-	PermissionID uint `gorm:"primaryKey;autoIncrement:false"`
-	Role         Role
-	Permission   Permission
-}
-
-type RolePermissions []RolePermission
-
-func (RolePermission) TableName() string {
-	return "RolePermissions"
 }

@@ -1,5 +1,6 @@
 package dto
 
+// Роль
 type RoleDTO struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
@@ -8,8 +9,10 @@ type RoleDTO struct {
 	Permissions []uint `json:"permissions"`
 }
 
+// Роли
 type RolesDTO []RoleDTO
 
+// Роль с привилегиями
 type RoleWithPermissionsDTO struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
@@ -19,4 +22,5 @@ type RoleWithPermissionsDTO struct {
 	Permissions PermissionsDTO
 }
 
+// Роли с привилегиями
 type RolesWithPermissionsDTO []RoleWithPermissionsDTO

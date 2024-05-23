@@ -1,6 +1,6 @@
 package models
 
-// Привилегии
+// Привилегия
 type Permission struct {
 	ID          uint   `gorm:"primaryKey"`
 	Name        string `gorm:"type:varchar(100);uniqueIndex"`
@@ -8,6 +8,7 @@ type Permission struct {
 	Status      bool   `gorm:"default:true"`
 }
 
+// Привилегии
 type Permissions []Permission
 
 func (Permission) TableName() string {

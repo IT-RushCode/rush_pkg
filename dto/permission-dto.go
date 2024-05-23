@@ -1,5 +1,6 @@
 package dto
 
+// Привилегия
 type PermissionDTO struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
@@ -7,4 +8,5 @@ type PermissionDTO struct {
 	Status      bool   `json:"default:true"`
 }
 
+// Привилегии
 type PermissionsDTO []PermissionDTO

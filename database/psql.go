@@ -12,7 +12,7 @@ import (
 func PSQL_CONNECT(cfg *config.DatabaseConfig) *gorm.DB {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-		cfg.Host, cfg.User, cfg.Pass, cfg.Name, cfg.Port,
+		cfg.HOST, cfg.USER, cfg.PASS, cfg.NAME, cfg.PORT,
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})

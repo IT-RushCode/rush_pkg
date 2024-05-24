@@ -8,72 +8,73 @@ import (
 
 // ------------ GLOBAL CONFIG ------------
 type Config struct {
-	APP      AppConfig      `mapstructure:"app"`
-	DB       DBConfig       `mapstructure:"db"`
-	JWT      JwtConfig      `mapstructure:"jwt"`
-	DATETIME DateTimeConfig `mapstructure:"datetime"`
-	REDIS    RedisConfig    `mapstructure:"redis"`
-	KAFKA    KafKaConfig    `mapstructure:"kafka"`
+	APP      AppConfig      `mapstructure:"APP"`
+	DB       DatabaseConfig `mapstructure:"DB"`
+	JWT      JwtConfig      `mapstructure:"JWT"`
+	DATETIME DateTimeConfig `mapstructure:"DATETIME"`
+	REDIS    RedisConfig    `mapstructure:"REDIS"`
+	KAFKA    KafKaConfig    `mapstructure:"KAFKA"`
+	RABBITMQ RabbitMQConfig `mapstructure:"RABBITMQ"`
+	MONGODB  MongoDBConfig  `mapstructure:"MONGODB"`
 }
 
 // ------------ SERVICES ------------
 type AppConfig struct {
-	ENV            string `mapstructure:"env"`
-	DEBUG          bool   `mapstructure:"debug"`
-	NAME           string `mapstructure:"name"`
-	HOST           string `mapstructure:"host"`
-	PORT           string `mapstructure:"port"`
-	MAX_CONNECTION string `mapstructure:"max_connection"`
+	ENV            string `mapstructure:"APP_ENV"`
+	DEBUG          bool   `mapstructure:"APP_DEBUG"`
+	NAME           string `mapstructure:"APP_NAME"`
+	HOST           string `mapstructure:"APP_HOST"`
+	PORT           string `mapstructure:"APP_PORT"`
+	MAX_CONNECTION int    `mapstructure:"APP_MAX_CONNECTION"`
 }
-
 
 // ------------ JWT ------------
 type JwtConfig struct {
-	JWT_SECRET  string `mapstructure:"jwt_secret"`
-	JWT_TTL     int64  `mapstructure:"jwt_ttl"`
-	REFRESH_TTL int64  `mapstructure:"refresh_ttl"`
+	JWT_SECRET  string `mapstructure:"JWT_SECRET"`
+	JWT_TTL     int64  `mapstructure:"JWT_TTL"`
+	REFRESH_TTL int64  `mapstructure:"REFRESH_TTL"`
 }
 
 // ------------ KAFKA ------------
 type KafKaConfig struct {
-	HOST1 string `mapstructure:"host1"`
-	HOST2 string `mapstructure:"host2"`
-	HOST3 string `mapstructure:"host3"`
+	HOST1 string `mapstructure:"HOST1"`
+	HOST2 string `mapstructure:"HOST2"`
+	HOST3 string `mapstructure:"HOST3"`
 }
 
 // ------------ DATETIME ------------
 type DateTimeConfig struct {
-	Datetime string `mapstructure:"datetime"`
-	Date     string `mapstructure:"date"`
-	Time     string `mapstructure:"time"`
+	Datetime string `mapstructure:"DATETIME"`
+	Date     string `mapstructure:"DATE"`
+	Time     string `mapstructure:"TIME"`
 }
 
 // ------------ REDIS ------------
 type RedisConfig struct {
-	HOST string `mapstructure:"host"`
-	PORT string `mapstructure:"port"`
-	PASS string `mapstructure:"password"`
-	DB   int    `mapstructure:"db"`
+	HOST string `mapstructure:"RD_HOST"`
+	PORT string `mapstructure:"RD_PORT"`
+	PASS string `mapstructure:"RD_PASS"`
+	DB   int    `mapstructure:"RD_DB"`
+}
+
+// ------------ RABBITMQ ------------
+type RabbitMQConfig struct {
+	URI string `mapstructure:"URI"`
 }
 
 // ------------ MONGO DB ------------
 type MongoDBConfig struct {
-	URI string `mapstructure:"uri"`
+	URI string `mapstructure:"URI"`
 }
 
 // ------------ DATABASE ------------
 type DatabaseConfig struct {
-	Host    string `mapstructure:"dbhost"`
-	Port    int64  `mapstructure:"dbport"`
-	User    string `mapstructure:"dbuser"`
-	Pass    string `mapstructure:"dbpass"`
-	Name    string `mapstructure:"dbname"`
-	CHARSET string `mapstructure:"charset"`
-}
-
-type DBConfig struct {
-	MYSQL DatabaseConfig `mapstructure:"MYSQL"`
-	PSQL  DatabaseConfig `mapstructure:"PSQL"`
+	HOST    string `mapstructure:"DBHOST"`
+	PORT    int64  `mapstructure:"DBPORT"`
+	USER    string `mapstructure:"DBUSER"`
+	PASS    string `mapstructure:"DBPASS"`
+	NAME    string `mapstructure:"DBNAME"`
+	CHARSET string `mapstructure:"CHARSET"`
 }
 
 func InitConfig(path string) *Config {

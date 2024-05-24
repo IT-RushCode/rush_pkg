@@ -4,13 +4,14 @@ import (
 	"sync"
 
 	"github.com/IT-RushCode/rush_pkg/config"
+
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type Storage struct {
-	MYSQL *gorm.DB
 	PSQL  *gorm.DB
-	REDIS interface{}
+	REDIS *redis.Client
 }
 
 var (
@@ -21,8 +22,7 @@ var (
 func DB_CONNECT(cfg *config.Config) *Storage {
 	storageOnce.Do(func() {
 		storageInstance = &Storage{
-			MYSQL: MYSQL_CONNECT(&cfg.DB.MYSQL),
-			PSQL:  PSQL_CONNECT(&cfg.DB.PSQL),
+			PSQL:  PSQL_CONNECT(&cfg.DB),
 			REDIS: REDIS_CONNECT(&cfg.REDIS),
 		}
 	})

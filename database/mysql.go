@@ -12,7 +12,7 @@ import (
 func MYSQL_CONNECT(cfg *config.DatabaseConfig) *gorm.DB {
 	dns := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
-		cfg.User, cfg.Pass, cfg.Host, cfg.Port, cfg.Name, cfg.CHARSET,
+		cfg.USER, cfg.PASS, cfg.HOST, cfg.PORT, cfg.NAME, cfg.CHARSET,
 	)
 
 	db, err := gorm.Open(

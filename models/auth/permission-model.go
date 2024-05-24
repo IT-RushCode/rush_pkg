@@ -1,4 +1,4 @@
-package models
+package auth
 
 // Привилегия
 type Permission struct {

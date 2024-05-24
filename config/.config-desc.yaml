@@ -1,0 +1,37 @@
+APP:
+  APP_ENV: "local"
+  APP_DEBUG: true
+  APP_NAME: ""
+  APP_HOST: "localhost"
+  APP_PORT: ":8000"
+  APP_MAX_CONNECTION: 100
+
+DB:
+  DBHOST: "localhost"
+  DBPORT: 5432
+  DBUSER: "postgres"
+  DBPASS: "postgres"
+  DBNAME: "postgres"
+  CHARSET: ""
+
+REDIS:
+  RD_HOST: "localhost"
+  RD_PORT: ":6379"
+  RD_PASS: ""
+  RD_DB: 0
+
+JWT:
+  JWT_SECRET: ""
+  JWT_TTL: 3600
+  REFRESH_TTL: 604800
+
+KAFKA:
+  HOST1: ""
+  HOST2: ""
+  HOST3: ""
+
+RABBITMQ:
+  URI: "amqp://guest:guest@localhost:5672/"
+
+MONGODB:
+  URI: "mongodb://localhost:27017"

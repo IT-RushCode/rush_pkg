@@ -1,4 +1,4 @@
-package dto
+package auth
 
 // Авторизация по телефону
 type AuthWithPhoneRequestDTO struct {

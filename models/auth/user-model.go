@@ -8,7 +8,7 @@ import (
 
 // Пользователи
 type User struct {
-	ID           uint           `gorm:"primaryKey"`
+	ID           uint           `gorm:"primaryKey;autoincrement"`
 	FirstName    string         `gorm:"type:varchar(100)"`
 	LastName     string         `gorm:"type:varchar(100)"`
 	MiddleName   string         `gorm:"type:varchar(100);default:null"`

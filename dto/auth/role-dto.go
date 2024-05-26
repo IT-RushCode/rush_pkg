@@ -1,4 +1,4 @@
-package dto
+package auth
 
 // Роль
 type RoleDTO struct {

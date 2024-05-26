@@ -1,4 +1,4 @@
-package dto
+package auth
 
 // Привилегия
 type PermissionDTO struct {

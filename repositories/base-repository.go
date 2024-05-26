@@ -9,11 +9,11 @@ import (
 // Repository интерфейс представляет базовый набор методов для работы с сущностями
 type BaseRepository interface {
 	GetAll(ctx context.Context, offset, limit uint, data interface{}) (int64, error)
-	Create(ctx context.Context, data interface{}) (interface{}, error)
+	Create(ctx context.Context, data interface{}) error
 	FindByID(ctx context.Context, id uint, data interface{}) error
-	Update(ctx context.Context, data interface{}) (interface{}, error)
+	Update(ctx context.Context, data interface{}) error
 	Delete(ctx context.Context, data interface{}) error
-	UpdateField(ctx context.Context, id uint, field string, value interface{}, data interface{}) (interface{}, error)
+	UpdateField(ctx context.Context, id uint, field string, value interface{}, data interface{}) error
 	SoftDelete(ctx context.Context, data interface{}) error
 	Filter(ctx context.Context, filters map[string]interface{}, entities interface{}) error
 }
@@ -56,11 +56,12 @@ func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data in
 }
 
 // Создание записи
-func (r *baseRepository) Create(ctx context.Context, data interface{}) (interface{}, error) {
+func (r *baseRepository) Create(ctx context.Context, data interface{}) error {
 	if err := r.db.WithContext(ctx).Create(data).Error; err != nil {
-		return nil, err
+		return err
 	}
-	return data, nil
+
+	return nil
 }
 
 // Поиск записи по ID
@@ -70,28 +71,28 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 }
 
 // Полное обновление
-func (r *baseRepository) Update(ctx context.Context, data interface{}) (interface{}, error) {
+func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
 	if err := r.db.WithContext(ctx).Save(data).Error; err != nil {
-		return nil, err
+		return err
 	}
-	return data, nil
+	return nil
 }
 
 // Частичное обновление
 func (r *baseRepository) UpdateField(
 	ctx context.Context,
 	id uint, field string, value interface{}, data interface{},
-) (interface{}, error) {
+) error {
 	if err := r.db.WithContext(ctx).
 		Model(data).
 		Where("id = ?", id).
 		Update(field, value).Error; err != nil {
-		return nil, err
+		return err
 	}
 	if err := r.db.WithContext(ctx).First(data, id).Error; err != nil {
-		return nil, err
+		return err
 	}
-	return data, nil
+	return nil
 }
 
 // Перманентное удаление

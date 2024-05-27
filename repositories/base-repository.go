@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 
+	"github.com/IT-RushCode/rush_pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -44,11 +45,11 @@ func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data in
 
 	// Применить пагинацию, если необходимо
 	if limit > 0 || offset > 0 {
-		query = query.Offset(int(offset)).Limit(int(limit))
+		query = query.Scopes(utils.Paginate(offset, limit))
 	}
 
 	// Получить данные с учетом пагинации
-	if err := query.Find(data).Error; err != nil {
+	if err := query.Where("").Find(data).Error; err != nil {
 		return 0, err
 	}
 

@@ -15,7 +15,7 @@ type UserRequestDTO struct {
 	Status      bool      `json:"status" default:"false"`
 	Avatar      string    `json:"avatar"`
 	UserName    string    `json:"userName" validate:"required"`
-	Password    string    `json:"password" validate:"required"`
+	Password    string    `json:"password"`
 	IsSuperUser bool      `json:"isSuperUser"  validate:"required"`
 	Roles       []uint    `json:"roles" validate:"required"`
 }

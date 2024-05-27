@@ -5,14 +5,14 @@ import (
 )
 
 type UserRequestDTO struct {
-	ID          uint      `json:"id" `
+	ID          uint      `json:"id"`
 	FirstName   string    `json:"firstName" validate:"required"`
 	LastName    string    `json:"lastName" validate:"required"`
 	MiddleName  string    `json:"middleName" validate:"required"`
-	Email       string    `json:"email"`
+	Email       string    `json:"email" validate:"email"`
 	PhoneNumber string    `json:"phoneNumber" validate:"required"`
 	BirthDate   time.Time `json:"birthDate"`
-	Status      bool      `json:"status" default:"false"`
+	Status      bool      `json:"status"`
 	Avatar      string    `json:"avatar"`
 	UserName    string    `json:"userName" validate:"required"`
 	Password    string    `json:"password"`
@@ -21,21 +21,21 @@ type UserRequestDTO struct {
 }
 
 type UserResponseDTO struct {
-	ID          uint      `json:"id"`
-	FirstName   string    `json:"firstName"`
-	LastName    string    `json:"lastName"`
-	MiddleName  string    `json:"middleName"`
-	Email       string    `json:"email"`
-	PhoneNumber string    `json:"phoneNumber"`
-	BirthDate   time.Time `json:"birthDate"`
-	Status      bool      `json:"status"`
-	Avatar      string    `json:"avatar"`
-	UserName    string    `json:"userName"`
-	IsSuperUser bool      `json:"isSuperUser"`
-	CreatedAt   time.Time `json:"createAt"`
-	UpdatedAt   time.Time `json:"updateAt"`
+	ID          uint      `json:"id,omitempty"`
+	FirstName   string    `json:"firstName,omitempty"`
+	LastName    string    `json:"lastName,omitempty"`
+	MiddleName  string    `json:"middleName,omitempty"`
+	Email       string    `json:"email,omitempty"`
+	PhoneNumber string    `json:"phoneNumber,omitempty"`
+	BirthDate   time.Time `json:"birthDate,omitempty"`
+	Status      bool      `json:"status,omitempty"`
+	Avatar      string    `json:"avatar,omitempty"`
+	UserName    string    `json:"userName,omitempty"`
+	IsSuperUser bool      `json:"isSuperUser,omitempty"`
+	CreatedAt   time.Time `json:"createAt,omitempty"`
+	UpdatedAt   time.Time `json:"updateAt,omitempty"`
 
-	Roles RolesWithPermissionsDTO `json:"roles"`
+	Roles RolesWithPermissionsDTO `json:"roles,omitempty"`
 }
 
 type UsersResponseDTO []UserResponseDTO

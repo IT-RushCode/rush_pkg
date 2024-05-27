@@ -16,6 +16,9 @@ var (
 	ErrFileNotFound    = errors.New("файл не найден")
 	ErrFilesNotFound   = errors.New("файлы не найдены")
 	ErrPermission      = errors.New("нет прав на редактирование")
+	ErrDuplicate       = errors.New("дубликат записи")
+	ErrInvalidInput    = errors.New("ошибка входящих данных")
+	ErrInternal        = errors.New("внутренняя ошибка сервера")
 )
 
 // Отлов ошибки дубликата и вывод соответствующей ошибки.

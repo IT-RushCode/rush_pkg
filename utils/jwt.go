@@ -17,7 +17,7 @@ var (
 )
 
 type JwtCustomClaim struct {
-	UserId         uint   `json:"userId"`
+	UserID         uint   `json:"userId"`
 	Name           string `json:"name"`
 	Login          string `json:"login"`
 	IsRefreshToken interface{}
@@ -48,7 +48,7 @@ func (service *jwtService) GenerateTokens(userId uint, name string, login string
 	refreshTokenExp := time.Now().Add(service.RefreshTokenExp)
 
 	accessTokenClaims := &JwtCustomClaim{
-		UserId:         userId,
+		UserID:         userId,
 		Name:           name,
 		Login:          login,
 		IsRefreshToken: false,
@@ -58,7 +58,7 @@ func (service *jwtService) GenerateTokens(userId uint, name string, login string
 	}
 
 	refreshTokenClaims := &JwtCustomClaim{
-		UserId:         userId,
+		UserID:         userId,
 		IsRefreshToken: true,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(refreshTokenExp),

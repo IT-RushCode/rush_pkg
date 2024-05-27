@@ -1,8 +1,11 @@
 package auth
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
+	"github.com/IT-RushCode/rush_pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -30,4 +33,20 @@ type Users []User
 
 func (User) TableName() string {
 	return "Users"
+}
+
+func (user *User) BeforeCreate(db *gorm.DB) (err error) {
+	// result, err := utils.HashPassword("admin")
+	result, err := utils.HashPassword(user.Password)
+	if err != nil {
+		return errors.New("ошибка генерации хеша пароля")
+	}
+
+	user.Password = result
+
+	return nil
+}
+
+func (user *User) GetFullName() string {
+	return fmt.Sprintf("%s %s %s", user.LastName, user.FirstName, user.MiddleName)
 }

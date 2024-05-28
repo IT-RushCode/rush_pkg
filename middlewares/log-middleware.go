@@ -3,7 +3,7 @@ package middlewares
 import (
 	"log"
 
-	color "github.com/IT-RushCode/rush_pkg/utils"
+	"github.com/IT-RushCode/rush_pkg/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -11,23 +11,23 @@ import (
 func RequestResponseLogger() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if c.Method() != "OPTIONS" {
-			log.Printf("%s----------- REQUEST ----------->%s\n", color.Yellow, color.Reset)
-			log.Printf("Client`s IP - %s%s%s\n", color.LightGreen, c.IP(), color.Reset)
-			log.Printf("API Path - %s%s%s\n", color.Blue, c.Path(), color.Reset)
-			log.Printf("Method - %s%s%s\n", color.Red, c.Method(), color.Reset)
+			log.Printf("%s----------- REQUEST ----------->%s\n", utils.Yellow, utils.Reset)
+			log.Printf("Client`s IP - %s%s%s\n", utils.LightGreen, c.IP(), utils.Reset)
+			log.Printf("API Path - %s%s%s\n", utils.Blue, c.Path(), utils.Reset)
+			log.Printf("Method - %s%s%s\n", utils.Red, c.Method(), utils.Reset)
 			if query := string(c.Context().URI().QueryString()); query != "" {
-				log.Printf("Query: %s%s%s\n", color.Magenta, query, color.Reset)
+				log.Printf("Query: %s%s%s\n", utils.Magenta, query, utils.Reset)
 			}
 			if body := string(c.Request().Body()); body != "" {
-				log.Printf("Body: \n%s%s%s\n", color.Blue, body, color.Reset)
+				log.Printf("Body: \n%s%s%s\n", utils.Blue, body, utils.Reset)
 			}
 
 			err := c.Next()
 
-			log.Printf("%s----------- RESPONSE ----------->%s\n", color.Yellow, color.Reset)
-			log.Printf("Status Code - %s%d%s\n", color.Red, c.Response().StatusCode(), color.Reset)
+			log.Printf("%s----------- RESPONSE ----------->%s\n", utils.Yellow, utils.Reset)
+			log.Printf("Status Code - %s%d%s\n", utils.Red, c.Response().StatusCode(), utils.Reset)
 			if body := string(c.Response().Body()); body != "" {
-				log.Printf("Response Body: \n%s%s%s\n", color.Blue, body, color.Reset)
+				log.Printf("Response Body: \n%s%s%s\n", utils.Purple, body, utils.Reset)
 			}
 
 			return err

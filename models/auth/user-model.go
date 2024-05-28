@@ -24,8 +24,8 @@ type User struct {
 	Password     string         `gorm:"type:varchar(255)"`
 	IsSuperUser  bool           `gorm:"default:false"`
 	LastActivity time.Time      `gorm:"default:null"`
-	CreatedAt    time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt    time.Time      `gorm:"autoUpdateTime"`
+	CreatedAt    *time.Time     `gorm:"autoCreateTime"`
+	UpdatedAt    *time.Time     `gorm:"autoUpdateTime"`
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
 }
 

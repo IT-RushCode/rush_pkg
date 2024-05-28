@@ -16,11 +16,11 @@ type User struct {
 	LastName     string         `gorm:"type:varchar(100)"`
 	MiddleName   string         `gorm:"type:varchar(100);default:null"`
 	Email        string         `gorm:"type:varchar(100)"`
-	PhoneNumber  string         `gorm:"type:varchar(20);uniqueIndex"`
+	PhoneNumber  string         `gorm:"type:varchar(20);unique"`
 	BirthDate    time.Time      `gorm:"type:date"`
 	Status       bool           `gorm:"default:true"`
 	Avatar       string         `gorm:"type:varchar(255);default:null"`
-	UserName     string         `gorm:"type:varchar(100);uniqueIndex"`
+	UserName     string         `gorm:"type:varchar(100);unique"`
 	Password     string         `gorm:"type:varchar(255)"`
 	IsSuperUser  bool           `gorm:"default:false"`
 	LastActivity time.Time      `gorm:"default:null"`

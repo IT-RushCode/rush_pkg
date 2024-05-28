@@ -3,8 +3,6 @@ package repositories
 import (
 	"context"
 	"errors"
-	"fmt"
-	"reflect"
 
 	"github.com/IT-RushCode/rush_pkg/utils"
 	"gorm.io/gorm"
@@ -85,21 +83,7 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 // TODO: ДОРАБОТАТЬ ПРОВЕРКУ УНИКАЛЬНОСТИ
 // Полное обновление
 func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
-	// Получаем значение ID из структуры data
-	modelValue := reflect.ValueOf(data).Elem()
-	idField := modelValue.FieldByName("ID")
-	id := idField.Uint()
-
-	// Проверяем, что ID не равен 0 (значение по умолчанию для uint)
-	if id == 0 {
-		return errors.New("ID должен быть задан для обновления записи")
-	}
-
-	// Создаем условие WHERE для выборки записи по ID
-	whereCondition := fmt.Sprintf("id = %d", id)
-
-	// Выполняем обновление записи, указывая условие WHERE по ID
-	if err := r.db.WithContext(ctx).Model(data).First(whereCondition).Error; err != nil {
+	if err := r.db.WithContext(ctx).Save(data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrRecordNotFound
 		}

@@ -36,14 +36,19 @@ func (User) TableName() string {
 }
 
 func (user *User) BeforeCreate(db *gorm.DB) (err error) {
-	// result, err := utils.HashPassword("admin")
-	result, err := utils.HashPassword(user.Password)
+	return user.hashPassword()
+}
+
+func (user *User) BeforeUpdate(db *gorm.DB) (err error) {
+	return user.hashPassword()
+}
+
+func (user *User) hashPassword() error {
+	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return errors.New("ошибка генерации хеша пароля")
 	}
-
-	user.Password = result
-
+	user.Password = hashedPassword
 	return nil
 }
 

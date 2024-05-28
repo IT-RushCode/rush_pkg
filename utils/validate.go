@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -12,6 +13,11 @@ var (
 )
 
 func ValidateStruct(data interface{}) error {
+	// Регистрация кастомных валидаторов
+	if err := registerCustomValidators(validate); err != nil {
+		return fmt.Errorf("ошибка при регистрации кастомных валидаторов: %v", err)
+	}
+
 	err := validate.Struct(data)
 	if err != nil {
 		var errMsg strings.Builder
@@ -42,25 +48,19 @@ func ValidateStruct(data interface{}) error {
 	return nil
 }
 
-// var validate = validator.New()
+// validatePhone проверяет формат телефонного номера
+func validatePhone(fl validator.FieldLevel) bool {
+	phoneNumber := fl.Field().String()
+	// Регулярное выражение для проверки формата телефонного номера
+	re := regexp.MustCompile(`^\+\d{1,3}\d{3}\d{3}\d{2}\d{2}$`)
+	return re.MatchString(phoneNumber)
+}
 
-// func (v XValidator) Validate(data interface{}) []ErrorResponse {
-// 	validationErrors := []ErrorResponse{}
-
-// 	errs := validate.Struct(data)
-// 	if errs != nil {
-// 		for _, err := range errs.(validator.ValidationErrors) {
-// 			// In this case data object is actually holding the User struct
-// 			var elem ErrorResponse
-
-// 			elem.FailedField = err.Field() // Export struct field name
-// 			elem.Tag = err.Tag()           // Export struct tag
-// 			elem.Value = err.Value()       // Export field value
-// 			elem.Error = true
-
-// 			validationErrors = append(validationErrors, elem)
-// 		}
-// 	}
-
-// 	return validationErrors
-// }
+// registerCustomValidators регистрирует кастомные валидаторы
+func registerCustomValidators(validate *validator.Validate) error {
+	// Регистрируем кастомный валидатор для формата телефонного номера
+	if err := validate.RegisterValidation("phone", validatePhone); err != nil {
+		return err
+	}
+	return nil
+}

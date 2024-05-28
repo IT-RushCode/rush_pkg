@@ -10,7 +10,7 @@ type UserRequestDTO struct {
 	LastName    string    `json:"lastName" validate:"required"`
 	MiddleName  string    `json:"middleName" validate:"required"`
 	Email       string    `json:"email" validate:"email"`
-	PhoneNumber string    `json:"phoneNumber" validate:"required"`
+	PhoneNumber string    `json:"phoneNumber" validate:"required,phone,len=12"`
 	BirthDate   time.Time `json:"birthDate"`
 	Status      bool      `json:"status"`
 	Avatar      string    `json:"avatar"`
@@ -39,3 +39,13 @@ type UserResponseDTO struct {
 }
 
 type UsersResponseDTO []UserResponseDTO
+
+type UserPhoneDataDTO struct {
+	ID          uint      `json:"id,omitempty"`
+	PhoneNumber string    `json:"phoneNumber,omitempty" validate:"required,phone,len=12"`
+	FirstName   string    `json:"firstName,omitempty" validate:"required"`
+	LastName    string    `json:"lastName,omitempty" validate:"required"`
+	MiddleName  string    `json:"middleName,omitempty"`
+	Email       string    `json:"email,omitempty" validate:"email"`
+	BirthDate   time.Time `json:"birthDate,omitempty"`
+}

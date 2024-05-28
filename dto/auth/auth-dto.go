@@ -2,12 +2,17 @@ package auth
 
 // Авторизация по телефону
 type AuthWithPhoneRequestDTO struct {
-	PhoneNumber string `json:"phoneNumber"  validate:"required,len=11"`
+	PhoneNumber string `json:"phoneNumber" validate:"required,phone,len=12"`
+}
+
+type AuthPhoneResponseDTO struct {
+	Token *TokenResponseDTO
+	User  *UserPhoneDataDTO
 }
 
 // Авторизация по логин паролю
 type AuthWithLoginPasswordRequestDTO struct {
-	Username string `json:"username" validate:"required,min=3"`
+	Username string `json:"userName" validate:"required,min=3"`
 	Password string `json:"password" validate:"required,min=8"`
 }
 

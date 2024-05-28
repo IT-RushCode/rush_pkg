@@ -80,7 +80,6 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 	return nil
 }
 
-// TODO: ДОРАБОТАТЬ ПРОВЕРКУ УНИКАЛЬНОСТИ
 // Полное обновление
 func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
 	if err := r.db.WithContext(ctx).Save(data).Error; err != nil {

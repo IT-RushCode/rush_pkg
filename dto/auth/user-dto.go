@@ -21,32 +21,32 @@ type UserRequestDTO struct {
 }
 
 type UserResponseDTO struct {
-	ID           uint       `json:"id,omitempty"`
-	LastName     string     `json:"lastName,omitempty"`
-	FirstName    string     `json:"firstName,omitempty"`
-	MiddleName   string     `json:"middleName,omitempty"`
-	Email        string     `json:"email,omitempty"`
-	PhoneNumber  string     `json:"phoneNumber,omitempty"`
-	BirthDate    time.Time  `json:"birthDate,omitempty"`
-	Status       bool       `json:"status,omitempty"`
-	Avatar       string     `json:"avatar,omitempty"`
-	UserName     string     `json:"userName,omitempty"`
-	IsSuperUser  bool       `json:"isSuperUser,omitempty"`
-	LastActivity time.Time  `json:"lastAcitvity,omitempty"`
-	CreatedAt    *time.Time `json:"createAt,omitempty"`
-	UpdatedAt    *time.Time `json:"updateAt,omitempty"`
+	ID           uint       `json:"id"`
+	LastName     string     `json:"lastName"`
+	FirstName    string     `json:"firstName"`
+	MiddleName   string     `json:"middleName"`
+	Email        string     `json:"email"`
+	PhoneNumber  string     `json:"phoneNumber"`
+	BirthDate    time.Time  `json:"birthDate"`
+	Status       bool       `json:"status"`
+	Avatar       string     `json:"avatar"`
+	UserName     string     `json:"userName"`
+	IsSuperUser  bool       `json:"isSuperUser"`
+	LastActivity time.Time  `json:"lastAcitvity"`
+	CreatedAt    *time.Time `json:"createAt"`
+	UpdatedAt    *time.Time `json:"updateAt"`
 
-	Roles RolesWithPermissionsDTO `json:"roles,omitempty"`
+	Roles RolesWithPermissionsDTO `json:"roles"`
 }
 
 type UsersResponseDTO []UserResponseDTO
 
 type UserPhoneDataDTO struct {
-	ID          uint      `json:"id,omitempty"`
-	PhoneNumber string    `json:"phoneNumber,omitempty" validate:"required,phone,len=12"`
-	LastName    string    `json:"lastName,omitempty" validate:"required"`
-	FirstName   string    `json:"firstName,omitempty" validate:"required"`
-	MiddleName  string    `json:"middleName,omitempty"`
-	Email       string    `json:"email,omitempty" validate:"email"`
-	BirthDate   time.Time `json:"birthDate,omitempty"`
+	ID          uint      `json:"id"`
+	PhoneNumber string    `json:"phoneNumber" validate:"required,phone,len=12"`
+	LastName    string    `json:"lastName" validate:"required"`
+	FirstName   string    `json:"firstName" validate:"required"`
+	MiddleName  string    `json:"middleName"`
+	Email       string    `json:"email" validate:"email"`
+	BirthDate   time.Time `json:"birthDate"`
 }

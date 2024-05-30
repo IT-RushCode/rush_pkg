@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	rp "github.com/IT-RushCode/rush_pkg/repositories"
+	rp "github.com/IT-RushCode/rush_pkg/repositories/base"
 
 	"gorm.io/gorm"
 )

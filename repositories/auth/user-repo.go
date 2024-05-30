@@ -6,7 +6,7 @@ import (
 
 	rpDTO "github.com/IT-RushCode/rush_pkg/dto/auth"
 	rpModels "github.com/IT-RushCode/rush_pkg/models/auth"
-	rp "github.com/IT-RushCode/rush_pkg/repositories"
+	rp "github.com/IT-RushCode/rush_pkg/repositories/base"
 	"github.com/IT-RushCode/rush_pkg/utils"
 
 	"gorm.io/gorm"

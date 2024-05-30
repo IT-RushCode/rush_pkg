@@ -1,4 +1,4 @@
-package repositories
+package base_repository
 
 import (
 	"context"

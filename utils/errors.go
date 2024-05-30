@@ -3,6 +3,8 @@ package utils
 import (
 	"errors"
 	"strings"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 var (
@@ -21,26 +23,38 @@ var (
 	ErrInternal        = errors.New("внутренняя ошибка сервера")
 )
 
-// Отлов ошибки дубликата и вывод соответствующей ошибки.
 func HandleDuplicateKeyError(err error) error {
 	if err == nil {
 		return nil
 	}
 
-	// PostgreSQL
-	if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-		return ErrExists
-	}
-
-	// MySQL
-	if strings.Contains(err.Error(), "Duplicate entry") {
-		return ErrExists
-	}
-
-	// MSSQL
-	if strings.Contains(err.Error(), "Violation of UNIQUE KEY constraint") {
+	if strings.Contains(err.Error(), "duplicate key value violates unique constraint") ||
+		strings.Contains(err.Error(), "Duplicate entry") ||
+		strings.Contains(err.Error(), "Violation of UNIQUE KEY constraint") {
 		return ErrExists
 	}
 
 	return ErrCreate
+}
+
+// Функция для проверки возвращаемой ошибки из репозитория
+func CheckErr(ctx *fiber.Ctx, err error) error {
+	if err == nil {
+		return nil
+	}
+
+	switch {
+	case errors.Is(err, ErrRecordNotFound):
+		return ErrorNotFoundResponse(ctx, err.Error(), nil)
+	case errors.Is(err, ErrExists):
+		return ErrorConflictResponse(ctx, err.Error(), nil)
+	case errors.Is(err, ErrInvalidInput):
+		return ErrorBadRequestResponse(ctx, err.Error(), nil)
+	case errors.Is(err, ErrPermission):
+		return ErrorForbiddenResponse(ctx, err.Error(), nil)
+	case errors.Is(err, ErrInternal):
+		return ErrorInternalServerErrorResponse(ctx, err.Error(), nil)
+	default:
+		return ErrorResponse(ctx, err.Error(), nil)
+	}
 }

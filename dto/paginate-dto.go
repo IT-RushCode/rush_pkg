@@ -1,7 +1,7 @@
 package dto
 
 type PaginationDTO struct {
-	Data       interface{} `json:"data"`
+	List       interface{} `json:"list"`
 	Meta       MetaDTO     `json:"meta"`
 	TotalCount int64       `json:"totalCount"`
 }

@@ -1,104 +1,75 @@
 package middlewares
 
-// import (
-// 	"encoding/json"
-// 	"errors"
-// 	"log"
+import (
+	"strings"
+	"time"
 
-// 	"time"
+	"github.com/gofiber/fiber/v2"
 
-// 	"github.com/IT-RushCode/rush_pkg/config"
-// 	"github.com/IT-RushCode/rush_pkg/utils"
-// 	"github.com/gofiber/fiber/v2"
-// 	"github.com/redis/go-redis/v9"
-// )
+	"github.com/IT-RushCode/rush_pkg/config"
+	"github.com/IT-RushCode/rush_pkg/utils"
+)
 
-// var (
-// 	ErrAuthHeader = errors.New("missing authorization token").Error()
-// 	// ErrAuthToken  = errors.New("token is invalid").Error()
-// )
+type AuthData struct {
+	UserID uint   `json:"userId"`
+	IP     string `json:"ip"`
+}
 
-// type AuthData struct {
-// 	UserID int64  `json:"userId"`
-// 	IP     string `json:"ip"`
-// }
+// AuthMiddleware представляет собой middleware для аутентификации пользователя.
+type AuthMiddleware struct {
+	jwtTTL time.Duration
+	jwt    utils.JWTService
+}
 
-// type AuthMiddleware struct {
-// 	authClient *cl.AuthClient
-// 	jwtTTL     time.Duration
-// 	r          *redis.Client
-// }
+// NewAuthMiddleware создает новый экземпляр AuthMiddleware.
+func NewAuthMiddleware(cfg *config.Config) *AuthMiddleware {
+	jwtTTL := time.Duration(cfg.JWT.JWT_TTL) * time.Second
+	jwtRTTL := time.Duration(cfg.JWT.REFRESH_TTL) * time.Second
+	jwtService := utils.NewJWTService(cfg.JWT.JWT_SECRET, jwtTTL, jwtRTTL)
 
-// func NewAuthMiddleware(cfg *config.Config, r *redis.Client) *AuthMiddleware {
-// 	authClient, err := cl.NewAuthClient(cfg)
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
+	return &AuthMiddleware{
+		jwtTTL: jwtTTL,
+		jwt:    jwtService,
+	}
+}
 
-// 	return &AuthMiddleware{
-// 		authClient: authClient,
-// 		jwtTTL:     time.Duration(cfg.JWT.JWT_TTL) * time.Second,
-// 		r:          r,
-// 	}
-// }
+// VerifyToken проверяет токен аутентификации пользователя.
+func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
+	// Список маршрутов, которые не требуют проверки токена
+	noAuthRoutes := []string{
+		"/",
+		"/api/v1/auth/login",
+		"/api/v1/auth/refresh-token",
+	}
 
-// func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
-// 	// Список маршрутов, которые не требуют проверки токена
-// 	noAuthRoutes := []string{
-// 		"/",
-// 		"/api/v1/auth/login",
-// 		"/api/v1/auth/refresh-token",
-// 	}
-// 	for _, route := range noAuthRoutes {
-// 		if ctx.Path() == route {
-// 			return ctx.Next()
-// 		}
-// 	}
+	for _, route := range noAuthRoutes {
+		if ctx.Path() == route {
+			return ctx.Next()
+		}
+	}
 
-// 	// Проверка наличия токена в header
-// 	authHeader := ctx.Get("Authorization")
-// 	if authHeader == "" {
-// 		log.Println(ErrAuthHeader)
-// 		return utils.ErrorResponse(ctx, ErrAuthHeader, nil, fiber.StatusUnauthorized)
-// 	}
+	// Проверка наличия токена в заголовке запроса
+	authHeader := ctx.Get("Authorization")
+	if authHeader == "" {
+		return utils.ErrorUnauthorizedResponse(ctx, "отсутствует токен авторизации", nil)
+	}
 
-// 	// Проверка токена в редисе
-// 	if exists, err := m.r.Exists(ctx.Context(), authHeader).Result(); err != nil {
-// 		log.Println(err)
-// 	} else if exists == 1 {
-// 		// Ключ существует в Redis
-// 		return ctx.Next()
-// 	}
+	// Проверка формата токена + на наличие Bearer
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return utils.ErrorUnauthorizedResponse(ctx, "неверный формат токена", nil)
+	}
 
-// 	// Отправляем токен в auth_service на проверку
-// 	userId, err := m.authClient.ValidateToken(ctx.Context(), jwt.VerifyToken(authHeader))
-// 	if err != nil {
-// 		code, msg := utils.HandleGRPCError(err)
-// 		return utils.ErrorResponse(
-// 			ctx, msg, nil, code,
-// 		)
-// 	}
+	// Извлечение самого токена
+	token := parts[1]
 
-// 	clientIP := utils.GetClientIP(ctx)
+	// Проверка токена через сервис JWT
+	claims, err := m.jwt.ValidateToken(token)
+	if err != nil {
+		return utils.ErrorUnauthorizedResponse(ctx, "неверный токен авторизации", nil)
+	}
 
-// 	authData := AuthData{
-// 		UserID: userId.GetId(),
-// 		IP:     clientIP,
-// 	}
+	ctx.Locals("UserID", claims.UserID)
 
-// 	authDataJSON, err := json.Marshal(authData)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return utils.ErrorResponse(ctx, "Ошибка при обработке данных", nil, fiber.StatusInternalServerError)
-// 	}
-
-// 	// Сохраняем данные в кеше
-// 	err = m.r.Set(ctx.Context(), authHeader, authDataJSON, m.jwtTTL).Err()
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
-
-// 	userId.GetId()
-
-// 	return ctx.Next()
-// }
+	return ctx.Next()
+}

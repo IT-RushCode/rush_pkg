@@ -4,15 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/IT-RushCode/rush_pkg/config"
 	rpAuthDTO "github.com/IT-RushCode/rush_pkg/dto/auth"
-	rpModel "github.com/IT-RushCode/rush_pkg/models/auth"
-	"github.com/IT-RushCode/rush_pkg/utils"
-
+	rpModels "github.com/IT-RushCode/rush_pkg/models/auth"
 	"github.com/IT-RushCode/rush_pkg/repositories"
+	"github.com/IT-RushCode/rush_pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
@@ -21,9 +19,6 @@ import (
 var (
 	ErrRefreshToken    = errors.New("неверный токен обновления")
 	ErrNotRefreshToken = errors.New("полученный токен не является refresh токеном")
-	ErrAuthToken       = errors.New("отсутствует Authorization токен")
-
-	bearerPrefix = "Bearer "
 )
 
 type AuthHandler struct {
@@ -74,7 +69,7 @@ func (h *AuthHandler) PhoneLogin(ctx *fiber.Ctx) error {
 		repoRes.UserName,
 	)
 	if err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return utils.CheckErr(ctx, err)
 	}
 
 	userRes := &rpAuthDTO.UserPhoneDataDTO{}
@@ -142,24 +137,13 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 
 // Получение данных пользователя по ID из токена
 func (h *AuthHandler) Me(ctx *fiber.Ctx) error {
-	// Получение токена авторизации
-	accessToken := ctx.Get("Authorization")
-	if accessToken == "" {
-		return utils.SendResponse(ctx, false, ErrAuthToken.Error(), nil, fiber.StatusUnauthorized)
-	}
+	// Получение UserID из локальных данных контекста
+	userID := ctx.Locals("UserID").(uint)
 
-	tokenString := strings.TrimPrefix(accessToken, bearerPrefix)
-
-	// Проверка токена
-	claims, err := h.jWTService.ValidateToken(tokenString)
-	if err != nil {
-		return utils.SendResponse(ctx, false, err.Error(), nil, fiber.StatusUnauthorized)
-	}
-
-	data := &rpModel.User{}
-	err = h.repo.User.FindByID(context.Background(), claims.UserID, data)
-	if err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+	// Получение данных пользователя по UserID
+	data := &rpModels.User{}
+	if err := h.repo.User.FindByID(context.Background(), userID, data); err != nil {
+		return utils.CheckErr(ctx, err)
 	}
 
 	// Обновляем даты последней активности "LastActivity"
@@ -219,7 +203,7 @@ func (h *AuthHandler) RefreshToken(ctx *fiber.Ctx) error {
 
 func (h *AuthHandler) updateLastActivity(ctx context.Context, userID uint) {
 	go func() {
-		if err := h.repo.User.UpdateField(ctx, userID, "last_activity", time.Now(), &rpModel.User{}); err != nil {
+		if err := h.repo.User.UpdateField(ctx, userID, "last_activity", time.Now(), &rpModels.User{}); err != nil {
 			fmt.Printf("Ошибка обновления LastActivity: %v\n", err)
 		}
 	}()

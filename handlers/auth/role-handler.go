@@ -5,10 +5,9 @@ import (
 
 	rpDTO "github.com/IT-RushCode/rush_pkg/dto"
 	rpAuthDTO "github.com/IT-RushCode/rush_pkg/dto/auth"
-	rpModel "github.com/IT-RushCode/rush_pkg/models/auth"
-	"github.com/IT-RushCode/rush_pkg/utils"
-
+	rpModels "github.com/IT-RushCode/rush_pkg/models/auth"
 	"github.com/IT-RushCode/rush_pkg/repositories"
+	"github.com/IT-RushCode/rush_pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
@@ -30,14 +29,14 @@ func (h *roleHandler) CreateRole(ctx *fiber.Ctx) error {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
 
-	data := &rpModel.Role{}
+	data := &rpModels.Role{}
 	if err := copier.Copy(data, &input); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
 	data.ID = 0
 
 	if err := h.repo.Role.Create(context.Background(), data); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return utils.CheckErr(ctx, err)
 	}
 
 	res := rpAuthDTO.RoleDTO{}
@@ -54,7 +53,7 @@ func (h *roleHandler) UpdateRole(ctx *fiber.Ctx) error {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
 
-	data := &rpModel.Role{}
+	data := &rpModels.Role{}
 	if err := copier.Copy(data, &input); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
@@ -65,7 +64,7 @@ func (h *roleHandler) UpdateRole(ctx *fiber.Ctx) error {
 	data.ID = uint(id)
 
 	if err := h.repo.Role.Update(context.Background(), data); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return utils.CheckErr(ctx, err)
 	}
 
 	res := rpAuthDTO.RoleDTO{}
@@ -79,13 +78,13 @@ func (h *roleHandler) FindRoleByID(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	data := &rpModel.Role{}
+	data := &rpModels.Role{}
 	if err := h.repo.Role.FindByID(context.Background(), uint(id), data); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return utils.CheckErr(ctx, err)
 	}
 
-	res := rpAuthDTO.RoleDTO{}
-	return utils.CopyAndRespond(ctx, data, &res)
+	res := &rpAuthDTO.RoleDTO{}
+	return utils.CopyAndRespond(ctx, data, res)
 }
 
 // Удаление роли
@@ -95,9 +94,9 @@ func (h *roleHandler) DeleteRole(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	data := &rpModel.Role{ID: uint(id)}
+	data := &rpModels.Role{ID: uint(id)}
 	if err := h.repo.Role.Delete(context.Background(), data); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return utils.CheckErr(ctx, err)
 	}
 
 	return utils.SendResponse(ctx, true, "", nil, fiber.StatusNoContent)
@@ -106,10 +105,11 @@ func (h *roleHandler) DeleteRole(ctx *fiber.Ctx) error {
 // Получить все роли с пагинацией или без
 func (h *roleHandler) GetRoles(ctx *fiber.Ctx) error {
 	limit, offset := utils.AutoPaginate(ctx)
-	repoRes := &rpModel.Roles{}
+
+	repoRes := &rpModels.Roles{}
 	count, err := h.repo.Role.GetAll(context.Background(), offset, limit, repoRes)
 	if err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return utils.CheckErr(ctx, err)
 	}
 
 	resDTO := rpAuthDTO.RolesDTO{}
@@ -138,9 +138,9 @@ func (h *roleHandler) GetRoles(ctx *fiber.Ctx) error {
 // 		return err
 // 	}
 
-// 	data := &rpModel.Role{}
+// 	data := &rpModels.Role{}
 // 	if err := h.repo.Role.FindWithPermissions(context.Background(), uint(id), data); err != nil {
-// 		return utils.ErrorResponse(ctx, err.Error(), nil)
+//		return utils.CheckErr(ctx, err)
 // 	}
 
 // 	res := rpAuthDTO.RoleWithPermissionsDTO{}

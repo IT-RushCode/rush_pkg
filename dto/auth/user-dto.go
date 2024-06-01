@@ -33,8 +33,8 @@ type UserResponseDTO struct {
 	UserName     string     `json:"userName"`
 	IsSuperUser  bool       `json:"isSuperUser"`
 	LastActivity time.Time  `json:"lastAcitvity"`
-	CreatedAt    *time.Time `json:"createAt"`
-	UpdatedAt    *time.Time `json:"updateAt"`
+	CreatedAt    *time.Time `json:"createdAt"`
+	UpdatedAt    *time.Time `json:"updatedAt"`
 
 	Roles RolesWithPermissionsDTO `json:"roles"`
 }

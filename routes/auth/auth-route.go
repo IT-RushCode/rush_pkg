@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"sync"
-
 	"github.com/IT-RushCode/rush_pkg/config"
 
 	h "github.com/IT-RushCode/rush_pkg/handlers/auth"
@@ -11,9 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RUN_AUTH(api fiber.Router, repo *repositories.Repositories, cfg *config.Config, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func RUN_AUTH(api fiber.Router, repo *repositories.Repositories, cfg *config.Config) {
 	authHandler := h.NewAuthHandler(repo, cfg)
 
 	auth := api.Group("auth")

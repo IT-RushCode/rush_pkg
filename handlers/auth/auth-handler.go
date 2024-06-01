@@ -105,6 +105,9 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		return utils.ErrorUnauthorizedResponse(ctx, err.Error(), nil)
 	}
+	if !repoRes.IsPersonal {
+		return utils.ErrorForbiddenResponse(ctx, "нет прав", nil)
+	}
 
 	// Обновляем даты последней активности "LastActivity"
 	h.updateLastActivity(context.Background(), repoRes.ID)

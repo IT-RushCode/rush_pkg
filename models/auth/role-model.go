@@ -12,8 +12,8 @@ type Role struct {
 	Name        string         `gorm:"type:varchar(100);uniqueIndex"`
 	Description string         `gorm:"type:varchar(255);default:null"`
 	Status      bool           `gorm:"default:true"`
-	CreatedAt   time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt   time.Time      `gorm:"autoUpdateTime"`
+	CreatedAt   *time.Time     `gorm:"autoCreateTime"`
+	UpdatedAt   *time.Time     `gorm:"autoUpdateTime"`
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 }
 

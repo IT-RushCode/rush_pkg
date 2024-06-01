@@ -67,6 +67,7 @@ func (h *AuthHandler) PhoneLogin(ctx *fiber.Ctx) error {
 		repoRes.ID,
 		repoRes.FirstName,
 		repoRes.UserName,
+		repoRes.IsPersonal,
 	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
@@ -112,6 +113,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		repoRes.ID,
 		repoRes.FirstName,
 		repoRes.UserName,
+		repoRes.IsPersonal,
 	)
 	if err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
@@ -182,6 +184,7 @@ func (h *AuthHandler) RefreshToken(ctx *fiber.Ctx) error {
 			valid.UserID,
 			valid.Name,
 			valid.Login,
+			valid.IsPersonal,
 		)
 		if err != nil {
 			return err

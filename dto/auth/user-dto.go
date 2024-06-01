@@ -5,19 +5,19 @@ import (
 )
 
 type UserRequestDTO struct {
-	ID          uint      `json:"id"`
-	LastName    string    `json:"lastName" validate:"required"`
-	FirstName   string    `json:"firstName" validate:"required"`
-	MiddleName  string    `json:"middleName" validate:"required"`
-	Email       string    `json:"email" validate:"email"`
-	PhoneNumber string    `json:"phoneNumber" validate:"required,phone,len=12"`
-	BirthDate   time.Time `json:"birthDate"`
-	Status      bool      `json:"status"`
-	Avatar      string    `json:"avatar"`
-	UserName    string    `json:"userName" validate:"required"`
-	Password    string    `json:"password"`
-	IsSuperUser bool      `json:"isSuperUser"  validate:"required"`
-	Roles       []uint    `json:"roles" validate:"required"`
+	ID          uint       `json:"id"`
+	LastName    string     `json:"lastName" validate:"required"`
+	FirstName   string     `json:"firstName" validate:"required"`
+	MiddleName  string     `json:"middleName" validate:"required"`
+	Email       string     `json:"email" validate:"email"`
+	PhoneNumber string     `json:"phoneNumber" validate:"required,phone,len=12"`
+	BirthDate   *time.Time `json:"birthDate"`
+	Status      bool       `json:"status"`
+	Avatar      string     `json:"avatar"`
+	UserName    string     `json:"userName" validate:"required"`
+	Password    string     `json:"password"`
+	IsPersonal  bool       `json:"isPersonal"  validate:"required"`
+	Roles       []uint     `json:"roles" validate:"required"`
 }
 
 type UserResponseDTO struct {
@@ -27,7 +27,7 @@ type UserResponseDTO struct {
 	MiddleName   string     `json:"middleName"`
 	Email        string     `json:"email"`
 	PhoneNumber  string     `json:"phoneNumber"`
-	BirthDate    time.Time  `json:"birthDate"`
+	BirthDate    *time.Time `json:"birthDate"`
 	Status       bool       `json:"status"`
 	Avatar       string     `json:"avatar"`
 	UserName     string     `json:"userName"`
@@ -42,11 +42,12 @@ type UserResponseDTO struct {
 type UsersResponseDTO []UserResponseDTO
 
 type UserPhoneDataDTO struct {
-	ID          uint      `json:"id"`
-	PhoneNumber string    `json:"phoneNumber" validate:"required,phone,len=12"`
-	LastName    string    `json:"lastName" validate:"required"`
-	FirstName   string    `json:"firstName" validate:"required"`
-	MiddleName  string    `json:"middleName"`
-	Email       string    `json:"email" validate:"email"`
-	BirthDate   time.Time `json:"birthDate"`
+	ID          uint       `json:"id"`
+	PhoneNumber string     `json:"phoneNumber" validate:"required,phone,len=12"`
+	LastName    string     `json:"lastName" validate:"required"`
+	FirstName   string     `json:"firstName" validate:"required"`
+	MiddleName  string     `json:"middleName"`
+	Email       string     `json:"email" validate:"email"`
+	BirthDate   *time.Time `json:"birthDate"`
+	UserName    string     `json:"userName,omitempty"`
 }

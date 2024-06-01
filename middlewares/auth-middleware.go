@@ -70,6 +70,9 @@ func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
 	if err != nil {
 		return utils.ErrorUnauthorizedResponse(ctx, "неверный токен авторизации", nil)
 	}
+	if !claims.IsPersonal {
+		return utils.ErrorForbiddenResponse(ctx, "нет прав", nil)
+	}
 
 	ctx.Locals("UserID", claims.UserID)
 

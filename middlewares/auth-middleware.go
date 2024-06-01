@@ -39,7 +39,9 @@ func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
 	noAuthRoutes := []string{
 		"/",
 		"/api/v1/auth/login",
+		"/api/v1/auth/phone-login",
 		"/api/v1/auth/refresh-token",
+		"/swagger",
 	}
 
 	for _, route := range noAuthRoutes {

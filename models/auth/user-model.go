@@ -22,7 +22,7 @@ type User struct {
 	Avatar       string         `gorm:"type:varchar(255);default:null"`
 	UserName     string         `gorm:"type:varchar(100);unique"`
 	Password     string         `gorm:"type:varchar(255)"`
-	IsSuperUser  bool           `gorm:"default:false"`
+	IsPersonal   bool           `gorm:"default:false"`
 	LastActivity time.Time      `gorm:"default:null"`
 	CreatedAt    *time.Time     `gorm:"autoCreateTime"`
 	UpdatedAt    *time.Time     `gorm:"autoUpdateTime"`

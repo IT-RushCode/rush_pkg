@@ -31,7 +31,7 @@ type UserResponseDTO struct {
 	Status       bool       `json:"status"`
 	Avatar       string     `json:"avatar"`
 	UserName     string     `json:"userName"`
-	IsSuperUser  bool       `json:"isSuperUser"`
+	IsPersonal   bool       `json:"IsPersonal"`
 	LastActivity time.Time  `json:"lastAcitvity"`
 	CreatedAt    *time.Time `json:"createdAt"`
 	UpdatedAt    *time.Time `json:"updatedAt"`

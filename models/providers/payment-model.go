@@ -9,11 +9,11 @@ import (
 
 // Пластиковые карты
 type PayCard struct {
-	ID            uint       `gorm:"primaryKey"`
-	Number        string     `gorm:"type:varchar(16)"`
-	DateMonthYear *time.Time `gorm:"type:date"`
-	CVV           string     `gorm:"type:varchar(3)"`
-	Cardholder    string     `gorm:"type:varchar(255)"`
+	ID            uint      `gorm:"primaryKey"`
+	Number        string    `gorm:"type:varchar(16)"`
+	DateMonthYear time.Time `gorm:"type:date"`
+	CVV           string    `gorm:"type:varchar(3)"`
+	Cardholder    string    `gorm:"type:varchar(255)"`
 	rpBase.BaseModel
 }
 

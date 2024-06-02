@@ -83,8 +83,8 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 // Полное обновление
 func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
 	if err := r.db.WithContext(ctx).
-		Model(data).
-		Updates(data).Error; err != nil {
+		Updates(data).
+		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrRecordNotFound
 		}
@@ -93,6 +93,16 @@ func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
 		}
 		return utils.ErrInternal
 	}
+
+	if err := r.db.WithContext(ctx).
+		First(data).
+		Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return utils.ErrRecordNotFound
+		}
+		return utils.ErrInternal
+	}
+
 	return nil
 }
 

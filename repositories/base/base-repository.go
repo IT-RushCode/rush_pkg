@@ -84,7 +84,7 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
 	if err := r.db.WithContext(ctx).
 		Model(data).
-		Save(data).Error; err != nil {
+		Updates(data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrRecordNotFound
 		}

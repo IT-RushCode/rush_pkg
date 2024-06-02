@@ -3,7 +3,6 @@ package base_repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/IT-RushCode/rush_pkg/utils"
@@ -96,23 +95,20 @@ func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
 		Where("id = ? AND deleted_at IS NOT NULL", id).
 		First(data).Error != nil {
 		// Если запись существует и мягко удалена, возвращаем ошибку
-		return errors.New("cannot update soft-deleted record")
+		return utils.ErrRecordNotFound
 	}
 
-	fmt.Println(data)
-
 	// Если запись не мягко удалена, выполняем обновление
-	// if err := r.db.WithContext(ctx).
-	// 	Where("id = ? AND deleted_at IS NOT NULL", id).
-	// 	Updates(data).Error; err != nil {
-	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
-	// 		return utils.ErrRecordNotFound
-	// 	}
-	// 	if err := utils.HandleDuplicateKeyError(err); err != nil {
-	// 		return err
-	// 	}
-	// 	return utils.ErrInternal
-	// }
+	if err := r.db.WithContext(ctx).
+		Updates(data).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return utils.ErrRecordNotFound
+		}
+		if err := utils.HandleDuplicateKeyError(err); err != nil {
+			return err
+		}
+		return utils.ErrInternal
+	}
 	return nil
 }
 

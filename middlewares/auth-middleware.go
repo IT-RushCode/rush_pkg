@@ -42,6 +42,8 @@ func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
 		"/api/v1/auth/phone-login",
 		"/api/v1/auth/refresh-token",
 		"/swagger",
+		"/fb-metrics",
+		"/metrics",
 	}
 
 	for _, route := range noAuthRoutes {

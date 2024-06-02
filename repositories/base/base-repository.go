@@ -3,7 +3,6 @@ package base_repository
 import (
 	"context"
 	"errors"
-	"reflect"
 
 	"github.com/IT-RushCode/rush_pkg/utils"
 	"gorm.io/gorm"
@@ -83,24 +82,9 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 
 // Полное обновление
 func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
-	// Извлечение ID из data
-	id, err := getPrimaryKeyValue(data)
-	if err != nil {
-		return err
-	}
-
-	// Проверяем, мягко ли удалена запись
-	if r.db.WithContext(ctx).
-		Model(data).
-		Where("id = ? AND deleted_at IS NOT NULL", id).
-		First(data).Error != nil {
-		// Если запись существует и мягко удалена, возвращаем ошибку
-		return utils.ErrRecordNotFound
-	}
-
-	// Если запись не мягко удалена, выполняем обновление
 	if err := r.db.WithContext(ctx).
-		Updates(data).Error; err != nil {
+		Model(data).
+		Save(data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrRecordNotFound
 		}
@@ -169,16 +153,4 @@ func (r *baseRepository) Filter(ctx context.Context, filters map[string]interfac
 		return utils.ErrInternal
 	}
 	return nil
-}
-
-func getPrimaryKeyValue(data interface{}) (uint, error) {
-	val := reflect.ValueOf(data).Elem()
-	idField := val.FieldByName("ID")
-	if !idField.IsValid() {
-		return 0, errors.New("ID field not found")
-	}
-	if idField.Kind() != reflect.Uint {
-		return 0, errors.New("ID field is not of type uint")
-	}
-	return uint(idField.Uint()), nil
 }

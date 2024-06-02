@@ -1,6 +1,10 @@
 package notification
 
-import "time"
+import (
+	"time"
+
+	rpBase "github.com/IT-RushCode/rush_pkg/models"
+)
 
 // Типы уведомлений
 const (
@@ -23,11 +27,10 @@ type Notification struct {
 	Recipient string `gorm:"type:varchar(255);not null"`
 	Message   string `gorm:"type:text;not null"`
 	Status    string `gorm:"type:varchar(50);not null;default:'pending'"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
 	SentAt    *time.Time
 	FailedAt  *time.Time
 	Error     string `gorm:"type:text"`
+	rpBase.BaseModel
 }
 
 type Notifications []Notification

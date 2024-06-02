@@ -1,20 +1,14 @@
 package auth
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import rpBase "github.com/IT-RushCode/rush_pkg/models"
 
 // Роль
 type Role struct {
-	ID          uint           `gorm:"primaryKey"`
-	Name        string         `gorm:"type:varchar(100);uniqueIndex"`
-	Description string         `gorm:"type:varchar(255);default:null"`
-	Status      bool           `gorm:"default:true"`
-	CreatedAt   *time.Time     `gorm:"autoCreateTime"`
-	UpdatedAt   *time.Time     `gorm:"autoUpdateTime"`
-	DeletedAt   gorm.DeletedAt `gorm:"index"`
+	ID          uint   `gorm:"primaryKey"`
+	Name        string `gorm:"type:varchar(100);uniqueIndex"`
+	Description string `gorm:"type:varchar(255);default:null"`
+	Status      *bool  `gorm:"default:true"`
+	rpBase.BaseModel
 }
 
 // Роли

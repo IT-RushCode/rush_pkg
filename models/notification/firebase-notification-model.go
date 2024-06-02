@@ -1,6 +1,10 @@
 package notification
 
-import "time"
+import (
+	"time"
+
+	rpBase "github.com/IT-RushCode/rush_pkg/models"
+)
 
 // FirebaseNotification модель
 type FirebaseNotification struct {
@@ -10,11 +14,10 @@ type FirebaseNotification struct {
 	Body        string `gorm:"type:text;not null"`
 	Data        string `gorm:"type:jsonb"`
 	Status      string `gorm:"type:varchar(50);not null;default:'pending'"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
 	SentAt      *time.Time
 	FailedAt    *time.Time
 	Error       string `gorm:"type:text"`
+	rpBase.BaseModel
 }
 
 type FirebaseNotifications []FirebaseNotification

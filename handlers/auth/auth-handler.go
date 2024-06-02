@@ -67,7 +67,7 @@ func (h *AuthHandler) PhoneLogin(ctx *fiber.Ctx) error {
 		repoRes.ID,
 		repoRes.FirstName,
 		repoRes.UserName,
-		repoRes.IsPersonal,
+		*repoRes.IsPersonal,
 	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
@@ -105,7 +105,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		return utils.ErrorUnauthorizedResponse(ctx, err.Error(), nil)
 	}
-	if !repoRes.IsPersonal {
+	if !*repoRes.IsPersonal {
 		return utils.ErrorForbiddenResponse(ctx, "нет прав", nil)
 	}
 
@@ -116,7 +116,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		repoRes.ID,
 		repoRes.FirstName,
 		repoRes.UserName,
-		repoRes.IsPersonal,
+		*repoRes.IsPersonal,
 	)
 	if err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)

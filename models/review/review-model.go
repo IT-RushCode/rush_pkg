@@ -1,22 +1,16 @@
 package review
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import rpBase "github.com/IT-RushCode/rush_pkg/models"
 
 // Отзывы
 type Review struct {
-	ID        uint `gorm:"primaryKey"`
-	UserID    uint
-	PointID   uint
-	Comment   string `gorm:"type:text"`
-	Rating    int
-	Status    bool           `gorm:"default:true"`
-	CreatedAt time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt time.Time      `gorm:"autoUpdateTime"`
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID      uint `gorm:"primaryKey"`
+	UserID  uint
+	PointID uint
+	Comment string `gorm:"type:text"`
+	Rating  int
+	Status  *bool
+	rpBase.BaseModel
 }
 
 type Reviews []Review

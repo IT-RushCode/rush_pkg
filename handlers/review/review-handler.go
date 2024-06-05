@@ -21,7 +21,7 @@ func NewReviewHandler(repo *repositories.Repositories) *reviewHandler {
 	return &reviewHandler{repo: repo}
 }
 
-// Создание пользователя
+// Создание Review
 func (h *reviewHandler) CreateReview(ctx *fiber.Ctx) error {
 	input := &dto.ReviewRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
@@ -48,7 +48,7 @@ func (h *reviewHandler) CreateReview(ctx *fiber.Ctx) error {
 	return utils.CopyAndRespond(ctx, data, res)
 }
 
-// Обновление пользователя
+// Обновление Review
 func (h *reviewHandler) UpdateReview(ctx *fiber.Ctx) error {
 	input := &dto.ReviewRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
@@ -80,7 +80,7 @@ func (h *reviewHandler) UpdateReview(ctx *fiber.Ctx) error {
 	return utils.CopyAndRespond(ctx, data, res)
 }
 
-// Удаление пользователя
+// Удаление Review
 func (h *reviewHandler) DeleteReview(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
@@ -98,7 +98,7 @@ func (h *reviewHandler) DeleteReview(ctx *fiber.Ctx) error {
 	return utils.SendResponse(ctx, true, "", nil, http.StatusNoContent)
 }
 
-// Получить всех пользователей с пагинацией или без
+// Получить всех Reviews с пагинацией или без
 func (h *reviewHandler) GetAllReviews(ctx *fiber.Ctx) error {
 	limit := uint(ctx.QueryInt("limit"))
 	offset := uint(ctx.QueryInt("offset"))
@@ -126,7 +126,7 @@ func (h *reviewHandler) GetAllReviews(ctx *fiber.Ctx) error {
 	return utils.SuccessResponse(ctx, "success", res)
 }
 
-// Получение разрешения по ID
+// Получение Review по ID
 func (h *reviewHandler) FindReviewByID(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {

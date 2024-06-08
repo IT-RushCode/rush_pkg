@@ -4,7 +4,6 @@ import (
 	"github.com/IT-RushCode/rush_pkg/config"
 	"github.com/IT-RushCode/rush_pkg/repositories"
 	auth "github.com/IT-RushCode/rush_pkg/routes/auth"
-	review "github.com/IT-RushCode/rush_pkg/routes/review"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,11 +13,6 @@ func RUN_AUTH_ROUTES(api fiber.Router, repo *repositories.Repositories, cfg *con
 	go auth.RUN_USER(api, repo)
 	go auth.RUN_ROLE(api, repo)
 	go auth.RUN_PERMISSION(api, repo)
-}
-
-// РОУТА ОТЗЫВОВ
-func RUN_REVIEW_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-	go review.RUN_REVIEW(api, repo)
 }
 
 // РОУТЫ УВЕДОМЛЕНИЙ SMS/EMAIL/PUSH

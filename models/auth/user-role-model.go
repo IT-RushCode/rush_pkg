@@ -4,8 +4,8 @@ package auth
 type UserRole struct {
 	UserID uint `gorm:"primaryKey;autoIncrement:false"`
 	RoleID uint `gorm:"primaryKey;autoIncrement:false"`
-	User   User
-	Role   Role
+	User   User `gorm:"foreignKey:UserID"`
+	Role   Role `gorm:"foreignKey:UserID"`
 }
 
 type UserRoles []UserRole

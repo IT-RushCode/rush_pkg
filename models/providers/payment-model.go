@@ -4,7 +4,7 @@ import (
 	"time"
 
 	rpBase "github.com/IT-RushCode/rush_pkg/models"
-	"github.com/IT-RushCode/rush_pkg/models/auth"
+	rpAuth "github.com/IT-RushCode/rush_pkg/models/auth"
 )
 
 // Пластиковые карты
@@ -25,11 +25,11 @@ func (PayCard) TableName() string {
 
 // Карты пользователей
 type UserPayCard struct {
-	UserID    uint  `gorm:"primaryKey;autoIncrement:false"`
-	PayCardID uint  `gorm:"primaryKey;autoIncrement:false"`
-	IsPrimary *bool `gorm:"default:false"`
-	User      auth.User
-	PayCard   PayCard
+	UserID    uint        `gorm:"primaryKey;autoIncrement:false"`
+	PayCardID uint        `gorm:"primaryKey;autoIncrement:false"`
+	IsPrimary *bool       `gorm:"default:false"`
+	User      rpAuth.User `gorm:"foreignKey:UserID"`
+	PayCard   PayCard     `gorm:"foreignKey:PayCardID"`
 }
 
 type UserPayCards []UserPayCard

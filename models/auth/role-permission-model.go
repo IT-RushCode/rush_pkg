@@ -2,10 +2,10 @@ package auth
 
 // Привилегия роли
 type RolePermission struct {
-	RoleID       uint `gorm:"primaryKey;autoIncrement:false"`
-	PermissionID uint `gorm:"primaryKey;autoIncrement:false"`
-	Role         Role
-	Permission   Permission
+	RoleID       uint       `gorm:"primaryKey;autoIncrement:false"`
+	PermissionID uint       `gorm:"primaryKey;autoIncrement:false"`
+	Role         Role       `gorm:"foreignKey:RoleID"`
+	Permission   Permission `gorm:"foreignKey:PermissionID"`
 }
 
 // Привилегии роли

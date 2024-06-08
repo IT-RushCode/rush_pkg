@@ -12,7 +12,7 @@ type ReviewRequestDTO struct {
 
 type ReviewResponseDTO struct {
 	ID      uint   `json:"id"`
-	UserID  uint   `json:"userID"`
+	User    uint   `json:"user"`
 	Comment string `json:"comment"`
 	Rating  int    `json:"rating"`
 	Status  *bool  `json:"status"`

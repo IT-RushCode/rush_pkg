@@ -16,6 +16,6 @@ func RUN_AUTH(api fiber.Router, repo *repositories.Repositories, cfg *config.Con
 
 	auth.Post("/phone-login", authHandler.PhoneLogin)
 	auth.Post("/login", authHandler.Login)
-	auth.Post("/me", authHandler.Me)
 	auth.Post("/refresh-token", authHandler.RefreshToken)
+	auth.Get("/me", authHandler.Me)
 }

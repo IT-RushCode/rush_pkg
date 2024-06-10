@@ -10,9 +10,9 @@ import (
 
 // BaseRepository интерфейс представляет базовый набор методов для работы с сущностями
 type BaseRepository interface {
-	GetAll(ctx context.Context, offset, limit uint, data interface{}) (int64, error)
+	GetAll(ctx context.Context, offset, limit uint, data interface{}, preloads ...string) (int64, error)
 	Create(ctx context.Context, data interface{}) error
-	FindByID(ctx context.Context, id uint, data interface{}) error
+	FindByID(ctx context.Context, id uint, data interface{}, preloads ...string) error
 	Update(ctx context.Context, data interface{}) error
 	Delete(ctx context.Context, data interface{}) error
 	UpdateField(ctx context.Context, id uint, field string, value interface{}, data interface{}) error
@@ -35,9 +35,16 @@ func NewBaseRepository(db *gorm.DB) BaseRepository {
 // ----------- Реализация базовых методов интерфейса Repository -----------
 
 // Получение всех или с пагинацией
-func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data interface{}) (int64, error) {
+func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data interface{}, preloads ...string) (int64, error) {
 	var count int64
 	query := r.db.WithContext(ctx).Model(data)
+
+	// Применить preloads
+	for _, preload := range preloads {
+		if preload != "" {
+			query = query.Preload(preload)
+		}
+	}
 
 	// Получить общее количество записей
 	if err := query.Count(&count).Error; err != nil {
@@ -69,8 +76,18 @@ func (r *baseRepository) Create(ctx context.Context, data interface{}) error {
 }
 
 // Поиск записи по ID
-func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}) error {
-	err := r.db.WithContext(ctx).First(data, id).Error
+func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}, preloads ...string) error {
+	query := r.db.WithContext(ctx).Model(data)
+
+	// Применить preloads
+	for _, preload := range preloads {
+		if preload != "" {
+			query = query.Preload(preload)
+		}
+	}
+
+	// Получить первую совпавшую запись
+	err := query.First(data, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrRecordNotFound

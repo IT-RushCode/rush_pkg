@@ -13,7 +13,7 @@ type UserRequestDTO struct {
 	PhoneNumber string    `json:"phoneNumber" validate:"required,phone,len=12"`
 	BirthDate   time.Time `json:"birthDate"`
 	Status      *bool     `json:"status"`
-	Avatar      string    `json:"avatar"`
+	AvatarUrl   string    `json:"avatarUrl"`
 	UserName    string    `json:"userName" validate:"required"`
 	Password    string    `json:"password"`
 	IsPersonal  *bool     `json:"isPersonal"  validate:"required"`
@@ -29,7 +29,7 @@ type UserResponseDTO struct {
 	PhoneNumber  string    `json:"phoneNumber"`
 	BirthDate    time.Time `json:"birthDate"`
 	Status       *bool     `json:"status"`
-	Avatar       string    `json:"avatar"`
+	AvatarUrl    string    `json:"avatarUrl"`
 	UserName     string    `json:"userName"`
 	IsPersonal   *bool     `json:"IsPersonal"`
 	LastActivity time.Time `json:"lastAcitvity"`

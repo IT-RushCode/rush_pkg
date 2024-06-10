@@ -143,7 +143,10 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 // Получение данных пользователя по ID из токена
 func (h *AuthHandler) Me(ctx *fiber.Ctx) error {
 	// Получение UserID из локальных данных контекста
-	userID := ctx.Locals("UserID").(uint)
+	userID, err := utils.GetUserIDFromLocals(ctx)
+	if err != nil {
+		return err
+	}
 
 	// Получение данных пользователя по UserID
 	data := &rpModels.User{}

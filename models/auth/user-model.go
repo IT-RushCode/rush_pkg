@@ -20,7 +20,7 @@ type User struct {
 	PhoneNumber  string    `gorm:"type:varchar(20);unique"`
 	BirthDate    time.Time `gorm:"type:date"`
 	Status       *bool     `gorm:"default:true"`
-	Avatar       string    `gorm:"type:varchar(255);default:null"`
+	AvatarUrl    string    `gorm:"type:varchar(255);default:null"`
 	UserName     string    `gorm:"type:varchar(100);unique"`
 	Password     string    `gorm:"type:varchar(255)"`
 	IsPersonal   *bool     `gorm:"default:false"`

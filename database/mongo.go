@@ -4,29 +4,27 @@ import (
 	"context"
 
 	"github.com/IT-RushCode/rush_pkg/config"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func MongoDBConnect(cfg *config.MongoDBConfig) (*mongo.Client, error) {
+func MONGO_DB_CONNECT(ctx context.Context, cfg *config.MongoDBConfig) *mongo.Client {
 	clientOptions := options.Client().ApplyURI(cfg.URI)
-
-	client, err := mongo.Connect(context.Background(), clientOptions)
+	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		return nil, err
+		panic("mongoDB is not connected!")
 	}
 
-	err = client.Ping(context.Background(), nil)
+	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, err
+		panic("mongoDB is not connected!")
 	}
 
-	return client, nil
+	return client
 }
 
-func MongoDBClose(client *mongo.Client) error {
-	err := client.Disconnect(context.Background())
+func MONGO_DB_CLOSE(ctx context.Context, client *mongo.Client) error {
+	err := client.Disconnect(ctx)
 	if err != nil {
 		return err
 	}

@@ -34,4 +34,5 @@ RABBITMQ:
   URI: "amqp://guest:guest@localhost:5672/"
 
 MONGODB:
+  DB: "HOTS"
   URI: "mongodb://localhost:27017"

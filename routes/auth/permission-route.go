@@ -1,7 +1,7 @@
 package routes
 
 import (
-	h "github.com/IT-RushCode/rush_pkg/handlers/auth"
+	h "github.com/IT-RushCode/rush_pkg/controllers/auth"
 	"github.com/IT-RushCode/rush_pkg/repositories"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,13 +9,13 @@ import (
 
 func RUN_PERMISSION(api fiber.Router, repo *repositories.Repositories) {
 
-	permissionHandler := h.NewPermissionHandler(repo)
+	permissionController := h.NewPermissionController(repo)
 
 	permission := api.Group("permissions")
 
-	permission.Get("/", permissionHandler.GetPermissions)
-	permission.Get("/:id", permissionHandler.FindPermissionByID)
-	permission.Post("/", permissionHandler.CreatePermission)
-	permission.Put("/:id", permissionHandler.UpdatePermission)
-	permission.Delete("/:id", permissionHandler.DeletePermission)
+	permission.Get("/", permissionController.GetPermissions)
+	permission.Get("/:id", permissionController.FindPermissionByID)
+	permission.Post("/", permissionController.CreatePermission)
+	permission.Put("/:id", permissionController.UpdatePermission)
+	permission.Delete("/:id", permissionController.DeletePermission)
 }

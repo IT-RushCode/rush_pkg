@@ -1,20 +1,20 @@
 package routes
 
 import (
-	h "github.com/IT-RushCode/rush_pkg/handlers/auth"
+	h "github.com/IT-RushCode/rush_pkg/controllers/auth"
 	"github.com/IT-RushCode/rush_pkg/repositories"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func RUN_ROLE(api fiber.Router, repo *repositories.Repositories) {
-	roleHandler := h.NewRoleHandler(repo)
+	roleController := h.NewRoleController(repo)
 
 	role := api.Group("roles")
 
-	role.Get("/", roleHandler.GetRoles)
-	role.Get("/:id", roleHandler.FindRoleByID)
-	role.Post("/", roleHandler.CreateRole)
-	role.Put("/:id", roleHandler.UpdateRole)
-	role.Delete("/:id", roleHandler.DeleteRole)
+	role.Get("/", roleController.GetRoles)
+	role.Get("/:id", roleController.FindRoleByID)
+	role.Post("/", roleController.CreateRole)
+	role.Put("/:id", roleController.UpdateRole)
+	role.Delete("/:id", roleController.DeleteRole)
 }

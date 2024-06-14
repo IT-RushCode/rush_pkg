@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"context"
@@ -14,14 +14,14 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-type userHandler struct{ repo *repositories.Repositories }
+type userController struct{ repo *repositories.Repositories }
 
-func NewUserHandler(repo *repositories.Repositories) *userHandler {
-	return &userHandler{repo: repo}
+func NewUserController(repo *repositories.Repositories) *userController {
+	return &userController{repo: repo}
 }
 
 // Создание пользователя
-func (h *userHandler) CreateUser(ctx *fiber.Ctx) error {
+func (h *userController) CreateUser(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.UserRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -45,7 +45,7 @@ func (h *userHandler) CreateUser(ctx *fiber.Ctx) error {
 }
 
 // Обновление пользователя
-func (h *userHandler) UpdateUser(ctx *fiber.Ctx) error {
+func (h *userController) UpdateUser(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.UserRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -74,7 +74,7 @@ func (h *userHandler) UpdateUser(ctx *fiber.Ctx) error {
 }
 
 // Удаление пользователя
-func (h *userHandler) DeleteUser(ctx *fiber.Ctx) error {
+func (h *userController) DeleteUser(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return utils.SendResponse(ctx, false, "некорректный ID", nil, http.StatusBadRequest)
@@ -89,7 +89,7 @@ func (h *userHandler) DeleteUser(ctx *fiber.Ctx) error {
 }
 
 // Получить всех пользователей с пагинацией или без
-func (h *userHandler) GetAllUsers(ctx *fiber.Ctx) error {
+func (h *userController) GetAllUsers(ctx *fiber.Ctx) error {
 	limit, offset := utils.AutoPaginate(ctx)
 
 	repoRes := &rpModels.Users{}
@@ -116,7 +116,7 @@ func (h *userHandler) GetAllUsers(ctx *fiber.Ctx) error {
 }
 
 // Получение разрешения по ID
-func (h *userHandler) FindUserByID(ctx *fiber.Ctx) error {
+func (h *userController) FindUserByID(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return err

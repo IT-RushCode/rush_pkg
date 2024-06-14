@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"context"
@@ -21,7 +21,7 @@ var (
 	ErrNotRefreshToken = errors.New("полученный токен не является refresh токеном")
 )
 
-type AuthHandler struct {
+type AuthController struct {
 	repo       *repositories.Repositories
 	cfg        *config.Config
 	jWTService utils.JWTService
@@ -29,14 +29,14 @@ type AuthHandler struct {
 	rttl       uint64
 }
 
-func NewAuthHandler(
+func NewAuthController(
 	repo *repositories.Repositories,
 	cfg *config.Config,
-) *AuthHandler {
+) *AuthController {
 	ttl := time.Duration(uint64(cfg.JWT.JWT_TTL)) * time.Second
 	rttl := time.Duration(uint64(cfg.JWT.REFRESH_TTL)) * time.Second
 	jwtService := utils.NewJWTService(cfg.JWT.JWT_SECRET, ttl, rttl)
-	return &AuthHandler{
+	return &AuthController{
 		repo:       repo,
 		cfg:        cfg,
 		jWTService: jwtService,
@@ -46,7 +46,7 @@ func NewAuthHandler(
 }
 
 // Авторизация пользователя
-func (h *AuthHandler) PhoneLogin(ctx *fiber.Ctx) error {
+func (h *AuthController) PhoneLogin(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.AuthWithPhoneRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -92,7 +92,7 @@ func (h *AuthHandler) PhoneLogin(ctx *fiber.Ctx) error {
 }
 
 // Авторизация пользователя
-func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
+func (h *AuthController) Login(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.AuthWithLoginPasswordRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -141,7 +141,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 }
 
 // Получение данных пользователя по ID из токена
-func (h *AuthHandler) Me(ctx *fiber.Ctx) error {
+func (h *AuthController) Me(ctx *fiber.Ctx) error {
 	// Получение UserID из локальных данных контекста
 	userID, err := utils.GetUserIDFromLocals(ctx)
 	if err != nil {
@@ -167,7 +167,7 @@ func (h *AuthHandler) Me(ctx *fiber.Ctx) error {
 }
 
 // Обновление токена
-func (h *AuthHandler) RefreshToken(ctx *fiber.Ctx) error {
+func (h *AuthController) RefreshToken(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.RefreshTokenDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -210,7 +210,7 @@ func (h *AuthHandler) RefreshToken(ctx *fiber.Ctx) error {
 
 }
 
-func (h *AuthHandler) updateLastActivity(ctx context.Context, userID uint) {
+func (h *AuthController) updateLastActivity(ctx context.Context, userID uint) {
 	go func() {
 		if err := h.repo.User.UpdateField(ctx, userID, "last_activity", time.Now(), &rpModels.User{}); err != nil {
 			fmt.Printf("Ошибка обновления LastActivity: %v\n", err)

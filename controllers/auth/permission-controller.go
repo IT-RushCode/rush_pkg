@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"context"
@@ -14,14 +14,14 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-type permissionHandler struct{ repo *repositories.Repositories }
+type permissionController struct{ repo *repositories.Repositories }
 
-func NewPermissionHandler(repo *repositories.Repositories) *permissionHandler {
-	return &permissionHandler{repo: repo}
+func NewPermissionController(repo *repositories.Repositories) *permissionController {
+	return &permissionController{repo: repo}
 }
 
 // Создание разрешения
-func (h *permissionHandler) CreatePermission(ctx *fiber.Ctx) error {
+func (h *permissionController) CreatePermission(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.PermissionDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -45,7 +45,7 @@ func (h *permissionHandler) CreatePermission(ctx *fiber.Ctx) error {
 }
 
 // Обновление разрешения
-func (h *permissionHandler) UpdatePermission(ctx *fiber.Ctx) error {
+func (h *permissionController) UpdatePermission(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.PermissionDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -74,7 +74,7 @@ func (h *permissionHandler) UpdatePermission(ctx *fiber.Ctx) error {
 }
 
 // Получение разрешения по ID
-func (h *permissionHandler) FindPermissionByID(ctx *fiber.Ctx) error {
+func (h *permissionController) FindPermissionByID(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (h *permissionHandler) FindPermissionByID(ctx *fiber.Ctx) error {
 }
 
 // Удаление разрешения
-func (h *permissionHandler) DeletePermission(ctx *fiber.Ctx) error {
+func (h *permissionController) DeletePermission(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func (h *permissionHandler) DeletePermission(ctx *fiber.Ctx) error {
 }
 
 // Получение всех разрешений с пагинацией или без
-func (h *permissionHandler) GetPermissions(ctx *fiber.Ctx) error {
+func (h *permissionController) GetPermissions(ctx *fiber.Ctx) error {
 	limit, offset := utils.AutoPaginate(ctx)
 
 	repoRes := &rpModels.Permissions{}

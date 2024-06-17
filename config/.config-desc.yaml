@@ -36,3 +36,7 @@ RABBITMQ:
 MONGODB:
   DB: "HOTS"
   URI: "mongodb://localhost:27017"
+
+DOCSAUTH:
+  LOGIN: "admin"
+  PASSWORD: "admin"

@@ -16,6 +16,7 @@ type Config struct {
 	KAFKA    KafKaConfig    `mapstructure:"KAFKA"`
 	RABBITMQ RabbitMQConfig `mapstructure:"RABBITMQ"`
 	MONGODB  MongoDBConfig  `mapstructure:"MONGODB"`
+	DOCS     DocsAuthConfig `mapstructure:"DOCSAUTH"`
 }
 
 // ------------ SERVICES ------------
@@ -76,6 +77,11 @@ type DatabaseConfig struct {
 	PASS    string `mapstructure:"DBPASS"`
 	NAME    string `mapstructure:"DBNAME"`
 	CHARSET string `mapstructure:"CHARSET"`
+}
+
+type DocsAuthConfig struct {
+	LOGIN    string `mapstructure:"LOGIN"`
+	PASSWORD string `mapstructure:"PASSWORD"`
 }
 
 func InitConfig(path string) *Config {

@@ -41,7 +41,7 @@ func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
 		"/api/v1/auth/login",
 		"/api/v1/auth/phone-login",
 		"/api/v1/auth/refresh-token",
-		"/swagger",
+		// "/swagger",
 		"/fb-metrics",
 		"/metrics",
 	}

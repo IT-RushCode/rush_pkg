@@ -15,11 +15,14 @@ type FileData struct {
 	FilePath string
 }
 
-// UploadFile принимает путь к папке и входящее название формы и сохраняет файл в соответвующей папке.
+// UploadFile принимает путь к папке и входящее название из FormData и сохраняет файл в соответвующей папке.
 // Если папка не существует, то создается новая.
 func UploadFile(ctx *fiber.Ctx, pathFile, formName string) (*FileData, error) {
 	file, err := ctx.FormFile(formName)
 	if err != nil {
+		if err == http.ErrMissingFile {
+			return nil, nil
+		}
 		return nil, SendResponse(ctx, false, "ошибка получения файла", nil, http.StatusBadRequest)
 	}
 

@@ -1,4 +1,4 @@
-package external_services
+package providers
 
 import (
 	"bytes"

@@ -9,6 +9,7 @@ require (
 	github.com/google/uuid v1.5.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/redis/go-redis/v9 v9.5.1
+	github.com/rvinnie/yookassa-sdk-go v0.0.0-20230904104101-ff7e5be5530c
 	github.com/spf13/viper v1.18.2
 	go.mongodb.org/mongo-driver v1.15.0
 	golang.org/x/crypto v0.23.0

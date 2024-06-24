@@ -1,4 +1,4 @@
-package providers
+package yookassa
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func NewPaymentKassa(client *KassaClient) *PaymentKassa {
 }
 
 // Создание платежа
-func (k *PaymentKassa) CreatePayment(paymentMethod, paymentType, amount, currency, returnURL string) {
+func (k *PaymentKassa) CreatePayment(paymentMethod, paymentType, amount, currency, description, returnURL string) {
 	var confirmation yoopayment.Confirmer
 
 	switch paymentType {
@@ -56,7 +56,7 @@ func (k *PaymentKassa) CreatePayment(paymentMethod, paymentType, amount, currenc
 		},
 		PaymentMethod: yoopayment.PaymentMethodType(paymentMethod),
 		Confirmation:  confirmation,
-		Description:   "Test payment",
+		Description:   description,
 	})
 	if err != nil {
 		fmt.Println("Ошибка: ", err)
@@ -66,7 +66,7 @@ func (k *PaymentKassa) CreatePayment(paymentMethod, paymentType, amount, currenc
 	fmt.Println("Успешно: ", payment)
 }
 
-// Получение информацию о платеже
+// Получение информации о платеже
 func (k *PaymentKassa) GetPayment(paymentId string) {
 	payment, err := k.paymentHandler.FindPayment(paymentId)
 	if err != nil {

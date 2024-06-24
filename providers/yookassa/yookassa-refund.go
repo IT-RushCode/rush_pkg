@@ -1,4 +1,4 @@
-package providers
+package yookassa
 
 import (
 	"fmt"
@@ -36,7 +36,7 @@ func (k *RefundKassa) CreateRefund(paymentId, amountValue, amountCurrency string
 	fmt.Println("Успешно: ", refund)
 }
 
-// Получение возврата
+// Получение информации возврата
 func (k *RefundKassa) FindRefund(refundId string) {
 	refund, err := k.refundHandler.FindRefund(refundId)
 	if err != nil {

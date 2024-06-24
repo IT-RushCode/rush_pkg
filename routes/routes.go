@@ -5,6 +5,8 @@ import (
 	"github.com/IT-RushCode/rush_pkg/repositories"
 	auth "github.com/IT-RushCode/rush_pkg/routes/auth"
 
+	// yookassa "github.com/IT-RushCode/rush_pkg/routes/yookassa"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,6 +16,21 @@ func RUN_AUTH_ROUTES(api fiber.Router, repo *repositories.Repositories, cfg *con
 	go auth.RUN_ROLE(api, repo)
 	go auth.RUN_PERMISSION(api, repo)
 }
+
+// // РОУТЫ ПРОВЕДЕНИЯ ПЛАТЕЖЕЙ ЮКАССЫ
+// func RUN_YOOKASSA_PAYMENT_ROUTES(api fiber.Router, repo *repositories.Repositories) {
+// 	go yookassa.RUN_PAYMENT_KASSA(api, repo)
+// }
+
+// // РОУТЫ ВОЗВРАТОВ ЮКАССЫ
+// func RUN_YOOKASSA_REFUND_ROUTES(api fiber.Router, repo *repositories.Repositories) {
+// 	go yookassa.RUN_REFUND_KASSA(api, repo)
+// }
+
+// // РОУТЫ НАСТРОЕК МАГАЗИНА ЮКАССЫ
+// func RUN_YOOKASSA_SETTINGS_ROUTES(api fiber.Router, repo *repositories.Repositories) {
+// 	go yookassa.RUN_SETTINGS_KASSA(api, repo)
+// }
 
 // РОУТЫ УВЕДОМЛЕНИЙ SMS/EMAIL/PUSH
 // func RUN_NOTIFICATION_ROUTES(api fiber.Router, repo *repositories.Repositories) {

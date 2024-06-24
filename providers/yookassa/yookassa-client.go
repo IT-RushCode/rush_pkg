@@ -1,4 +1,4 @@
-package providers
+package yookassa
 
 import (
 	"github.com/rvinnie/yookassa-sdk-go/yookassa"

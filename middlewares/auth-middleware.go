@@ -77,3 +77,46 @@ func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
 
 	return ctx.Next()
 }
+
+// // AuthorizationMiddleware проверяет права пользователя
+// func AuthorizationMiddleware(requiredPermission string) fiber.Handler {
+// 	return func(c *fiber.Ctx) error {
+// 		// Предполагается, что вы уже получили userID из токена или сессии
+// 		userID := c.Locals("userID")
+// 		if userID == nil {
+// 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "user not authenticated"})
+// 		}
+
+// 		var user *rpModels.User
+// 		if err := db.Preload("Permissions").Preload("Roles.Permissions").First(&user, userID).Error; err != nil {
+// 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "пользователь не найден"})
+// 		}
+
+// 		// Проверка прав пользователя
+// 		hasPermission := false
+// 		for _, perm := range user.Permissions {
+// 			if perm.Name == requiredPermission {
+// 				hasPermission = true
+// 				break
+// 			}
+// 		}
+
+// 		// Проверка прав через роли
+// 		if !hasPermission {
+// 			for _, role := range user.Roles {
+// 				for _, perm := range role.Permissions {
+// 					if perm.Name == requiredPermission {
+// 						hasPermission = true
+// 						break
+// 					}
+// 				}
+// 			}
+// 		}
+
+// 		if !hasPermission {
+// 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Доступ запрещен"})
+// 		}
+
+// 		return c.Next()
+// 	}
+// }

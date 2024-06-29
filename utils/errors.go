@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	// Repositoriy errors
 	ErrId              = errors.New("неверный id")
 	ErrCreate          = errors.New("ошибка создания записи")
 	ErrUpdate          = errors.New("ошибка обновления записи")
@@ -15,12 +16,20 @@ var (
 	ErrExists          = errors.New("запись с такими же параметрами уже существует")
 	ErrRecordNotFound  = errors.New("запись не найдена")
 	ErrRecordsNotFound = errors.New("записи не найдены")
-	ErrFileNotFound    = errors.New("файл не найден")
-	ErrFilesNotFound   = errors.New("файлы не найдены")
-	ErrPermission      = errors.New("нет прав на редактирование")
 	ErrDuplicate       = errors.New("дубликат записи")
-	ErrInvalidInput    = errors.New("ошибка входящих данных")
-	ErrInternal        = errors.New("внутренняя ошибка сервера")
+
+	// Global errors
+	ErrInternal   = errors.New("внутренняя ошибка сервера")
+	ErrPermission = errors.New("нет прав на редактирование")
+
+	// File handler errors
+	ErrFileNotFound  = errors.New("файл не найден")
+	ErrFilesNotFound = errors.New("файлы не найдены")
+
+	// Controller errors
+	ErrorIncorrectID     = errors.New("некорректный :id в параметре пути").Error()
+	ErrorIncorrectUserID = errors.New("некорректный :userId в параметре пути").Error()
+	ErrInvalidInput      = errors.New("ошибка входящих данных")
 )
 
 func HandleDuplicateKeyError(err error) error {

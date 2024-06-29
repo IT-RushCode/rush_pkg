@@ -71,3 +71,7 @@ func ErrorUnsupportedMediaTypeResponse(ctx *fiber.Ctx, message string, body inte
 func ErrorInternalServerErrorResponse(ctx *fiber.Ctx, message string, body interface{}) error {
 	return SendResponse(ctx, false, message, body, fiber.StatusInternalServerError)
 }
+
+var (
+	Success = "успешно"
+)

@@ -59,11 +59,11 @@ func (h *permissionController) UpdatePermission(ctx *fiber.Ctx) error {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
 	}
-	data.ID = uint(id)
+	data.ID = id
 
 	if err := h.repo.Permission.Update(context.Background(), data); err != nil {
 		return utils.CheckErr(ctx, err)
@@ -75,13 +75,13 @@ func (h *permissionController) UpdatePermission(ctx *fiber.Ctx) error {
 
 // Получение разрешения по ID
 func (h *permissionController) FindPermissionByID(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
 	}
 
 	data := &rpModels.Permission{}
-	if err := h.repo.Permission.FindByID(context.Background(), uint(id), data); err != nil {
+	if err := h.repo.Permission.FindByID(context.Background(), id, data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
@@ -91,12 +91,12 @@ func (h *permissionController) FindPermissionByID(ctx *fiber.Ctx) error {
 
 // Удаление разрешения
 func (h *permissionController) DeletePermission(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
 	}
 
-	data := &rpModels.Permission{ID: uint(id)}
+	data := &rpModels.Permission{ID: id}
 	if err := h.repo.Permission.Delete(context.Background(), data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -127,5 +127,5 @@ func (h *permissionController) GetPermissions(ctx *fiber.Ctx) error {
 		TotalCount: count,
 	}
 
-	return utils.SuccessResponse(ctx, "success", res)
+	return utils.SuccessResponse(ctx, utils.Success, res)
 }

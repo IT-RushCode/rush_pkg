@@ -88,7 +88,7 @@ func (h *AuthController) PhoneLogin(ctx *fiber.Ctx) error {
 		User: userRes,
 	}
 
-	return utils.SuccessResponse(ctx, "success", res)
+	return utils.SuccessResponse(ctx, utils.Success, res)
 }
 
 // Авторизация пользователя
@@ -137,7 +137,7 @@ func (h *AuthController) Login(ctx *fiber.Ctx) error {
 		User: userRes,
 	}
 
-	return utils.SuccessResponse(ctx, "success", res)
+	return utils.SuccessResponse(ctx, utils.Success, res)
 }
 
 // Получение данных пользователя по ID из токена
@@ -163,7 +163,7 @@ func (h *AuthController) Me(ctx *fiber.Ctx) error {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
 
-	return utils.SuccessResponse(ctx, "success", userDTO)
+	return utils.SuccessResponse(ctx, utils.Success, userDTO)
 }
 
 // Обновление токена
@@ -203,7 +203,7 @@ func (h *AuthController) RefreshToken(ctx *fiber.Ctx) error {
 			RefreshTokenExpiredIn: h.rttl,
 		}
 
-		return utils.SuccessResponse(ctx, "success", tokenDto)
+		return utils.SuccessResponse(ctx, utils.Success, tokenDto)
 	}
 
 	return utils.ErrorResponse(ctx, ErrRefreshToken.Error(), nil)

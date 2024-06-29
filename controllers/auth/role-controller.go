@@ -57,11 +57,11 @@ func (h *roleController) UpdateRole(ctx *fiber.Ctx) error {
 	if err := copier.Copy(data, &input); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
 	}
-	data.ID = uint(id)
+	data.ID = id
 
 	if err := h.repo.Role.Update(context.Background(), data); err != nil {
 		return utils.CheckErr(ctx, err)
@@ -73,13 +73,13 @@ func (h *roleController) UpdateRole(ctx *fiber.Ctx) error {
 
 // Получение роли по ID
 func (h *roleController) FindRoleByID(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
 	}
 
 	data := &rpModels.Role{}
-	if err := h.repo.Role.FindByID(context.Background(), uint(id), data); err != nil {
+	if err := h.repo.Role.FindByID(context.Background(), id, data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
@@ -89,12 +89,12 @@ func (h *roleController) FindRoleByID(ctx *fiber.Ctx) error {
 
 // Удаление роли
 func (h *roleController) DeleteRole(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
 	}
 
-	data := &rpModels.Role{ID: uint(id)}
+	data := &rpModels.Role{ID: id}
 	if err := h.repo.Role.Delete(context.Background(), data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -126,7 +126,7 @@ func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
 		TotalCount: count,
 	}
 
-	return utils.SuccessResponse(ctx, "success", res)
+	return utils.SuccessResponse(ctx, utils.Success, res)
 }
 
 // TODO: НУЖНА ДОРАБОТКА
@@ -139,7 +139,7 @@ func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
 // 	}
 
 // 	data := &rpModels.Role{}
-// 	if err := h.repo.Role.FindWithPermissions(context.Background(), uint(id), data); err != nil {
+// 	if err := h.repo.Role.FindWithPermissions(context.Background(), id, data); err != nil {
 //		return utils.CheckErr(ctx, err)
 // 	}
 
@@ -148,10 +148,10 @@ func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
 // }
 
 // func (h *roleController) ChangeRolePermission(ctx *fiber.Ctx) error {
-// 	return utils.SuccessResponse(ctx, "success", nil)
+// 	return utils.SuccessResponse(ctx, utils.Success, nil)
 
 // }
 
 // func (h *roleController) GetRolesWithPagination(ctx *fiber.Ctx) error {
-// 	return utils.SuccessResponse(ctx, "success", nil)
+// 	return utils.SuccessResponse(ctx, utils.Success, nil)
 // }

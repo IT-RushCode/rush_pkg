@@ -28,7 +28,7 @@ package handler
 // 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
 // 	}
 
-// 	return utils.SuccessResponse(ctx, "success", settings)
+// 	return utils.SuccessResponse(ctx, utils.Success, settings)
 // }
 
 // // Хендлеры для работы с платежами
@@ -49,7 +49,7 @@ package handler
 // 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
 // 	}
 
-// 	return utils.SuccessResponse(ctx, "success", payment)
+// 	return utils.SuccessResponse(ctx, utils.Success, payment)
 // }
 
 // func (h *Handlers) GetPayment(ctx *fiber.Ctx) error {
@@ -65,7 +65,7 @@ package handler
 // 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
 // 	}
 
-// 	return utils.SuccessResponse(ctx, "success", payment)
+// 	return utils.SuccessResponse(ctx, utils.Success, payment)
 // }
 
 // func (h *Handlers) GetPayments(ctx *fiber.Ctx) error {
@@ -74,7 +74,7 @@ package handler
 // 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
 // 	}
 
-// 	return utils.SuccessResponse(ctx, "success", payments)
+// 	return utils.SuccessResponse(ctx, utils.Success, payments)
 // }
 
 // // Хендлеры для работы с возвратами
@@ -93,7 +93,7 @@ package handler
 // 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
 // 	}
 
-// 	return utils.SuccessResponse(ctx, "success", refund)
+// 	return utils.SuccessResponse(ctx, utils.Success, refund)
 // }
 
 // func (h *Handlers) GetRefund(ctx *fiber.Ctx) error {
@@ -109,7 +109,7 @@ package handler
 // 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
 // 	}
 
-// 	return utils.SuccessResponse(ctx, "success", refund)
+// 	return utils.SuccessResponse(ctx, utils.Success, refund)
 // }
 
 // func (h *Handlers) GetRefunds(ctx *fiber.Ctx) error {
@@ -118,5 +118,5 @@ package handler
 // 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
 // 	}
 
-// 	return utils.SuccessResponse(ctx, "success", refunds)
+// 	return utils.SuccessResponse(ctx, utils.Success, refunds)
 // }

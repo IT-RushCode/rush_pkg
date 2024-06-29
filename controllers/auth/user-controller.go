@@ -59,11 +59,11 @@ func (h *userController) UpdateUser(ctx *fiber.Ctx) error {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
 	}
-	data.ID = uint(id)
+	data.ID = id
 
 	if err := h.repo.User.Update(context.Background(), data); err != nil {
 		return utils.CheckErr(ctx, err)
@@ -75,12 +75,12 @@ func (h *userController) UpdateUser(ctx *fiber.Ctx) error {
 
 // Удаление пользователя
 func (h *userController) DeleteUser(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
-		return utils.SendResponse(ctx, false, "некорректный ID", nil, http.StatusBadRequest)
+		return err
 	}
 
-	data := &rpModels.User{ID: uint(id)}
+	data := &rpModels.User{ID: id}
 	if err := h.repo.User.Delete(context.Background(), data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -112,18 +112,18 @@ func (h *userController) GetAllUsers(ctx *fiber.Ctx) error {
 		TotalCount: count,
 	}
 
-	return utils.SuccessResponse(ctx, "success", res)
+	return utils.SuccessResponse(ctx, utils.Success, res)
 }
 
 // Получение разрешения по ID
 func (h *userController) FindUserByID(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
 	}
 
 	data := &rpModels.User{}
-	if err := h.repo.User.FindByID(context.Background(), uint(id), data); err != nil {
+	if err := h.repo.User.FindByID(context.Background(), id, data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 

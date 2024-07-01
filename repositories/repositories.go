@@ -4,14 +4,16 @@ import (
 	"github.com/IT-RushCode/rush_pkg/database"
 	rpAuth "github.com/IT-RushCode/rush_pkg/repositories/auth"
 	rpBase "github.com/IT-RushCode/rush_pkg/repositories/base"
+	rpYKassa "github.com/IT-RushCode/rush_pkg/repositories/yookassa"
 	"github.com/redis/go-redis/v9"
 )
 
 // Флаги для определения, какие репозитории инициализировать
 type RepoFlags struct {
-	InitAuthRepo  bool // Инициализировать ли репозитории для авторизации
-	InitCacheRepo bool // Инициализировать ли кэш-репозиторий Redis
-	InitMongoRepo bool // Инициализировать ли MongoDB репозиторий
+	InitAuthRepo   bool // Инициализировать ли репозитории для авторизации
+	InitYKassaRepo bool // Инициализировать ли YKassa репозиторий
+	InitCacheRepo  bool // Инициализировать ли кэш-репозиторий Redis
+	InitMongoRepo  bool // Инициализировать ли MongoDB репозиторий
 }
 
 // Все репозитории
@@ -19,6 +21,8 @@ type Repositories struct {
 	User       rpAuth.UserRepository
 	Role       rpAuth.RoleRepository
 	Permission rpAuth.PermissionRepository
+
+	YooKassaSetting rpYKassa.YooKassaSettingRepository
 
 	Redis *redis.Client
 
@@ -36,6 +40,11 @@ func NewRepositories(db *database.Storage, flags RepoFlags, mongoDB string) *Rep
 		repos.User = rpAuth.NewUserRepository(DB)
 		repos.Role = rpAuth.NewRoleRepository(DB)
 		repos.Permission = rpAuth.NewPermissionRepository(DB)
+	}
+
+	// Инициализация репозиториев для авторизации
+	if flags.InitYKassaRepo {
+		repos.YooKassaSetting = rpYKassa.NewYooKassaSettingRepository(DB)
 	}
 
 	// Инициализация кэш-репозитория Redis

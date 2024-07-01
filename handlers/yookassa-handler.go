@@ -1,122 +1,107 @@
-package handler
+package handlers
 
-// import (
-// 	"github.com/IT-RushCode/rush_pkg/providers/yookassa"
-// 	"github.com/IT-RushCode/rush_pkg/utils"
+import (
+	"context"
 
-// 	"github.com/gofiber/fiber/v2"
-// )
+	dto "github.com/IT-RushCode/rush_pkg/dto/payment"
+	rpYKassa "github.com/IT-RushCode/rush_pkg/models/yookassa"
+	"github.com/IT-RushCode/rush_pkg/repositories"
+	"github.com/IT-RushCode/rush_pkg/utils"
 
-// type Handlers struct {
-// 	settingsKassa *yookassa.SettingsKassa
-// 	paymentKassa  *yookassa.PaymentKassa
-// 	refundKassa   *yookassa.RefundKassa
-// }
+	yookassa "github.com/rvinnie/yookassa-sdk-go/yookassa"
+	yoocommon "github.com/rvinnie/yookassa-sdk-go/yookassa/common"
+	yoopayment "github.com/rvinnie/yookassa-sdk-go/yookassa/payment"
 
-// func NewHandlers(client *yookassa.KassaClient) *Handlers {
-// 	return &Handlers{
-// 		settingsKassa: yookassa.NewSettingsKassa(client),
-// 		paymentKassa:  yookassa.NewPaymentKassa(client),
-// 		refundKassa:   yookassa.NewRefundKassa(client),
-// 	}
-// }
+	"github.com/gofiber/fiber/v2"
+)
 
-// // Хендлеры для работы с настройками
-// func (h *Handlers) GetSettings(ctx *fiber.Ctx) error {
-// 	settings, err := h.settingsKassa.GetStoreSettings()
-// 	if err != nil {
-// 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
-// 	}
+type PaymentHandler struct {
+	repo repositories.Repositories
+}
 
-// 	return utils.SuccessResponse(ctx, utils.Success, settings)
-// }
+func NewPaymentHandler(repo *repositories.Repositories) *PaymentHandler {
+	return &PaymentHandler{
+		repo: *repo,
+	}
+}
 
-// // Хендлеры для работы с платежами
-// func (h *Handlers) CreatePayment(ctx *fiber.Ctx) error {
-// 	var req struct {
-// 		PaymentMethod string `json:"paymentMethod"`
-// 		PaymentType   string `json:"paymentType"`
-// 		Amount        string `json:"amount"`
-// 		Currency      string `json:"currency"`
-// 		ReturnURL     string `json:"returnUrl"`
-// 	}
-// 	if err := ctx.BodyParser(&req); err != nil {
-// 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
-// 	}
+// TODO: ДОРАБОТАТЬ МЕТОД
+func (h *PaymentHandler) CreatePayment(ctx *fiber.Ctx) error {
+	var req dto.PaymentRequest
+	var err error
+	if err := ctx.BodyParser(&req); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
+	if err := utils.ValidateStruct(req); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
 
-// 	payment, err := h.paymentKassa.CreatePayment(req.PaymentMethod, req.PaymentType, req.Amount, req.Currency, req.ReturnURL)
-// 	if err != nil {
-// 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
-// 	}
+	store := &rpYKassa.YooKassaSetting{}
+	if err := h.repo.YooKassaSetting.Filter(
+		context.Background(),
+		map[string]interface{}{"point_id": req.PointID},
+		store,
+	); err != nil {
+		return utils.ErrorNotFoundResponse(ctx, "настройки YooKassa не найдены", nil)
+	}
 
-// 	return utils.SuccessResponse(ctx, utils.Success, payment)
-// }
+	client := yookassa.NewClient(store.StoreID, store.SecretKey)
+	paymentKassa := yookassa.NewPaymentHandler(client)
 
-// func (h *Handlers) GetPayment(ctx *fiber.Ctx) error {
-// 	var req struct {
-// 		PaymentID string `json:"paymentId"`
-// 	}
-// 	if err := ctx.BodyParser(&req); err != nil {
-// 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
-// 	}
+	var payment *yoopayment.Payment
+	switch yoopayment.PaymentMethodType(req.PaymentType) {
+	case yoopayment.PaymentTypeBankCard:
+		payment, err = paymentKassa.CreatePayment(&yoopayment.Payment{
+			Amount: &yoocommon.Amount{
+				Value:    req.Amount,
+				Currency: req.Currency,
+			},
+			PaymentMethod: yoopayment.PaymentMethodType(yoopayment.PaymentTypeBankCard),
+			// Card: &yoopayment.PaymentMethodDataCard{
+			// 	Number:      req.CardNumber,
+			// 	ExpiryMonth: req.ExpiryMonth,
+			// 	ExpiryYear:  req.ExpiryYear,
+			// 	Cvc:         req.Cvc,
+			// },
+			Confirmation: &yoopayment.Redirect{
+				Type:      yoopayment.TypeRedirect,
+				ReturnURL: req.ReturnURL,
+			},
+			Description: req.Description,
+		})
+	case yoopayment.PaymentTypeTinkoffBank, yoopayment.PaymentTypeSberbank, yoopayment.PaymentTypeYooMoney:
+		payment, err = paymentKassa.CreatePayment(&yoopayment.Payment{
+			Amount: &yoocommon.Amount{
+				Value:    req.Amount,
+				Currency: req.Currency,
+			},
+			PaymentMethod: yoopayment.PaymentMethodType(req.PaymentType),
+			Confirmation: &yoopayment.Redirect{
+				Type:      yoopayment.TypeRedirect,
+				ReturnURL: req.ReturnURL,
+			},
+			Description: req.Description,
+		})
+	case yoopayment.PaymentTypeCash:
+		payment, err = paymentKassa.CreatePayment(&yoopayment.Payment{
+			Amount: &yoocommon.Amount{
+				Value:    req.Amount,
+				Currency: req.Currency,
+			},
+			PaymentMethod: yoopayment.PaymentMethodType(yoopayment.PaymentTypeCash),
+			Confirmation: &yoopayment.Redirect{
+				Type:      yoopayment.TypeRedirect,
+				ReturnURL: req.ReturnURL,
+			},
+			Description: req.Description,
+		})
+	default:
+		return utils.ErrorBadRequestResponse(ctx, "не поддерживаемый тип оплаты", nil)
+	}
 
-// 	payment, err := h.paymentKassa.GetPayment(req.PaymentID)
-// 	if err != nil {
-// 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
-// 	}
+	if err != nil {
+		return utils.ErrorInternalServerErrorResponse(ctx, err.Error(), nil)
+	}
 
-// 	return utils.SuccessResponse(ctx, utils.Success, payment)
-// }
-
-// func (h *Handlers) GetPayments(ctx *fiber.Ctx) error {
-// 	payments, err := h.paymentKassa.GetPayments()
-// 	if err != nil {
-// 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
-// 	}
-
-// 	return utils.SuccessResponse(ctx, utils.Success, payments)
-// }
-
-// // Хендлеры для работы с возвратами
-// func (h *Handlers) CreateRefund(ctx *fiber.Ctx) error {
-// 	var req struct {
-// 		PaymentID string `json:"paymentId"`
-// 		Amount    string `json:"amount"`
-// 		Currency  string `json:"currency"`
-// 	}
-// 	if err := ctx.BodyParser(&req); err != nil {
-// 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
-// 	}
-
-// 	refund, err := h.refundKassa.CreateRefund(req.PaymentID, req.Amount, req.Currency)
-// 	if err != nil {
-// 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
-// 	}
-
-// 	return utils.SuccessResponse(ctx, utils.Success, refund)
-// }
-
-// func (h *Handlers) GetRefund(ctx *fiber.Ctx) error {
-// 	var req struct {
-// 		RefundID string `json:"refundId"`
-// 	}
-// 	if err := ctx.BodyParser(&req); err != nil {
-// 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
-// 	}
-
-// 	refund, err := h.refundKassa.FindRefund(req.RefundID)
-// 	if err != nil {
-// 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
-// 	}
-
-// 	return utils.SuccessResponse(ctx, utils.Success, refund)
-// }
-
-// func (h *Handlers) GetRefunds(ctx *fiber.Ctx) error {
-// 	refunds, err := h.refundKassa.FindRefunds()
-// 	if err != nil {
-// 		return utils.ErrorInternalServerErrorResponse(ctx, err, nil)
-// 	}
-
-// 	return utils.SuccessResponse(ctx, utils.Success, refunds)
-// }
+	return utils.SuccessResponse(ctx, utils.Success, payment)
+}

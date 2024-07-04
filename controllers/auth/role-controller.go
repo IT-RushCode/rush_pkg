@@ -107,7 +107,14 @@ func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
 	limit, offset := utils.AutoPaginate(ctx)
 
 	repoRes := &rpModels.Roles{}
-	count, err := h.repo.Role.GetAll(context.Background(), offset, limit, repoRes)
+	count, err := h.repo.Role.GetAll(
+		context.Background(),
+		offset,
+		limit,
+		repoRes,
+		ctx.Query("sortBy"),
+		ctx.Query("orderBy"),
+	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}

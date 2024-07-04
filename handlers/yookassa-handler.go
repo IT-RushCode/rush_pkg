@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
 	dto "github.com/IT-RushCode/rush_pkg/dto/payment"
 	rpYKassa "github.com/IT-RushCode/rush_pkg/models/yookassa"
@@ -49,37 +50,53 @@ func (h *PaymentHandler) CreatePayment(ctx *fiber.Ctx) error {
 	paymentKassa := yookassa.NewPaymentHandler(client)
 
 	var payment *yoopayment.Payment
-	switch yoopayment.PaymentMethodType(req.PaymentType) {
+	switch yoopayment.PaymentMethodType(req.PaymentMethod) {
 	case yoopayment.PaymentTypeBankCard:
 		payment, err = paymentKassa.CreatePayment(&yoopayment.Payment{
+			Metadata: map[string]interface{}{
+				"orderID": 1,
+			},
+			MerchantCustomerID: "felixkot00@gmail.com",
+			Capture:            true,
 			Amount: &yoocommon.Amount{
 				Value:    req.Amount,
 				Currency: req.Currency,
 			},
-			PaymentMethod: yoopayment.PaymentMethodType(yoopayment.PaymentTypeBankCard),
-			// Card: &yoopayment.PaymentMethodDataCard{
-			// 	Number:      req.CardNumber,
-			// 	ExpiryMonth: req.ExpiryMonth,
-			// 	ExpiryYear:  req.ExpiryYear,
-			// 	Cvc:         req.Cvc,
-			// },
+			PaymentMethod: yoopayment.BankCard{
+				Card: yoopayment.Card{
+					First6:        "220000",
+					Last4:         "0004",
+					ExpiryYear:    "05",
+					ExpiryMonth:   "2030",
+					CardType:      "MIR",
+					IssuerCountry: "RU",
+					IssuerName:    "Sberbank",
+					Source:        "sber_pay",
+				},
+			},
 			Confirmation: &yoopayment.Redirect{
 				Type:      yoopayment.TypeRedirect,
-				ReturnURL: req.ReturnURL,
+				Enforce:   true,
+				ReturnURL: "http://localhost:8000",
 			},
 			Description: req.Description,
 		})
-	case yoopayment.PaymentTypeTinkoffBank, yoopayment.PaymentTypeSberbank, yoopayment.PaymentTypeYooMoney:
+	case yoopayment.PaymentTypeTinkoffBank,
+		yoopayment.PaymentTypeSberbank,
+		yoopayment.PaymentTypeYooMoney,
+		yoopayment.PaymentTypeSBP:
 		payment, err = paymentKassa.CreatePayment(&yoopayment.Payment{
 			Amount: &yoocommon.Amount{
 				Value:    req.Amount,
 				Currency: req.Currency,
 			},
-			PaymentMethod: yoopayment.PaymentMethodType(req.PaymentType),
-			Confirmation: &yoopayment.Redirect{
-				Type:      yoopayment.TypeRedirect,
-				ReturnURL: req.ReturnURL,
-			},
+			PaymentMethod: yoopayment.PaymentMethodType(req.PaymentMethod),
+			Confirmation:  yoopayment.TypeEmbedded,
+
+			// &yoopayment.Redirect{
+			// 	Type:      yoopayment.TypeRedirect,
+			// 	ReturnURL: req.ReturnURL,
+			// },
 			Description: req.Description,
 		})
 	case yoopayment.PaymentTypeCash:
@@ -96,7 +113,18 @@ func (h *PaymentHandler) CreatePayment(ctx *fiber.Ctx) error {
 			Description: req.Description,
 		})
 	default:
-		return utils.ErrorBadRequestResponse(ctx, "не поддерживаемый тип оплаты", nil)
+		return utils.ErrorBadRequestResponse(
+			ctx,
+			fmt.Sprintf(
+				"не поддерживаемый метод оплаты. Используйте один из методов (%s, %s, %s, %s, %s)",
+				yoopayment.PaymentTypeCash,
+				yoopayment.PaymentTypeBankCard,
+				yoopayment.PaymentTypeYooMoney,
+				yoopayment.PaymentTypeTinkoffBank,
+				yoopayment.PaymentTypeSberbank,
+			),
+			nil,
+		)
 	}
 
 	if err != nil {

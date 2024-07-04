@@ -1,7 +1,7 @@
 package payment
 
 type PaymentRequest struct {
-	PaymentType   string `json:"paymentType"`
+	PaymentMethod string `json:"paymentMethod,omitempty"`
 	PointID       uint   `json:"pointId"`
 	Amount        string `json:"amount"`
 	Currency      string `json:"currency"`
@@ -10,7 +10,6 @@ type PaymentRequest struct {
 	ExpiryMonth   string `json:"expiryMonth,omitempty"`
 	ExpiryYear    string `json:"expiryYear,omitempty"`
 	Cvc           string `json:"cvc,omitempty"`
-	PaymentMethod string `json:"paymentMethod,omitempty"`
 	PhoneNumber   string `json:"phoneNumber,omitempty"`
 	ReturnURL     string `json:"returnUrl"`
 }

@@ -93,7 +93,14 @@ func (h *userController) GetAllUsers(ctx *fiber.Ctx) error {
 	limit, offset := utils.AutoPaginate(ctx)
 
 	repoRes := &rpModels.Users{}
-	count, err := h.repo.User.GetAll(context.Background(), offset, limit, repoRes)
+	count, err := h.repo.User.GetAll(
+		context.Background(),
+		offset,
+		limit,
+		repoRes,
+		ctx.Query("sortBy"),
+		ctx.Query("orderBy"),
+	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}

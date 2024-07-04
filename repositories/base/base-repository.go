@@ -10,7 +10,7 @@ import (
 
 // BaseRepository интерфейс представляет базовый набор методов для работы с сущностями
 type BaseRepository interface {
-	GetAll(ctx context.Context, offset, limit uint, data interface{}, preloads ...string) (int64, error)
+	GetAll(ctx context.Context, offset, limit uint, data interface{}, sortBy, order string, preloads ...string) (int64, error)
 	Create(ctx context.Context, data interface{}) error
 	FindByID(ctx context.Context, id uint, data interface{}, preloads ...string) error
 	Update(ctx context.Context, data interface{}) error
@@ -35,7 +35,7 @@ func NewBaseRepository(db *gorm.DB) BaseRepository {
 // ----------- Реализация базовых методов интерфейса Repository -----------
 
 // Получение всех или с пагинацией
-func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data interface{}, preloads ...string) (int64, error) {
+func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data interface{}, sortBy, order string, preloads ...string) (int64, error) {
 	var count int64
 	query := r.db.WithContext(ctx).Model(data)
 
@@ -49,6 +49,15 @@ func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data in
 	// Получить общее количество записей
 	if err := query.Count(&count).Error; err != nil {
 		return 0, utils.ErrInternal
+	}
+
+	// Применить сортировку
+	if sortBy != "" {
+		if order == "desc" {
+			query = query.Order(sortBy + " desc")
+		} else {
+			query = query.Order(sortBy + " asc")
+		}
 	}
 
 	// Применить пагинацию, если необходимо

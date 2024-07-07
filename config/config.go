@@ -17,6 +17,7 @@ type Config struct {
 	RABBITMQ RabbitMQConfig `mapstructure:"RABBITMQ"`
 	MONGODB  MongoDBConfig  `mapstructure:"MONGODB"`
 	DOCS     DocsAuthConfig `mapstructure:"DOCSAUTH"`
+	APISMS   APISMS         `mapstructure:"APISMS"`
 }
 
 // ------------ SERVICES ------------
@@ -82,6 +83,11 @@ type DatabaseConfig struct {
 type DocsAuthConfig struct {
 	LOGIN    string `mapstructure:"LOGIN"`
 	PASSWORD string `mapstructure:"PASSWORD"`
+}
+
+type APISMS struct {
+	API    string `mapstructure:"API"`
+	SENDER string `mapstructure:"SENDER"`
 }
 
 func InitConfig(path string) *Config {

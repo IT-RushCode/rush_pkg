@@ -40,3 +40,7 @@ MONGODB:
 DOCSAUTH:
   LOGIN: "admin"
   PASSWORD: "admin"
+
+APISMS:
+  API: ""
+  SENDER: ""

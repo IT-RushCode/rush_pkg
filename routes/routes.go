@@ -5,6 +5,7 @@ import (
 	"github.com/IT-RushCode/rush_pkg/repositories"
 	auth "github.com/IT-RushCode/rush_pkg/routes/auth"
 
+	sms "github.com/IT-RushCode/rush_pkg/routes/sms"
 	yookassa "github.com/IT-RushCode/rush_pkg/routes/yookassa"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,32 +24,17 @@ func RUN_YOOKASSA_PAYMENT_ROUTES(api fiber.Router, repo *repositories.Repositori
 	go yookassa.RUN_PAYMENT_ROUTES(api, repo)
 }
 
-// // РОУТЫ ВОЗВРАТОВ ЮКАССЫ
-// func RUN_YOOKASSA_REFUND_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-// 	go yookassa.RUN_REFUND_KASSA(api, repo)
-// }
-
-// // РОУТЫ НАСТРОЕК МАГАЗИНА ЮКАССЫ
-// func RUN_YOOKASSA_SETTINGS_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-// 	go yookassa.RUN_SETTINGS_KASSA(api, repo)
-// }
+// РОУТЫ SMS
+func RUN_SMS_ROUTES(api fiber.Router, repo *repositories.Repositories, cfg *config.Config) {
+	go sms.RUN_SMS_ROUTES(api, cfg, repo)
+}
 
 // РОУТЫ УВЕДОМЛЕНИЙ SMS/EMAIL/PUSH
 // func RUN_NOTIFICATION_ROUTES(api fiber.Router, repo *repositories.Repositories) {
 // 	go review.RUN_NOTIFICATION(api, repo)
 // }
 
-// РОУТЫ ОПЛАТ
-// func RUN_PAYMENT_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-// 	go review.RUN_PAYMENT(api, repo)
-// }
-
 // РОУТЫ GOOGLE КАРТ
 // func RUN_MAP_ROUTES(api fiber.Router, repo *repositories.Repositories) {
 // 	go review.RUN_MAP(api, repo)
-// }
-
-// РОУТЫ ПРОВАЙДЕРОВ
-// func RUN_PROVIDER_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-// 	go review.RUN_PROVIDER(api, repo)
 // }

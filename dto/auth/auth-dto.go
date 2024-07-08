@@ -12,7 +12,13 @@ type AuthPhoneResponseDTO struct {
 
 // Авторизация по логин паролю
 type AuthWithLoginPasswordRequestDTO struct {
-	Username string `json:"userName" validate:"required,min=3"`
+	Username string `json:"userName" validate:"required,min=5,max=20"`
+	Password string `json:"password" validate:"required,min=8"`
+}
+
+// Авторизация по логин паролю
+type AuthWithEmailPasswordRequestDTO struct {
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8"`
 }
 

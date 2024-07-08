@@ -2,11 +2,11 @@ package auth
 
 // Роль
 type RoleDTO struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Status      *bool  `json:"status" default:"true"`
-	Permissions []uint `json:"permissions"`
+	ID          uint   `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Status      *bool  `json:"status,omitempty" default:"true"`
+	Permissions []uint `json:"permissions,omitempty"`
 }
 
 // Роли

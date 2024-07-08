@@ -3,14 +3,18 @@ package base_repository
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strconv"
+	"time"
 
+	"github.com/IT-RushCode/rush_pkg/dto"
 	"github.com/IT-RushCode/rush_pkg/utils"
 	"gorm.io/gorm"
 )
 
 // BaseRepository интерфейс представляет базовый набор методов для работы с сущностями
 type BaseRepository interface {
-	GetAll(ctx context.Context, offset, limit uint, data interface{}, sortBy, order string, preloads ...string) (int64, error)
+	GetAll(ctx context.Context, data interface{}, dto *dto.GetAllRequest, preloads ...string) (int64, error)
 	Create(ctx context.Context, data interface{}) error
 	FindByID(ctx context.Context, id uint, data interface{}, preloads ...string) error
 	Update(ctx context.Context, data interface{}) error
@@ -35,7 +39,7 @@ func NewBaseRepository(db *gorm.DB) BaseRepository {
 // ----------- Реализация базовых методов интерфейса Repository -----------
 
 // Получение всех или с пагинацией
-func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data interface{}, sortBy, order string, preloads ...string) (int64, error) {
+func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.GetAllRequest, preloads ...string) (int64, error) {
 	var count int64
 	query := r.db.WithContext(ctx).Model(data)
 
@@ -46,23 +50,49 @@ func (r *baseRepository) GetAll(ctx context.Context, offset, limit uint, data in
 		}
 	}
 
+	// Применить фильтры, если они есть
+	if len(dto.Filters) > 0 {
+		for field, value := range dto.Filters {
+			if field != "" && value != "" {
+				switch {
+				case value == "true" || value == "false":
+					// Булевое значение
+					query = query.Where(fmt.Sprintf("%s = ?", field), value)
+				case isRFC3339(value):
+					// Дата и время в формате RFC3339
+					query = query.Where(fmt.Sprintf("%s = ?", field), value)
+				case isDate(value):
+					// Дата (формат: YYYY-MM-DD)
+					query = query.Where(fmt.Sprintf("%s = ?", field), value)
+				case isNumber(value):
+					// Числовое значение
+					query = query.Where(fmt.Sprintf("%s ILIKE ?", field), "%"+value+"%")
+				default:
+					// Строковое значение
+					query = query.Where(fmt.Sprintf("%s ILIKE ?", field), "%"+value+"%")
+				}
+
+			}
+		}
+	}
+
 	// Получить общее количество записей
 	if err := query.Count(&count).Error; err != nil {
 		return 0, utils.ErrInternal
 	}
 
 	// Применить сортировку
-	if sortBy != "" {
-		if order == "desc" {
-			query = query.Order(sortBy + " desc")
-		} else {
-			query = query.Order(sortBy + " asc")
+	if dto.SortBy != "" {
+		order := "asc"
+		if dto.OrderBy == "desc" {
+			order = "desc"
 		}
+		query = query.Order(fmt.Sprintf("%s %s", dto.SortBy, order))
 	}
 
 	// Применить пагинацию, если необходимо
-	if limit > 0 || offset > 0 {
-		query = query.Scopes(utils.Paginate(offset, limit))
+	if dto.Limit > 0 || dto.Offset > 0 {
+		query = query.Offset(int(dto.Offset - 1)).Limit(int(dto.Limit))
 	}
 
 	// Получить данные с учетом пагинации
@@ -189,4 +219,22 @@ func (r *baseRepository) Filter(ctx context.Context, filters map[string]interfac
 		return utils.ErrInternal
 	}
 	return nil
+}
+
+// isDate проверяет, является ли строка датой в формате YYYY-MM-DD
+func isDate(value string) bool {
+	_, err := time.Parse("2006-01-02", value)
+	return err == nil
+}
+
+// isRFC3339 проверяет, является ли строка датой и временем в формате RFC3339
+func isRFC3339(value string) bool {
+	_, err := time.Parse(time.RFC3339, value)
+	return err == nil
+}
+
+// isNumber проверяет, является ли строка числом
+func isNumber(value string) bool {
+	_, err := strconv.Atoi(value)
+	return err == nil
 }

@@ -15,6 +15,7 @@ import (
 type UserRepository interface {
 	rp.BaseRepository
 	FindByUsernameAndPassword(ctx context.Context, data rpDTO.AuthWithLoginPasswordRequestDTO) (*rpModels.User, error)
+	FindByEmailAndPassword(ctx context.Context, data rpDTO.AuthWithEmailPasswordRequestDTO) (*rpModels.User, error)
 	FindByPhone(ctx context.Context, data rpDTO.AuthWithPhoneRequestDTO) (*rpModels.User, error)
 }
 
@@ -32,6 +33,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 var (
 	ErrUsernameOrPassword = errors.New("неверный логин или пароль")
+	ErrEmailOrPassword    = errors.New("неверный email или пароль")
 )
 
 // Аутентификация пользователя по логин-паролю.
@@ -51,9 +53,34 @@ func (repo *userRepository) FindByUsernameAndPassword(
 		return nil, err
 	}
 
-	// Сравниваем пароль из запроса с паролем пользователя
-	if !utils.ComparePassword(user.Password, data.Password) {
+	// Сравниваем хеши пароля из запроса с паролем из базы
+	if !utils.ComparePassword(user.HashPassword, data.Password) {
 		return nil, ErrUsernameOrPassword
+	}
+
+	return user, nil
+}
+
+// Аутентификация пользователя по логин-паролю.
+func (repo *userRepository) FindByEmailAndPassword(
+	ctx context.Context,
+	data rpDTO.AuthWithEmailPasswordRequestDTO,
+) (*rpModels.User, error) {
+	var user *rpModels.User
+
+	// Поиск пользователя по email
+	if err := repo.db.WithContext(ctx).
+		Where("email = ?", data.Email).
+		First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrEmailOrPassword
+		}
+		return nil, err
+	}
+
+	// Сравниваем хеши пароля из запроса с паролем из базы
+	if !utils.ComparePassword(user.HashPassword, data.Password) {
+		return nil, ErrEmailOrPassword
 	}
 
 	return user, nil

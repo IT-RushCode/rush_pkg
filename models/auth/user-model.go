@@ -12,19 +12,21 @@ import (
 
 // Пользователи
 type User struct {
-	ID           uint      `gorm:"primaryKey;autoincrement"`
-	FirstName    string    `gorm:"type:varchar(100)"`
-	LastName     string    `gorm:"type:varchar(100)"`
-	MiddleName   string    `gorm:"type:varchar(100);default:null"`
-	Email        string    `gorm:"type:varchar(100)"`
-	PhoneNumber  string    `gorm:"type:varchar(20);unique"`
-	BirthDate    time.Time `gorm:"type:date"`
-	Status       *bool     `gorm:"default:true"`
-	AvatarUrl    string    `gorm:"type:varchar(255);default:null"`
-	UserName     string    `gorm:"type:varchar(100);unique"`
-	Password     string    `gorm:"type:varchar(255)"`
-	IsPersonal   *bool     `gorm:"default:false"`
-	LastActivity time.Time `gorm:"default:null"`
+	ID             uint      `gorm:"primaryKey;autoincrement"`
+	FirstName      string    `gorm:"type:varchar(100)"`
+	LastName       string    `gorm:"type:varchar(100)"`
+	MiddleName     string    `gorm:"type:varchar(100);default:null"`
+	Email          string    `gorm:"type:varchar(100);unique"`
+	EmailConfirmed *bool     `gorm:"default:false"`
+	PhoneNumber    string    `gorm:"type:varchar(20);unique"`
+	PhoneConfirmed *bool     `gorm:"type:varchar(20);unique"`
+	BirthDate      time.Time `gorm:"type:date"`
+	Status         *bool     `gorm:"default:true"`
+	AvatarUrl      string    `gorm:"type:varchar(255);default:null"`
+	UserName       string    `gorm:"type:varchar(100);unique"`
+	HashPassword   string    `gorm:"type:varchar(255)"`
+	IsStaff        *bool     `gorm:"default:false"`
+	LastActivity   time.Time `gorm:"default:null"`
 	rpBase.BaseModel
 }
 
@@ -43,11 +45,11 @@ func (user *User) BeforeUpdate(db *gorm.DB) (err error) {
 }
 
 func (user *User) hashPassword() error {
-	hashedPassword, err := utils.HashPassword(user.Password)
+	hashedPassword, err := utils.HashPassword(user.HashPassword)
 	if err != nil {
 		return errors.New("ошибка генерации хеша пароля")
 	}
-	user.Password = hashedPassword
+	user.HashPassword = hashedPassword
 	return nil
 }
 

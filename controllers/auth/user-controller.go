@@ -90,16 +90,16 @@ func (h *userController) DeleteUser(ctx *fiber.Ctx) error {
 
 // Получить всех пользователей с пагинацией или без
 func (h *userController) GetAllUsers(ctx *fiber.Ctx) error {
-	limit, offset := utils.AutoPaginate(ctx)
+	req, err := utils.GetAllQueries(ctx)
+	if err != nil {
+		return err
+	}
 
 	repoRes := &rpModels.Users{}
 	count, err := h.repo.User.GetAll(
 		context.Background(),
-		offset,
-		limit,
 		repoRes,
-		ctx.Query("sortBy"),
-		ctx.Query("orderBy"),
+		req,
 	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
@@ -113,8 +113,8 @@ func (h *userController) GetAllUsers(ctx *fiber.Ctx) error {
 	res := &rpDTO.PaginationDTO{
 		List: resDTO,
 		Meta: rpDTO.MetaDTO{
-			Limit:  limit,
-			Offset: offset,
+			Limit:  req.Limit,
+			Offset: req.Offset,
 		},
 		TotalCount: count,
 	}
@@ -136,4 +136,14 @@ func (h *userController) FindUserByID(ctx *fiber.Ctx) error {
 
 	res := &rpAuthDTO.UserResponseDTO{}
 	return utils.CopyAndRespond(ctx, data, res)
+}
+
+// Изенение пароля пользователя
+func (h *userController) ChangeUserPassword(ctx *fiber.Ctx) error {
+	return nil
+}
+
+// Сброс пароля пользователя
+func (h *userController) ResetUserPassword(ctx *fiber.Ctx) error {
+	return nil
 }

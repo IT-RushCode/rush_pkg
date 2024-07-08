@@ -41,6 +41,7 @@ func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse
 		if data.Messages[i].Channel == "" {
 			data.Messages[i].Channel = "char"
 		}
+
 		if data.Messages[i].Channel == "char" {
 			data.Messages[0].Sender = cfg.APISMS.SENDER
 		}
@@ -86,7 +87,7 @@ func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse
 
 	// В зависимости от статуса десериализуем data
 	var jsonRes dto.SMSRes
-	if intermRes.Status == "success" { // Или другой критерий для успешного ответа
+	if intermRes.Status == "success" {
 		var dataArray []dto.Data
 		err = json.Unmarshal(intermRes.Data, &dataArray)
 		if err != nil {

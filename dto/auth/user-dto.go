@@ -5,19 +5,19 @@ import (
 )
 
 type UserRequestDTO struct {
-	ID          uint      `json:"id"`
-	LastName    string    `json:"lastName" validate:"required"`
-	FirstName   string    `json:"firstName" validate:"required"`
-	MiddleName  string    `json:"middleName" validate:"required"`
-	Email       string    `json:"email" validate:"email"`
-	PhoneNumber string    `json:"phoneNumber" validate:"required,phone,len=12"`
-	BirthDate   time.Time `json:"birthDate"`
-	Status      *bool     `json:"status"`
-	AvatarUrl   string    `json:"avatarUrl"`
-	UserName    string    `json:"userName" validate:"required"`
-	Password    string    `json:"password"`
-	IsPersonal  *bool     `json:"isPersonal"  validate:"required"`
-	Roles       []uint    `json:"roles" validate:"required"`
+	ID          uint      `json:"id,omitempty"`
+	LastName    string    `json:"lastName,omitempty" validate:"required"`
+	FirstName   string    `json:"firstName,omitempty" validate:"required"`
+	MiddleName  string    `json:"middleName,omitempty" validate:"required"`
+	PhoneNumber string    `json:"phoneNumber,omitempty" validate:"required,phone,len=12"`
+	BirthDate   time.Time `json:"birthDate,omitempty"`
+	Status      *bool     `json:"status,omitempty"`
+	AvatarUrl   string    `json:"avatarUrl,omitempty"`
+	Email       string    `json:"email,omitempty" validate:"required,email"`
+	UserName    string    `json:"userName,omitempty" validate:"required"`
+	Password    string    `json:"password,omitempty"`
+	IsStaff     *bool     `json:"isStaff,omitempty"  validate:"required"`
+	Roles       []uint    `json:"roles,omitempty" validate:"required"`
 }
 
 type UserResponseDTO struct {
@@ -31,7 +31,7 @@ type UserResponseDTO struct {
 	Status       *bool     `json:"status"`
 	AvatarUrl    string    `json:"avatarUrl"`
 	UserName     string    `json:"userName"`
-	IsPersonal   *bool     `json:"IsPersonal"`
+	IsStaff      *bool     `json:"IsStaff"`
 	LastActivity time.Time `json:"lastAcitvity"`
 
 	CreatedAt *time.Time `json:"createdAt,omitempty"`

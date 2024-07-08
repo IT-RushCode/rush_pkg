@@ -67,7 +67,7 @@ func (h *AuthController) PhoneLogin(ctx *fiber.Ctx) error {
 		repoRes.ID,
 		repoRes.FirstName,
 		repoRes.UserName,
-		*repoRes.IsPersonal,
+		*repoRes.IsStaff,
 	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
@@ -105,7 +105,7 @@ func (h *AuthController) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		return utils.ErrorUnauthorizedResponse(ctx, err.Error(), nil)
 	}
-	if !*repoRes.IsPersonal {
+	if !*repoRes.IsStaff {
 		return utils.ErrorForbiddenResponse(ctx, "нет прав", nil)
 	}
 
@@ -116,7 +116,56 @@ func (h *AuthController) Login(ctx *fiber.Ctx) error {
 		repoRes.ID,
 		repoRes.FirstName,
 		repoRes.UserName,
-		*repoRes.IsPersonal,
+		*repoRes.IsStaff,
+	)
+	if err != nil {
+		return utils.ErrorResponse(ctx, err.Error(), nil)
+	}
+
+	userRes := &rpAuthDTO.UserResponseDTO{}
+	if err := copier.Copy(&userRes, &repoRes); err != nil {
+		return utils.ErrorResponse(ctx, err.Error(), nil)
+	}
+
+	res := &rpAuthDTO.AuthResponseDTO{
+		Token: &rpAuthDTO.TokenResponseDTO{
+			AccessToken:           accessToken,
+			RefreshToken:          refreshToken,
+			AccessTokenExpiredIn:  h.ttl,
+			RefreshTokenExpiredIn: h.rttl,
+		},
+		User: userRes,
+	}
+
+	return utils.SuccessResponse(ctx, utils.Success, res)
+}
+
+// Авторизация пользователя
+func (h *AuthController) EmailLogin(ctx *fiber.Ctx) error {
+	input := &rpAuthDTO.AuthWithEmailPasswordRequestDTO{}
+	if err := ctx.BodyParser(input); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
+	if err := utils.ValidateStruct(input); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
+
+	repoRes, err := h.repo.User.FindByEmailAndPassword(context.Background(), *input)
+	if err != nil {
+		return utils.ErrorUnauthorizedResponse(ctx, err.Error(), nil)
+	}
+	if !*repoRes.IsStaff {
+		return utils.ErrorForbiddenResponse(ctx, "нет прав", nil)
+	}
+
+	// Обновляем даты последней активности "LastActivity"
+	h.updateLastActivity(context.Background(), repoRes.ID)
+
+	accessToken, refreshToken, err := h.jWTService.GenerateTokens(
+		repoRes.ID,
+		repoRes.FirstName,
+		repoRes.UserName,
+		*repoRes.IsStaff,
 	)
 	if err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
@@ -190,7 +239,7 @@ func (h *AuthController) RefreshToken(ctx *fiber.Ctx) error {
 			valid.UserID,
 			valid.Name,
 			valid.Login,
-			valid.IsPersonal,
+			valid.IsStaff,
 		)
 		if err != nil {
 			return err

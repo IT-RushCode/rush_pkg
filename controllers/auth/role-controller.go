@@ -104,16 +104,16 @@ func (h *roleController) DeleteRole(ctx *fiber.Ctx) error {
 
 // Получить все роли с пагинацией или без
 func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
-	limit, offset := utils.AutoPaginate(ctx)
+	req, err := utils.GetAllQueries(ctx)
+	if err != nil {
+		return err
+	}
 
 	repoRes := &rpModels.Roles{}
 	count, err := h.repo.Role.GetAll(
 		context.Background(),
-		offset,
-		limit,
 		repoRes,
-		ctx.Query("sortBy"),
-		ctx.Query("orderBy"),
+		req,
 	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
@@ -127,8 +127,8 @@ func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
 	res := &rpDTO.PaginationDTO{
 		List: resDTO,
 		Meta: rpDTO.MetaDTO{
-			Limit:  limit,
-			Offset: offset,
+			Limit:  req.Limit,
+			Offset: req.Offset,
 		},
 		TotalCount: count,
 	}

@@ -44,3 +44,11 @@ DOCSAUTH:
 APISMS:
   API: ""
   SENDER: ""
+
+MAIL:
+  SMTP_HOST: "smtp.example.com" # хост smtp сервера
+  SMTP_PORT: 587 # порт smtp сервера
+  SMTP_USER: "your-email@example.com" # пользователь smtp сервера
+  SMTP_PASSWORD: "your-email-password" # пароль smtp сервера
+  SENDER_EMAIL: "no-reply@example.com" # от чьего имени отправляется почта
+  SENDER_NAME: "Example App" # имя отправителя

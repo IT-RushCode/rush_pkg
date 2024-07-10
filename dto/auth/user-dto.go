@@ -21,18 +21,19 @@ type UserRequestDTO struct {
 }
 
 type UserResponseDTO struct {
-	ID           uint      `json:"id"`
-	LastName     string    `json:"lastName"`
-	FirstName    string    `json:"firstName"`
-	MiddleName   string    `json:"middleName"`
-	Email        string    `json:"email"`
-	PhoneNumber  string    `json:"phoneNumber"`
-	BirthDate    time.Time `json:"birthDate"`
-	Status       *bool     `json:"status"`
-	AvatarUrl    string    `json:"avatarUrl"`
-	UserName     string    `json:"userName"`
-	IsStaff      *bool     `json:"IsStaff"`
-	LastActivity time.Time `json:"lastAcitvity"`
+	ID                      uint      `json:"id"`
+	LastName                string    `json:"lastName"`
+	FirstName               string    `json:"firstName"`
+	MiddleName              string    `json:"middleName"`
+	Email                   string    `json:"email"`
+	PhoneNumber             string    `json:"phoneNumber"`
+	BirthDate               time.Time `json:"birthDate"`
+	Status                  *bool     `json:"status"`
+	AvatarUrl               string    `json:"avatarUrl"`
+	UserName                string    `json:"userName"`
+	IsStaff                 *bool     `json:"IsStaff"`
+	LastActivity            time.Time `json:"lastAcitvity"`
+	ChangePasswordWhenLogin *bool     `json:"changePasswordWhenLogin"`
 
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
@@ -51,4 +52,11 @@ type UserPhoneDataDTO struct {
 	Email       string     `json:"email" validate:"email"`
 	BirthDate   *time.Time `json:"birthDate"`
 	UserName    string     `json:"userName,omitempty"`
+}
+
+// DTO для изменения пароля пользователя
+type ChangePasswordRequestDTO struct {
+	OldPassword     string `json:"oldPassword" validate:"required,min=8"`
+	NewPassword     string `json:"newPassword" validate:"required,min=8"`
+	ConfirmPassword string `json:"confirmPassword" validate:"required,min=8"`
 }

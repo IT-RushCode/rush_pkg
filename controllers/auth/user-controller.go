@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
+	"github.com/IT-RushCode/rush_pkg/config"
 	rpDTO "github.com/IT-RushCode/rush_pkg/dto"
 	rpAuthDTO "github.com/IT-RushCode/rush_pkg/dto/auth"
 	rpModels "github.com/IT-RushCode/rush_pkg/models/auth"
@@ -14,10 +16,19 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-type userController struct{ repo *repositories.Repositories }
+type userController struct {
+	repo *repositories.Repositories
+	cfg  *config.MailConfig
+}
 
-func NewUserController(repo *repositories.Repositories) *userController {
-	return &userController{repo: repo}
+func NewUserController(
+	repo *repositories.Repositories,
+	cfg *config.MailConfig,
+) *userController {
+	return &userController{
+		repo: repo,
+		cfg:  cfg,
+	}
 }
 
 // Создание пользователя
@@ -35,6 +46,8 @@ func (h *userController) CreateUser(ctx *fiber.Ctx) error {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
 	data.ID = 0
+	changePassword := true
+	data.ChangePasswordWhenLogin = &changePassword
 
 	if err := h.repo.User.Create(context.Background(), data); err != nil {
 		return utils.CheckErr(ctx, err)
@@ -138,12 +151,57 @@ func (h *userController) FindUserByID(ctx *fiber.Ctx) error {
 	return utils.CopyAndRespond(ctx, data, res)
 }
 
-// Изенение пароля пользователя
+// Изменение пароля пользователя
 func (h *userController) ChangeUserPassword(ctx *fiber.Ctx) error {
-	return nil
+	id, err := utils.GetID(ctx)
+	if err != nil {
+		return err
+	}
+
+	var input rpAuthDTO.ChangePasswordRequestDTO
+	if err := ctx.BodyParser(&input); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
+
+	if err := utils.ValidateStruct(&input); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
+
+	if err := h.repo.User.ChangePassword(context.Background(), id, input); err != nil {
+		return utils.ErrorResponse(ctx, err.Error(), nil)
+	}
+
+	return utils.SuccessResponse(ctx, "Пароль успешно изменен", nil)
 }
 
 // Сброс пароля пользователя
 func (h *userController) ResetUserPassword(ctx *fiber.Ctx) error {
-	return nil
+	id, err := utils.GetID(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Генерация нового пароля
+	newPassword := utils.GeneratePassword(8, true)
+
+	// Сброс пароля пользователя
+	userEmail, err := h.repo.User.ResetPassword(context.Background(), id, newPassword)
+	if err != nil {
+		return utils.ErrorResponse(ctx, err.Error(), nil)
+	}
+
+	// Отправка нового пароля пользователю на почту
+	if err := h.sendNewPasswordToUser(userEmail, newPassword); err != nil {
+		return utils.ErrorResponse(ctx, err.Error(), nil)
+	}
+
+	return utils.SuccessResponse(ctx, "Пароль успешно сброшен и отправлен на почту", nil)
+}
+
+// sendNewPasswordToUser отправляет новый пароль пользователю на почту
+func (h *userController) sendNewPasswordToUser(userEmail string, newPassword string) error {
+	fmt.Println("--------", newPassword, "--------")
+	subject := "Новый пароль Westerdam"                      // Заголовок почты
+	body := fmt.Sprintf("Ваш новый пароль: %s", newPassword) // Текст почты
+	return utils.SendEmail(h.cfg, userEmail, subject, body)
 }

@@ -58,7 +58,7 @@ func (h sendSms) SendSMS(ctx *fiber.Ctx) error {
 		return utils.SuccessResponse(ctx, utils.Success, fmt.Sprintf("Сообщение отправлено на номер %s", res.Phone))
 	}
 
-	return utils.SuccessResponse(ctx, utils.Success, "Сообщения отправлены")
+	return utils.SuccessResponse(ctx, "Сообщения отправлены", nil)
 }
 
 // VerifySMSCode подтверждает SMS код который был отправлен на номер телефона и удаляет из кеша

@@ -17,6 +17,8 @@ type UserRepository interface {
 	FindByUsernameAndPassword(ctx context.Context, data rpDTO.AuthWithLoginPasswordRequestDTO) (*rpModels.User, error)
 	FindByEmailAndPassword(ctx context.Context, data rpDTO.AuthWithEmailPasswordRequestDTO) (*rpModels.User, error)
 	FindByPhone(ctx context.Context, data rpDTO.AuthWithPhoneRequestDTO) (*rpModels.User, error)
+	ChangePassword(ctx context.Context, userID uint, dto rpDTO.ChangePasswordRequestDTO) error
+	ResetPassword(ctx context.Context, userID uint, newPassword string) (string, error)
 }
 
 type userRepository struct {
@@ -34,6 +36,8 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 var (
 	ErrUsernameOrPassword = errors.New("неверный логин или пароль")
 	ErrEmailOrPassword    = errors.New("неверный email или пароль")
+	ErrOldPassword        = errors.New("неверный старый пароль")
+	ErrConfirmNewPassword = errors.New("новый пароль и подтверждение не совпадают")
 )
 
 // Аутентификация пользователя по логин-паролю.
@@ -54,7 +58,7 @@ func (repo *userRepository) FindByUsernameAndPassword(
 	}
 
 	// Сравниваем хеши пароля из запроса с паролем из базы
-	if !utils.ComparePassword(user.HashPassword, data.Password) {
+	if !utils.ComparePasswordWithSalt(user.HashPassword, data.Password, user.Salt) {
 		return nil, ErrUsernameOrPassword
 	}
 
@@ -79,7 +83,7 @@ func (repo *userRepository) FindByEmailAndPassword(
 	}
 
 	// Сравниваем хеши пароля из запроса с паролем из базы
-	if !utils.ComparePassword(user.HashPassword, data.Password) {
+	if !utils.ComparePasswordWithSalt(user.HashPassword, data.Password, user.Salt) {
 		return nil, ErrEmailOrPassword
 	}
 
@@ -104,4 +108,75 @@ func (repo *userRepository) FindByPhone(
 	}
 
 	return user, nil
+}
+
+// ChangePassword изменяет пароль пользователя.
+func (repo *userRepository) ChangePassword(ctx context.Context, userID uint, dto rpDTO.ChangePasswordRequestDTO) error {
+	var user rpModels.User
+
+	// Поиск пользователя по ID
+	if err := repo.db.WithContext(ctx).First(&user, userID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return utils.ErrRecordNotFound
+		}
+		return err
+	}
+
+	// Проверка старого пароля с использованием соли
+	if !utils.ComparePasswordWithSalt(user.HashPassword, dto.OldPassword, user.Salt) {
+		return ErrOldPassword
+	}
+
+	// Проверка совпадения нового пароля и его подтверждения
+	if dto.NewPassword != dto.ConfirmPassword {
+		return ErrConfirmNewPassword
+	}
+
+	// Хеширование нового пароля с солью
+	salt := utils.GenerateSalt()
+	hashedPassword, err := utils.HashPasswordWithSalt(dto.NewPassword, salt)
+	if err != nil {
+		return err
+	}
+
+	// Обновление пароля и соли пользователя
+	user.HashPassword = hashedPassword
+	user.Salt = salt
+	user.ChangePasswordWhenLogin = new(bool)
+	if err := repo.db.WithContext(ctx).Save(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ResetPassword сбрасывает пароль пользователя.
+func (repo *userRepository) ResetPassword(ctx context.Context, userID uint, newPassword string) (string, error) {
+	var user rpModels.User
+
+	// Поиск пользователя по ID
+	if err := repo.db.WithContext(ctx).First(&user, userID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", utils.ErrRecordNotFound
+		}
+		return "", err
+	}
+
+	// Хеширование нового пароля с солью
+	salt := utils.GenerateSalt()
+	hashedPassword, err := utils.HashPasswordWithSalt(newPassword, salt)
+	if err != nil {
+		return "", err
+	}
+
+	// Обновление пароля и соли пользователя
+	user.HashPassword = hashedPassword
+	user.Salt = salt
+	changePassword := true
+	user.ChangePasswordWhenLogin = &changePassword
+	if err := repo.db.WithContext(ctx).Save(&user).Error; err != nil {
+		return "", err
+	}
+
+	return user.Email, nil
 }

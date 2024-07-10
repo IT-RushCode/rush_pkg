@@ -13,7 +13,7 @@ import (
 
 func RUN_AUTH_ROUTES(api fiber.Router, repo *repositories.Repositories, cfg *config.Config) {
 	go auth.RUN_AUTH(api, repo, cfg)
-	go auth.RUN_USER(api, repo)
+	go auth.RUN_USER(api, repo, &cfg.MAIL)
 	go auth.RUN_ROLE(api, repo)
 	go auth.RUN_PERMISSION(api, repo)
 }

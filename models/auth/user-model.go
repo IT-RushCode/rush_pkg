@@ -12,22 +12,25 @@ import (
 
 // Пользователи
 type User struct {
-	ID             uint      `gorm:"primaryKey;autoincrement"`
-	FirstName      string    `gorm:"type:varchar(100)"`
-	LastName       string    `gorm:"type:varchar(100)"`
-	MiddleName     string    `gorm:"type:varchar(100);default:null"`
-	Email          string    `gorm:"type:varchar(100);unique"`
-	EmailConfirmed *bool     `gorm:"default:false"`
-	PhoneNumber    string    `gorm:"type:varchar(20);unique"`
-	PhoneConfirmed *bool     `gorm:"type:varchar(20);unique"`
-	BirthDate      time.Time `gorm:"type:date"`
-	Status         *bool     `gorm:"default:true"`
-	AvatarUrl      string    `gorm:"type:varchar(255);default:null"`
-	UserName       string    `gorm:"type:varchar(100);unique"`
-	HashPassword   string    `gorm:"type:varchar(255)"`
-	IsStaff        *bool     `gorm:"default:false"`
-	LastActivity   time.Time `gorm:"default:null"`
-	rpBase.BaseModel
+	ID                      uint      `gorm:"primaryKey;autoincrement"`       // Идентификатор пользователя
+	FirstName               string    `gorm:"type:varchar(100)"`              // Имя
+	LastName                string    `gorm:"type:varchar(100)"`              // Фамилия
+	MiddleName              string    `gorm:"type:varchar(100);default:null"` // Отчество
+	Email                   string    `gorm:"type:varchar(100);unique"`       // Email
+	EmailConfirmed          *bool     `gorm:"default:false"`                  // Подтверждение Email
+	PhoneNumber             string    `gorm:"type:varchar(20);unique"`        // Номер телефона
+	PhoneConfirmed          *bool     `gorm:"default:false"`                  // Подтверждение номера телефона
+	BirthDate               time.Time `gorm:"type:date"`                      // Дата рождения
+	Status                  *bool     `gorm:"default:true"`                   // Статус
+	AvatarUrl               string    `gorm:"type:varchar(255);default:null"` // URL аватара
+	UserName                string    `gorm:"type:varchar(100);unique"`       // Имя пользователя
+	HashPassword            string    `gorm:"type:varchar(255)"`              // Хеш пароля
+	Salt                    string    `gorm:"type:varchar(255)"`              // Соль для пароля
+	ChangePasswordWhenLogin *bool     `gorm:"default:false"`                  // Требование изменения пароля при следующем входе
+	IsStaff                 *bool     `gorm:"default:false"`                  // Флаг сотрудника
+	LastActivity            time.Time `gorm:"default:null"`                   // Время последней активности
+
+	rpBase.BaseModel // Встроенная базовая модель с общими полями
 }
 
 type Users []User
@@ -37,19 +40,13 @@ func (User) TableName() string {
 }
 
 func (user *User) BeforeCreate(db *gorm.DB) (err error) {
-	return user.hashPassword()
-}
-
-func (user *User) BeforeUpdate(db *gorm.DB) (err error) {
-	return user.hashPassword()
-}
-
-func (user *User) hashPassword() error {
-	hashedPassword, err := utils.HashPassword(user.HashPassword)
+	salt := utils.GenerateSalt()
+	hashedPassword, err := utils.HashPasswordWithSalt(user.HashPassword, salt)
 	if err != nil {
 		return errors.New("ошибка генерации хеша пароля")
 	}
 	user.HashPassword = hashedPassword
+	user.Salt = salt
 	return nil
 }
 

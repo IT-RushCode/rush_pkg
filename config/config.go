@@ -18,6 +18,7 @@ type Config struct {
 	MONGODB  MongoDBConfig  `mapstructure:"MONGODB"`
 	DOCS     DocsAuthConfig `mapstructure:"DOCSAUTH"`
 	APISMS   APISMS         `mapstructure:"APISMS"`
+	MAIL     MailConfig     `mapstructure:"MAIL"`
 }
 
 // ------------ SERVICES ------------
@@ -80,14 +81,26 @@ type DatabaseConfig struct {
 	CHARSET string `mapstructure:"CHARSET"`
 }
 
+// ------------ DOCS AUTH ------------
 type DocsAuthConfig struct {
 	LOGIN    string `mapstructure:"LOGIN"`
 	PASSWORD string `mapstructure:"PASSWORD"`
 }
 
+// ------------ API SMS ------------
 type APISMS struct {
 	API    string `mapstructure:"API"`
 	SENDER string `mapstructure:"SENDER"`
+}
+
+// ------------ MAIL CONFIG ------------
+type MailConfig struct {
+	SMTPHost     string `mapstructure:"SMTP_HOST"`
+	SMTPPort     int    `mapstructure:"SMTP_PORT"`
+	SMTPUser     string `mapstructure:"SMTP_USER"`
+	SMTPPassword string `mapstructure:"SMTP_PASSWORD"`
+	SenderEmail  string `mapstructure:"SENDER_EMAIL"`
+	SenderName   string `mapstructure:"SENDER_NAME"`
 }
 
 func InitConfig(path string) *Config {

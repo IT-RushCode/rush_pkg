@@ -3,6 +3,9 @@ package repositories
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
+	"time"
 
 	rpDTO "github.com/IT-RushCode/rush_pkg/dto/auth"
 	rpModels "github.com/IT-RushCode/rush_pkg/models/auth"
@@ -19,6 +22,9 @@ type UserRepository interface {
 	FindByPhone(ctx context.Context, data rpDTO.AuthWithPhoneRequestDTO) (*rpModels.User, error)
 	ChangePassword(ctx context.Context, userID uint, dto rpDTO.ChangePasswordRequestDTO) error
 	ResetPassword(ctx context.Context, userID uint, newPassword string) (string, error)
+
+	// Cron task
+	CheckUserBirthDays(ctx context.Context) error
 }
 
 type userRepository struct {
@@ -179,4 +185,27 @@ func (repo *userRepository) ResetPassword(ctx context.Context, userID uint, newP
 	}
 
 	return user.Email, nil
+}
+
+func (repo *userRepository) CheckUserBirthDays(ctx context.Context) error {
+	var users *rpModels.Users
+	today := time.Now().Format("2006-01-02")
+
+	if err := repo.db.WithContext(ctx).
+		Where("DATE(birth_date) = ?", today).
+		Find(&users).Error; err != nil {
+		return err
+	}
+
+	if users != nil {
+		for _, user := range *users {
+			message := fmt.Sprintf("%s, с Днем рождения!", user.FirstName)
+
+			log.Println(message) // TODO: тут реализовать логику отправки уведомления через notification
+		}
+	}
+
+	log.Println("Некого поздравлять")
+
+	return nil
 }

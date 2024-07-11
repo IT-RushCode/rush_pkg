@@ -188,17 +188,17 @@ func (repo *userRepository) ResetPassword(ctx context.Context, userID uint, newP
 }
 
 func (repo *userRepository) CheckUserBirthDays(ctx context.Context) error {
-	var users *rpModels.Users
+	var users rpModels.Users
 	today := time.Now().Format("2006-01-02")
 
 	if err := repo.db.WithContext(ctx).
-		Where("DATE(birth_date) = ?", today).
+		Where("TO_CHAR(birth_date, 'MM-DD') = TO_CHAR(CAST(? AS DATE), 'MM-DD')", today).
 		Find(&users).Error; err != nil {
 		return err
 	}
 
-	if users != nil {
-		for _, user := range *users {
+	if len(users) > 0 {
+		for _, user := range users {
 			message := fmt.Sprintf("%s, с Днем рождения!", user.FirstName)
 
 			log.Println(message) // TODO: тут реализовать логику отправки уведомления через notification

@@ -30,6 +30,8 @@ type User struct {
 	IsStaff                 *bool     `gorm:"default:false"`                  // Флаг сотрудника
 	LastActivity            time.Time `gorm:"default:null"`                   // Время последней активности
 
+	Roles Roles `gorm:"-"` // Связанные роли, отключение автосоздания таблицы many2many
+
 	rpBase.BaseModel // Встроенная базовая модель с общими полями
 }
 

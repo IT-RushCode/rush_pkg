@@ -15,7 +15,7 @@ type FileData struct {
 	FilePath string
 }
 
-// UploadFile принимает путь к папке и входящее название из FormData и сохраняет файл в соответвующей папке.
+// UploadFile принимает путь к папке и входящее название из FormData и сохраняет файл в соответствующей папке.
 // Если папка не существует, то создается новая.
 func UploadFile(ctx *fiber.Ctx, pathFile, formName string) (*FileData, error) {
 	file, err := ctx.FormFile(formName)
@@ -31,15 +31,19 @@ func UploadFile(ctx *fiber.Ctx, pathFile, formName string) (*FileData, error) {
 		return nil, SendResponse(ctx, false, "ошибка создания директории", nil, http.StatusInternalServerError)
 	}
 
-	filePath := filepath.Join("./uploads/"+pathFile, file.Filename)
+	uuid := uuid.New().String()
+	ext := filepath.Ext(file.Filename)
+	newFileName := uuid + ext
+
+	filePath := filepath.Join("./uploads/"+pathFile, newFileName)
 	err = ctx.SaveFile(file, filePath)
 	if err != nil {
 		return nil, SendResponse(ctx, false, "ошибка сохранения файла", nil, http.StatusInternalServerError)
 	}
 
 	return &FileData{
-		UUID:     uuid.New().String(),
-		FileName: file.Filename,
+		UUID:     uuid,
+		FileName: newFileName,
 		FilePath: filePath,
 	}, err
 }

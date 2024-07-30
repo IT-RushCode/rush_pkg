@@ -6,15 +6,15 @@ import (
 
 type Response struct {
 	Status  bool        `json:"status"`
-	Body    interface{} `json:"body"`
 	Message string      `json:"message"`
+	Body    interface{} `json:"body"`
 }
 
 func SendResponse(ctx *fiber.Ctx, success bool, message string, body interface{}, statusCode int) error {
 	response := Response{
 		Status:  success,
-		Body:    body,
 		Message: message,
+		Body:    body,
 	}
 
 	ctx.Status(statusCode)

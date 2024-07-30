@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -14,11 +13,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
-)
-
-var (
-	ErrRefreshToken    = errors.New("неверный токен обновления")
-	ErrNotRefreshToken = errors.New("полученный токен не является refresh токеном")
 )
 
 type AuthController struct {
@@ -67,7 +61,7 @@ func (h *AuthController) PhoneLogin(ctx *fiber.Ctx) error {
 		repoRes.ID,
 		repoRes.FirstName,
 		repoRes.UserName,
-		*repoRes.IsStaff,
+		false,
 	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
@@ -106,7 +100,7 @@ func (h *AuthController) Login(ctx *fiber.Ctx) error {
 		return utils.ErrorUnauthorizedResponse(ctx, err.Error(), nil)
 	}
 	if !*repoRes.IsStaff {
-		return utils.ErrorForbiddenResponse(ctx, "нет прав", nil)
+		return utils.ErrorForbiddenResponse(ctx, utils.ErrForbidden.Error(), nil)
 	}
 
 	// Обновляем даты последней активности "LastActivity"
@@ -155,7 +149,7 @@ func (h *AuthController) EmailLogin(ctx *fiber.Ctx) error {
 		return utils.ErrorUnauthorizedResponse(ctx, err.Error(), nil)
 	}
 	if !*repoRes.IsStaff {
-		return utils.ErrorForbiddenResponse(ctx, "нет прав", nil)
+		return utils.ErrorForbiddenResponse(ctx, utils.ErrForbidden.Error(), nil)
 	}
 
 	// Обновляем даты последней активности "LastActivity"
@@ -198,8 +192,8 @@ func (h *AuthController) Me(ctx *fiber.Ctx) error {
 	}
 
 	// Получение данных пользователя по UserID
-	data := &rpModels.User{}
-	if err := h.repo.User.FindByID(context.Background(), userID, data); err != nil {
+	data, err := h.repo.User.FindByIDWithRoles(context.Background(), userID)
+	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
@@ -232,7 +226,7 @@ func (h *AuthController) RefreshToken(ctx *fiber.Ctx) error {
 	}
 
 	if isRefreshToken, ok := valid.IsRefreshToken.(bool); !ok || !isRefreshToken {
-		return utils.ErrorResponse(ctx, ErrNotRefreshToken.Error(), nil)
+		return utils.ErrorResponse(ctx, utils.ErrNotRefreshToken.Error(), nil)
 	}
 	if valid != nil {
 		newAccessToken, newRefreshToken, err := h.jWTService.GenerateTokens(
@@ -255,7 +249,7 @@ func (h *AuthController) RefreshToken(ctx *fiber.Ctx) error {
 		return utils.SuccessResponse(ctx, utils.Success, tokenDto)
 	}
 
-	return utils.ErrorResponse(ctx, ErrRefreshToken.Error(), nil)
+	return utils.ErrorResponse(ctx, utils.ErrRefreshToken.Error(), nil)
 
 }
 

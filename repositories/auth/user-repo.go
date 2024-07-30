@@ -20,6 +20,7 @@ type UserRepository interface {
 	FindByUsernameAndPassword(ctx context.Context, data rpDTO.AuthWithLoginPasswordRequestDTO) (*rpModels.User, error)
 	FindByEmailAndPassword(ctx context.Context, data rpDTO.AuthWithEmailPasswordRequestDTO) (*rpModels.User, error)
 	FindByPhone(ctx context.Context, data rpDTO.AuthWithPhoneRequestDTO) (*rpModels.User, error)
+	FindByIDWithRoles(ctx context.Context, id uint) (*rpModels.User, error)
 	ChangePassword(ctx context.Context, userID uint, dto rpDTO.ChangePasswordRequestDTO) error
 	ResetPassword(ctx context.Context, userID uint, newPassword string) (string, error)
 
@@ -68,6 +69,10 @@ func (repo *userRepository) FindByUsernameAndPassword(
 		return nil, ErrUsernameOrPassword
 	}
 
+	if err := repo.getRoles(ctx, user); err != nil {
+		return nil, err
+	}
+
 	return user, nil
 }
 
@@ -91,6 +96,10 @@ func (repo *userRepository) FindByEmailAndPassword(
 	// Сравниваем хеши пароля из запроса с паролем из базы
 	if !utils.ComparePasswordWithSalt(user.HashPassword, data.Password, user.Salt) {
 		return nil, ErrEmailOrPassword
+	}
+
+	if err := repo.getRoles(ctx, user); err != nil {
+		return nil, err
 	}
 
 	return user, nil
@@ -117,7 +126,11 @@ func (repo *userRepository) FindByPhone(
 }
 
 // ChangePassword изменяет пароль пользователя.
-func (repo *userRepository) ChangePassword(ctx context.Context, userID uint, dto rpDTO.ChangePasswordRequestDTO) error {
+func (repo *userRepository) ChangePassword(
+	ctx context.Context,
+	userID uint,
+	dto rpDTO.ChangePasswordRequestDTO,
+) error {
 	var user rpModels.User
 
 	// Поиск пользователя по ID
@@ -157,7 +170,11 @@ func (repo *userRepository) ChangePassword(ctx context.Context, userID uint, dto
 }
 
 // ResetPassword сбрасывает пароль пользователя.
-func (repo *userRepository) ResetPassword(ctx context.Context, userID uint, newPassword string) (string, error) {
+func (repo *userRepository) ResetPassword(
+	ctx context.Context,
+	userID uint,
+	newPassword string,
+) (string, error) {
 	var user rpModels.User
 
 	// Поиск пользователя по ID
@@ -206,6 +223,35 @@ func (repo *userRepository) CheckUserBirthDays(ctx context.Context) error {
 	}
 
 	log.Println("Некого поздравлять")
+
+	return nil
+}
+
+func (repo *userRepository) FindByIDWithRoles(ctx context.Context, id uint) (*rpModels.User, error) {
+	user := &rpModels.User{}
+	if err := repo.BaseRepository.FindByID(ctx, id, user); err != nil {
+		return nil, err
+	}
+
+	if err := repo.getRoles(ctx, user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (repo *userRepository) getRoles(ctx context.Context, user *rpModels.User) error {
+	var roles rpModels.Roles
+	if err := repo.db.WithContext(ctx).
+		Table(`"Roles"`).
+		Select(`"Roles".*`).
+		Joins(`JOIN "UserRoles" ON "UserRoles".role_id = "Roles".id`).
+		Where(`"UserRoles".user_id = ?`, user.ID).
+		Find(&roles).Error; err != nil {
+		return err
+	}
+
+	user.Roles = roles
 
 	return nil
 }

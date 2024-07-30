@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,10 +20,15 @@ var (
 	ErrDuplicate       = errors.New("дубликат записи")
 
 	// Global errors
-	ErrInternal   = errors.New("внутренняя ошибка сервера")
-	ErrPermission = errors.New("нет прав на редактирование")
+	ErrInternal        = errors.New("внутренняя ошибка сервера")
+	ErrPermission      = errors.New("нет прав на редактирование")
+	ErrForbidden       = errors.New("нет прав")
+	ErrRefreshToken    = errors.New("неверный токен обновления")
+	ErrNotRefreshToken = errors.New("полученный токен не является refresh токеном")
 
 	// File handler errors
+	ErrUploadFile    = errors.New("ошибка загрузки файла")
+	ErrUpdateFile    = errors.New("ошибка обновления файла")
 	ErrFileNotFound  = errors.New("файл не найден")
 	ErrFilesNotFound = errors.New("файлы не найдены")
 
@@ -32,6 +38,15 @@ var (
 	ErrInvalidInput      = errors.New("ошибка входящих данных")
 )
 
+type DuplicateKeyError struct {
+	Field string
+	Msg   string
+}
+
+func (e *DuplicateKeyError) Error() string {
+	return e.Msg
+}
+
 func HandleDuplicateKeyError(err error) error {
 	if err == nil {
 		return nil
@@ -40,7 +55,30 @@ func HandleDuplicateKeyError(err error) error {
 	if strings.Contains(err.Error(), "duplicate key value violates unique constraint") ||
 		strings.Contains(err.Error(), "Duplicate entry") ||
 		strings.Contains(err.Error(), "Violation of UNIQUE KEY constraint") {
-		return ErrExists
+
+		// Регулярное выражение для поиска имени уникального ограничения и поля
+		re := regexp.MustCompile(`(?i)(duplicate key value violates unique constraint|Duplicate entry|Violation of UNIQUE KEY constraint)\s*"([^"]+)"`)
+		match := re.FindStringSubmatch(err.Error())
+
+		if len(match) > 2 {
+			uniqueConstraint := match[2]
+			fieldParts := strings.Split(uniqueConstraint, "_")
+
+			// Предполагаем, что имя ограничения состоит из таблицы и поля
+			// Например, "Points_pkey" -> "Points", "pkey"
+			if len(fieldParts) > 1 {
+				fieldCamelCase := ToCamelCase(strings.Join(fieldParts[1:], "_"))
+				return &DuplicateKeyError{
+					Field: fieldCamelCase,
+					Msg:   ErrExists.Error() + ": " + fieldCamelCase,
+				}
+			}
+		}
+
+		return &DuplicateKeyError{
+			Field: "",
+			Msg:   ErrExists.Error(),
+		}
 	}
 
 	return ErrCreate
@@ -55,7 +93,7 @@ func CheckErr(ctx *fiber.Ctx, err error) error {
 	switch {
 	case errors.Is(err, ErrRecordNotFound):
 		return ErrorNotFoundResponse(ctx, err.Error(), nil)
-	case errors.Is(err, ErrExists):
+	case strings.Contains(err.Error(), ErrExists.Error()):
 		return ErrorConflictResponse(ctx, err.Error(), nil)
 	case errors.Is(err, ErrInvalidInput):
 		return ErrorBadRequestResponse(ctx, err.Error(), nil)

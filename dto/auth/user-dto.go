@@ -11,12 +11,12 @@ type UserRequestDTO struct {
 	MiddleName  string    `json:"middleName,omitempty" validate:"required"`
 	PhoneNumber string    `json:"phoneNumber,omitempty" validate:"required,phone,len=12"`
 	BirthDate   time.Time `json:"birthDate,omitempty"`
-	Status      *bool     `json:"status,omitempty"`
+	Status      bool      `json:"status,omitempty"`
 	AvatarUrl   string    `json:"avatarUrl,omitempty"`
 	Email       string    `json:"email,omitempty" validate:"required,email"`
-	UserName    string    `json:"userName,omitempty" validate:"required"`
+	UserName    string    `json:"userName,omitempty"`
 	Password    string    `json:"password,omitempty"`
-	IsStaff     *bool     `json:"isStaff,omitempty"  validate:"required"`
+	IsStaff     bool      `json:"isStaff,omitempty"  validate:"required"`
 	Roles       []uint    `json:"roles,omitempty" validate:"required"`
 }
 
@@ -26,7 +26,9 @@ type UserResponseDTO struct {
 	FirstName               string    `json:"firstName"`
 	MiddleName              string    `json:"middleName"`
 	Email                   string    `json:"email"`
+	EmailConfirmed          *bool     `json:"emailConfirmed"`
 	PhoneNumber             string    `json:"phoneNumber"`
+	PhoneConfirmed          *bool     `json:"phoneConfirmed"`
 	BirthDate               time.Time `json:"birthDate"`
 	Status                  *bool     `json:"status"`
 	AvatarUrl               string    `json:"avatarUrl"`
@@ -38,7 +40,7 @@ type UserResponseDTO struct {
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 
-	Roles RolesWithPermissionsDTO `json:"roles"`
+	Roles RolesResponseDTO `json:"roles"`
 }
 
 type UsersResponseDTO []UserResponseDTO
@@ -51,7 +53,6 @@ type UserPhoneDataDTO struct {
 	MiddleName  string     `json:"middleName"`
 	Email       string     `json:"email" validate:"email"`
 	BirthDate   *time.Time `json:"birthDate"`
-	UserName    string     `json:"userName,omitempty"`
 }
 
 // DTO для изменения пароля пользователя

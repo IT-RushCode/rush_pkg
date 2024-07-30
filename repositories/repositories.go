@@ -18,9 +18,11 @@ type RepoFlags struct {
 
 // Все репозитории
 type Repositories struct {
-	User       rpAuth.UserRepository
-	Role       rpAuth.RoleRepository
-	Permission rpAuth.PermissionRepository
+	User           rpAuth.UserRepository
+	Role           rpAuth.RoleRepository
+	UserRole       rpAuth.UserRoleRepository
+	Permission     rpAuth.PermissionRepository
+	RolePermission rpAuth.RolePermissionRepository
 
 	YooKassaSetting rpYKassa.YooKassaSettingRepository
 
@@ -39,7 +41,9 @@ func NewRepositories(db *database.Storage, flags RepoFlags, mongoDB string) *Rep
 	if flags.InitAuthRepo {
 		repos.User = rpAuth.NewUserRepository(DB)
 		repos.Role = rpAuth.NewRoleRepository(DB)
+		repos.UserRole = rpAuth.NewUserRoleRepository(DB)
 		repos.Permission = rpAuth.NewPermissionRepository(DB)
+		repos.RolePermission = rpAuth.NewRolePermissionRepository(DB)
 	}
 
 	// Инициализация репозиториев для авторизации

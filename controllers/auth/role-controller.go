@@ -21,7 +21,7 @@ func NewRoleController(repo *repositories.Repositories) *roleController {
 
 // Создание роли
 func (h *roleController) CreateRole(ctx *fiber.Ctx) error {
-	input := &rpAuthDTO.RoleDTO{}
+	input := &rpAuthDTO.RoleRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
@@ -39,13 +39,26 @@ func (h *roleController) CreateRole(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	res := rpAuthDTO.RoleDTO{}
-	return utils.CopyAndRespond(ctx, data, &res)
+	// Привязка привилегий к роли
+	if err := h.repo.RolePermission.BindRolePermissions(
+		context.Background(),
+		data.ID,
+		input.Permissions,
+	); err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	role, err := h.repo.Role.FindByIDWithPermissions(context.Background(), data.ID)
+	if err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	return utils.CopyAndRespond(ctx, role, &rpAuthDTO.RoleWithPermissionsDTO{})
 }
 
 // Обновление роли
 func (h *roleController) UpdateRole(ctx *fiber.Ctx) error {
-	input := &rpAuthDTO.RoleDTO{}
+	input := &rpAuthDTO.RoleRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
@@ -67,8 +80,21 @@ func (h *roleController) UpdateRole(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	res := rpAuthDTO.RoleDTO{}
-	return utils.CopyAndRespond(ctx, data, &res)
+	// Привязка привилегий к роли
+	if err := h.repo.RolePermission.BindRolePermissions(
+		context.Background(),
+		data.ID,
+		input.Permissions,
+	); err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	role, err := h.repo.Role.FindByIDWithPermissions(context.Background(), data.ID)
+	if err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	return utils.CopyAndRespond(ctx, role, &rpAuthDTO.RoleWithPermissionsDTO{})
 }
 
 // Получение роли по ID
@@ -78,13 +104,12 @@ func (h *roleController) FindRoleByID(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	data := &rpModels.Role{}
-	if err := h.repo.Role.FindByID(context.Background(), id, data); err != nil {
+	data, err := h.repo.Role.FindByIDWithPermissions(context.Background(), id)
+	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
-	res := &rpAuthDTO.RoleDTO{}
-	return utils.CopyAndRespond(ctx, data, res)
+	return utils.CopyAndRespond(ctx, data, &rpAuthDTO.RoleWithPermissionsDTO{})
 }
 
 // Удаление роли
@@ -119,7 +144,7 @@ func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	resDTO := rpAuthDTO.RolesDTO{}
+	resDTO := rpAuthDTO.RolesResponseDTO{}
 	if err := copier.Copy(&resDTO, repoRes); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}

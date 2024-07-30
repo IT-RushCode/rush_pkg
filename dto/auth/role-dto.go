@@ -1,25 +1,31 @@
 package auth
 
 // Роль
-type RoleDTO struct {
+type RoleRequestDTO struct {
 	ID          uint   `json:"id,omitempty"`
 	Name        string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
-	Status      *bool  `json:"status,omitempty" default:"true"`
 	Permissions []uint `json:"permissions,omitempty"`
 }
 
 // Роли
-type RolesDTO []RoleDTO
+type RolesRequestDTO []RoleRequestDTO
+
+type RoleResponseDTO struct {
+	ID          uint   `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+type RolesResponseDTO []RoleResponseDTO
 
 // Роль с привилегиями
 type RoleWithPermissionsDTO struct {
 	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Status      *bool  `json:"status" default:"true"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
 
-	Permissions PermissionsDTO
+	Permissions PermissionsDTO `json:"permissions"`
 }
 
 // Роли с привилегиями

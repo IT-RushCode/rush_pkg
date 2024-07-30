@@ -7,7 +7,9 @@ type Role struct {
 	ID          uint   `gorm:"primaryKey"`
 	Name        string `gorm:"type:varchar(100);uniqueIndex"`
 	Description string `gorm:"type:varchar(255);default:null"`
-	Status      *bool  `gorm:"default:true"`
+
+	Permissions Permissions `gorm:"-"` // Связанные привилегии, отключение автосоздания таблицы many2many
+
 	rpBase.BaseModel
 }
 

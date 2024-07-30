@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/IT-RushCode/rush_pkg/config"
 	rpDTO "github.com/IT-RushCode/rush_pkg/dto"
@@ -41,6 +42,10 @@ func (h *userController) CreateUser(ctx *fiber.Ctx) error {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
 
+	if input.UserName == "" {
+		input.UserName = strings.Split(input.Email, "@")[0]
+	}
+
 	data := &rpModels.User{}
 	if err := copier.Copy(data, input); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
@@ -53,8 +58,17 @@ func (h *userController) CreateUser(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	res := &rpAuthDTO.UserResponseDTO{}
-	return utils.CopyAndRespond(ctx, data, res)
+	// Привязка ролей к пользователю
+	if err := h.repo.UserRole.BindUserRoles(context.Background(), data.ID, input.Roles); err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	user, err := h.repo.User.FindByIDWithRoles(context.Background(), data.ID)
+	if err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	return utils.CopyAndRespond(ctx, user, &rpAuthDTO.UserResponseDTO{})
 }
 
 // Обновление пользователя
@@ -65,6 +79,10 @@ func (h *userController) UpdateUser(ctx *fiber.Ctx) error {
 	}
 	if err := utils.ValidateStruct(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
+
+	if input.UserName == "" {
+		input.UserName = strings.Split(input.Email, "@")[0]
 	}
 
 	data := &rpModels.User{}
@@ -82,8 +100,17 @@ func (h *userController) UpdateUser(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	res := &rpAuthDTO.UserResponseDTO{}
-	return utils.CopyAndRespond(ctx, data, res)
+	// Привязка ролей к пользователю
+	if err := h.repo.UserRole.BindUserRoles(context.Background(), data.ID, input.Roles); err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	user, err := h.repo.User.FindByIDWithRoles(context.Background(), data.ID)
+	if err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	return utils.CopyAndRespond(ctx, user, &rpAuthDTO.UserResponseDTO{})
 }
 
 // Удаление пользователя
@@ -142,8 +169,8 @@ func (h *userController) FindUserByID(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	data := &rpModels.User{}
-	if err := h.repo.User.FindByID(context.Background(), id, data); err != nil {
+	data, err := h.repo.User.FindByIDWithRoles(context.Background(), id)
+	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
@@ -201,7 +228,7 @@ func (h *userController) ResetUserPassword(ctx *fiber.Ctx) error {
 // sendNewPasswordToUser отправляет новый пароль пользователю на почту
 func (h *userController) sendNewPasswordToUser(userEmail string, newPassword string) error {
 	fmt.Println("--------", newPassword, "--------")
-	subject := "Новый пароль Westerdam"                      // Заголовок почты
-	body := fmt.Sprintf("Ваш новый пароль: %s", newPassword) // Текст почты
+	subject := fmt.Sprintf("Новый пароль %s", h.cfg.SenderName) // Заголовок почты
+	body := fmt.Sprintf("Ваш новый пароль: %s", newPassword)    // Текст почты
 	return utils.SendEmail(h.cfg, userEmail, subject, body)
 }

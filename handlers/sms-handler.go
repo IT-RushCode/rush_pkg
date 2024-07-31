@@ -14,20 +14,20 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type sendSms struct {
+type SmsHandler struct {
 	cfg   *config.Config
 	redis *redis.Client
 }
 
-func NewSMSHandler(cfg *config.Config, redis *redis.Client) sendSms {
-	return sendSms{
+func NewSMSHandler(cfg *config.Config, redis *redis.Client) *SmsHandler {
+	return &SmsHandler{
 		cfg:   cfg,
 		redis: redis,
 	}
 }
 
 // SendSMS обрабатывает запрос на отправку SMS
-func (h sendSms) SendSMS(ctx *fiber.Ctx) error {
+func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
 	var req dto.SMSRequestDTO
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -62,7 +62,7 @@ func (h sendSms) SendSMS(ctx *fiber.Ctx) error {
 }
 
 // VerifySMSCode подтверждает SMS код который был отправлен на номер телефона и удаляет из кеша
-func (h sendSms) VerifySMSCode(ctx *fiber.Ctx) error {
+func (h *SmsHandler) VerifySMSCode(ctx *fiber.Ctx) error {
 	var req dto.VerifyRequest
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка парсинга тела запроса: "+err.Error(), nil)

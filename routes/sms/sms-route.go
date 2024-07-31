@@ -1,18 +1,14 @@
 package routes
 
 import (
-	"github.com/IT-RushCode/rush_pkg/config"
-	h "github.com/IT-RushCode/rush_pkg/handlers"
-	"github.com/IT-RushCode/rush_pkg/repositories"
+	"github.com/IT-RushCode/rush_pkg/handlers"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func RUN_SMS_ROUTES(api fiber.Router, cfg *config.Config, repo *repositories.Repositories) {
-	smsHandler := h.NewSMSHandler(cfg, repo.Redis)
-
+func RUN_SMS_ROUTES(api fiber.Router, h *handlers.Handlers) {
 	sms := api.Group("sms")
 
-	sms.Post("/send-sms", smsHandler.SendSMS)
-	sms.Post("/verify-code", smsHandler.VerifySMSCode)
+	sms.Post("/send-sms", h.SmsHandler.SendSMS)
+	sms.Post("/verify-code", h.SmsHandler.VerifySMSCode)
 }

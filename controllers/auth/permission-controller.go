@@ -14,14 +14,14 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-type permissionController struct{ repo *repositories.Repositories }
+type PermissionController struct{ repo *repositories.Repositories }
 
-func NewPermissionController(repo *repositories.Repositories) *permissionController {
-	return &permissionController{repo: repo}
+func NewPermissionController(repo *repositories.Repositories) *PermissionController {
+	return &PermissionController{repo: repo}
 }
 
 // Создание разрешения
-func (h *permissionController) CreatePermission(ctx *fiber.Ctx) error {
+func (h *PermissionController) CreatePermission(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.PermissionDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -45,7 +45,7 @@ func (h *permissionController) CreatePermission(ctx *fiber.Ctx) error {
 }
 
 // Обновление разрешения
-func (h *permissionController) UpdatePermission(ctx *fiber.Ctx) error {
+func (h *PermissionController) UpdatePermission(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.PermissionDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -74,7 +74,7 @@ func (h *permissionController) UpdatePermission(ctx *fiber.Ctx) error {
 }
 
 // Получение разрешения по ID
-func (h *permissionController) FindPermissionByID(ctx *fiber.Ctx) error {
+func (h *PermissionController) FindPermissionByID(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (h *permissionController) FindPermissionByID(ctx *fiber.Ctx) error {
 }
 
 // Удаление разрешения
-func (h *permissionController) DeletePermission(ctx *fiber.Ctx) error {
+func (h *PermissionController) DeletePermission(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -101,11 +101,11 @@ func (h *permissionController) DeletePermission(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	return utils.SendResponse(ctx, true, "", nil, fiber.StatusNoContent)
+	return utils.NoContentResponse(ctx)
 }
 
 // Получение всех разрешений с пагинацией или без
-func (h *permissionController) GetPermissions(ctx *fiber.Ctx) error {
+func (h *PermissionController) GetPermissions(ctx *fiber.Ctx) error {
 	req, err := utils.GetAllQueries(ctx)
 	if err != nil {
 		return err

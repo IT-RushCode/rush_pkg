@@ -30,6 +30,7 @@ func NewAuthController(
 	ttl := time.Duration(uint64(cfg.JWT.JWT_TTL)) * time.Second
 	rttl := time.Duration(uint64(cfg.JWT.REFRESH_TTL)) * time.Second
 	jwtService := utils.NewJWTService(cfg.JWT.JWT_SECRET, ttl, rttl)
+
 	return &AuthController{
 		repo:       repo,
 		cfg:        cfg,
@@ -250,7 +251,6 @@ func (h *AuthController) RefreshToken(ctx *fiber.Ctx) error {
 	}
 
 	return utils.ErrorResponse(ctx, utils.ErrRefreshToken.Error(), nil)
-
 }
 
 func (h *AuthController) updateLastActivity(ctx context.Context, userID uint) {

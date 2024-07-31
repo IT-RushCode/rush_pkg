@@ -13,14 +13,14 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-type roleController struct{ repo *repositories.Repositories }
+type RoleController struct{ repo *repositories.Repositories }
 
-func NewRoleController(repo *repositories.Repositories) *roleController {
-	return &roleController{repo: repo}
+func NewRoleController(repo *repositories.Repositories) *RoleController {
+	return &RoleController{repo: repo}
 }
 
 // Создание роли
-func (h *roleController) CreateRole(ctx *fiber.Ctx) error {
+func (h *RoleController) CreateRole(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.RoleRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -57,7 +57,7 @@ func (h *roleController) CreateRole(ctx *fiber.Ctx) error {
 }
 
 // Обновление роли
-func (h *roleController) UpdateRole(ctx *fiber.Ctx) error {
+func (h *RoleController) UpdateRole(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.RoleRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -98,7 +98,7 @@ func (h *roleController) UpdateRole(ctx *fiber.Ctx) error {
 }
 
 // Получение роли по ID
-func (h *roleController) FindRoleByID(ctx *fiber.Ctx) error {
+func (h *RoleController) FindRoleByID(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -113,7 +113,7 @@ func (h *roleController) FindRoleByID(ctx *fiber.Ctx) error {
 }
 
 // Удаление роли
-func (h *roleController) DeleteRole(ctx *fiber.Ctx) error {
+func (h *RoleController) DeleteRole(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -124,11 +124,11 @@ func (h *roleController) DeleteRole(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	return utils.SendResponse(ctx, true, "", nil, fiber.StatusNoContent)
+	return utils.NoContentResponse(ctx)
 }
 
 // Получить все роли с пагинацией или без
-func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
+func (h *RoleController) GetRoles(ctx *fiber.Ctx) error {
 	req, err := utils.GetAllQueries(ctx)
 	if err != nil {
 		return err
@@ -164,7 +164,7 @@ func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
 // TODO: НУЖНА ДОРАБОТКА
 
 // Получение роли с разрешениями
-// func (h *roleController) GetRoleWithPermissions(ctx *fiber.Ctx) error {
+// func (h *RoleController) GetRoleWithPermissions(ctx *fiber.Ctx) error {
 // 	id, err := ctx.ParamsInt("id")
 // 	if err != nil {
 // 		return err
@@ -179,11 +179,11 @@ func (h *roleController) GetRoles(ctx *fiber.Ctx) error {
 // 	return utils.CopyAndRespond(ctx, data, &res)
 // }
 
-// func (h *roleController) ChangeRolePermission(ctx *fiber.Ctx) error {
+// func (h *RoleController) ChangeRolePermission(ctx *fiber.Ctx) error {
 // 	return utils.SuccessResponse(ctx, utils.Success, nil)
 
 // }
 
-// func (h *roleController) GetRolesWithPagination(ctx *fiber.Ctx) error {
+// func (h *RoleController) GetRolesWithPagination(ctx *fiber.Ctx) error {
 // 	return utils.SuccessResponse(ctx, utils.Success, nil)
 // }

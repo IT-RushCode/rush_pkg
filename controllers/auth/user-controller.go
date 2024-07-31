@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/IT-RushCode/rush_pkg/config"
@@ -17,7 +16,7 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-type userController struct {
+type UserController struct {
 	repo *repositories.Repositories
 	cfg  *config.MailConfig
 }
@@ -25,15 +24,15 @@ type userController struct {
 func NewUserController(
 	repo *repositories.Repositories,
 	cfg *config.MailConfig,
-) *userController {
-	return &userController{
+) *UserController {
+	return &UserController{
 		repo: repo,
 		cfg:  cfg,
 	}
 }
 
 // Создание пользователя
-func (h *userController) CreateUser(ctx *fiber.Ctx) error {
+func (h *UserController) CreateUser(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.UserRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -72,7 +71,7 @@ func (h *userController) CreateUser(ctx *fiber.Ctx) error {
 }
 
 // Обновление пользователя
-func (h *userController) UpdateUser(ctx *fiber.Ctx) error {
+func (h *UserController) UpdateUser(ctx *fiber.Ctx) error {
 	input := &rpAuthDTO.UserRequestDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -114,7 +113,7 @@ func (h *userController) UpdateUser(ctx *fiber.Ctx) error {
 }
 
 // Удаление пользователя
-func (h *userController) DeleteUser(ctx *fiber.Ctx) error {
+func (h *UserController) DeleteUser(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -125,11 +124,11 @@ func (h *userController) DeleteUser(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	return utils.SendResponse(ctx, true, "", nil, http.StatusNoContent)
+	return utils.NoContentResponse(ctx)
 }
 
 // Получить всех пользователей с пагинацией или без
-func (h *userController) GetAllUsers(ctx *fiber.Ctx) error {
+func (h *UserController) GetAllUsers(ctx *fiber.Ctx) error {
 	req, err := utils.GetAllQueries(ctx)
 	if err != nil {
 		return err
@@ -163,7 +162,7 @@ func (h *userController) GetAllUsers(ctx *fiber.Ctx) error {
 }
 
 // Получение разрешения по ID
-func (h *userController) FindUserByID(ctx *fiber.Ctx) error {
+func (h *UserController) FindUserByID(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -179,7 +178,7 @@ func (h *userController) FindUserByID(ctx *fiber.Ctx) error {
 }
 
 // Изменение пароля пользователя
-func (h *userController) ChangeUserPassword(ctx *fiber.Ctx) error {
+func (h *UserController) ChangeUserPassword(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -202,7 +201,7 @@ func (h *userController) ChangeUserPassword(ctx *fiber.Ctx) error {
 }
 
 // Сброс пароля пользователя
-func (h *userController) ResetUserPassword(ctx *fiber.Ctx) error {
+func (h *UserController) ResetUserPassword(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -226,7 +225,7 @@ func (h *userController) ResetUserPassword(ctx *fiber.Ctx) error {
 }
 
 // sendNewPasswordToUser отправляет новый пароль пользователю на почту
-func (h *userController) sendNewPasswordToUser(userEmail string, newPassword string) error {
+func (h *UserController) sendNewPasswordToUser(userEmail string, newPassword string) error {
 	fmt.Println("--------", newPassword, "--------")
 	subject := fmt.Sprintf("Новый пароль %s", h.cfg.SenderName) // Заголовок почты
 	body := fmt.Sprintf("Ваш новый пароль: %s", newPassword)    // Текст почты

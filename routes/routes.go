@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/IT-RushCode/rush_pkg/config"
-	"github.com/IT-RushCode/rush_pkg/repositories"
+	"github.com/IT-RushCode/rush_pkg/controllers"
+	"github.com/IT-RushCode/rush_pkg/handlers"
 	auth "github.com/IT-RushCode/rush_pkg/routes/auth"
 
 	sms "github.com/IT-RushCode/rush_pkg/routes/sms"
@@ -11,22 +11,22 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RUN_AUTH_ROUTES(api fiber.Router, repo *repositories.Repositories, cfg *config.Config) {
-	go auth.RUN_AUTH(api, repo, cfg)
-	go auth.RUN_USER(api, repo, &cfg.MAIL)
-	go auth.RUN_ROLE(api, repo)
-	go auth.RUN_PERMISSION(api, repo)
+func RUN_AUTH_ROUTES(api fiber.Router, ctrl *controllers.Controllers) {
+	auth.RUN_AUTH(api, ctrl)
+	auth.RUN_USER(api, ctrl)
+	auth.RUN_ROLE(api, ctrl)
+	auth.RUN_PERMISSION(api, ctrl)
 }
 
 // РОУТЫ ПРОВЕДЕНИЯ ПЛАТЕЖЕЙ ЮКАССЫ
-func RUN_YOOKASSA_PAYMENT_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-	go yookassa.RUN_YOOKASSA_SETTINGS_ROUTES(api, repo)
-	go yookassa.RUN_PAYMENT_ROUTES(api, repo)
+func RUN_YOOKASSA_PAYMENT_ROUTES(api fiber.Router, ctrl *controllers.Controllers, h *handlers.Handlers) {
+	yookassa.RUN_YOOKASSA_SETTINGS_ROUTES(api, ctrl)
+	yookassa.RUN_PAYMENT_ROUTES(api, h)
 }
 
 // РОУТЫ SMS
-func RUN_SMS_ROUTES(api fiber.Router, repo *repositories.Repositories, cfg *config.Config) {
-	go sms.RUN_SMS_ROUTES(api, cfg, repo)
+func RUN_SMS_ROUTES(api fiber.Router, h *handlers.Handlers) {
+	sms.RUN_SMS_ROUTES(api, h)
 }
 
 // РОУТЫ УВЕДОМЛЕНИЙ SMS/EMAIL/PUSH

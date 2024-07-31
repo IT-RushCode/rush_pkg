@@ -4,6 +4,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+var (
+	Success = "успешно"
+)
+
 type Response struct {
 	Status  bool        `json:"status"`
 	Message string      `json:"message"`
@@ -27,10 +31,39 @@ func SendResponse(ctx *fiber.Ctx, success bool, message string, body interface{}
 	return nil
 }
 
+// ---------------- SUCCESS RESPONSES ----------------
+
 // SuccessResponse отправляет успешный ответ с указанным сообщением и телом данных.
 func SuccessResponse(ctx *fiber.Ctx, message string, body interface{}) error {
 	return SendResponse(ctx, true, message, body, fiber.StatusOK)
 }
+
+// CreatedResponse отправляет успешный ответ о создании с указанным сообщением и телом данных.
+func CreatedResponse(ctx *fiber.Ctx, message string, body interface{}) error {
+	return SendResponse(ctx, true, message, body, fiber.StatusCreated)
+}
+
+// NoContentResponse отправляет успешный ответ со статус кодом 204 без контента.
+func NoContentResponse(ctx *fiber.Ctx) error {
+	return SendResponse(ctx, true, "", nil, fiber.StatusNoContent)
+}
+
+// AcceptedResponse отправляет успешный ответ о принятии запроса с указанным сообщением и телом данных.
+func AcceptedResponse(ctx *fiber.Ctx, message string, body interface{}) error {
+	return SendResponse(ctx, true, message, body, fiber.StatusAccepted)
+}
+
+// ResetContentResponse отправляет успешный ответ со статус кодом 205 "Сбросить содержимое".
+func ResetContentResponse(ctx *fiber.Ctx, message string) error {
+	return SendResponse(ctx, true, message, nil, fiber.StatusResetContent)
+}
+
+// PartialContentResponse отправляет успешный ответ со статус кодом 206 "Частичное содержимое".
+func PartialContentResponse(ctx *fiber.Ctx, message string, body interface{}) error {
+	return SendResponse(ctx, true, message, body, fiber.StatusPartialContent)
+}
+
+// ---------------- ERROR RESPONSES ----------------
 
 // ErrorResponse отправляет ответ об ошибке сервера с указанным сообщением и телом данных.
 func ErrorResponse(ctx *fiber.Ctx, message string, body interface{}) error {
@@ -71,7 +104,3 @@ func ErrorUnsupportedMediaTypeResponse(ctx *fiber.Ctx, message string, body inte
 func ErrorInternalServerErrorResponse(ctx *fiber.Ctx, message string, body interface{}) error {
 	return SendResponse(ctx, false, message, body, fiber.StatusInternalServerError)
 }
-
-var (
-	Success = "успешно"
-)

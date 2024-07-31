@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"net/http"
 
 	dto "github.com/IT-RushCode/rush_pkg/dto/payment"
 	ykModel "github.com/IT-RushCode/rush_pkg/models/yookassa"
@@ -13,14 +12,14 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-type yookassasettingController struct{ repo *repositories.Repositories }
+type YookassasettingController struct{ repo *repositories.Repositories }
 
-func NewYooKassaSettingController(repo *repositories.Repositories) *yookassasettingController {
-	return &yookassasettingController{repo: repo}
+func NewYooKassaSettingController(repo *repositories.Repositories) *YookassasettingController {
+	return &YookassasettingController{repo: repo}
 }
 
 // Создание YooKassaSetting
-func (h *yookassasettingController) CreateYooKassaSetting(ctx *fiber.Ctx) error {
+func (h *YookassasettingController) CreateYooKassaSetting(ctx *fiber.Ctx) error {
 	input := &dto.YooKassaSettingDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -45,7 +44,7 @@ func (h *yookassasettingController) CreateYooKassaSetting(ctx *fiber.Ctx) error 
 }
 
 // Обновление YooKassaSetting
-func (h *yookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error {
+func (h *YookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error {
 	input := &dto.YooKassaSettingDTO{}
 	if err := ctx.BodyParser(input); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
@@ -75,7 +74,7 @@ func (h *yookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error 
 }
 
 // Удаление YooKassaSetting
-func (h *yookassasettingController) DeleteYooKassaSetting(ctx *fiber.Ctx) error {
+func (h *YookassasettingController) DeleteYooKassaSetting(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -86,11 +85,11 @@ func (h *yookassasettingController) DeleteYooKassaSetting(ctx *fiber.Ctx) error 
 		return utils.CheckErr(ctx, err)
 	}
 
-	return utils.SendResponse(ctx, true, "", nil, http.StatusNoContent)
+	return utils.NoContentResponse(ctx)
 }
 
 // Получение разрешения по ID
-func (h *yookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) error {
+func (h *YookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
 		return err
@@ -106,7 +105,7 @@ func (h *yookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) erro
 }
 
 // Получение разрешения по ID
-func (h *yookassasettingController) FindYooKassaSettingByPointID(ctx *fiber.Ctx) error {
+func (h *YookassasettingController) FindYooKassaSettingByPointID(ctx *fiber.Ctx) error {
 
 	data := &ykModel.YooKassaSetting{}
 	if err := h.repo.YooKassaSetting.Filter(

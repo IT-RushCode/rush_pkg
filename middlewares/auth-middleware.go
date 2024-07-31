@@ -74,6 +74,11 @@ func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
 		return utils.ErrorUnauthorizedResponse(ctx, "неверный токен авторизации", nil)
 	}
 
+	// Проверка привилегий пользователя
+	// if err := m.checkPermissions(ctx, claims.UserID); err != nil {
+	// 	return err
+	// }
+
 	ctx.Locals("UserID", claims.UserID)
 
 	return ctx.Next()

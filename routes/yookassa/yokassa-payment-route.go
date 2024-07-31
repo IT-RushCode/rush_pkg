@@ -1,15 +1,12 @@
 package routes
 
 import (
-	h "github.com/IT-RushCode/rush_pkg/handlers"
-	"github.com/IT-RushCode/rush_pkg/repositories"
+	"github.com/IT-RushCode/rush_pkg/handlers"
 	"github.com/gofiber/fiber/v2"
 )
 
-func RUN_PAYMENT_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-	paymentHandler := h.NewPaymentHandler(repo)
-
+func RUN_PAYMENT_ROUTES(api fiber.Router, h *handlers.Handlers) {
 	payment := api.Group("payment")
 
-	payment.Post("/", paymentHandler.CreatePayment)
+	payment.Post("/", h.PaymentHandler.CreatePayment)
 }

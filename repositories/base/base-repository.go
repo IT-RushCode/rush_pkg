@@ -90,13 +90,9 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 		query = query.Order(fmt.Sprintf("%s %s", dto.SortBy, order))
 	}
 
-	// Применить пагинацию, если необходимо
-	if dto.Limit > 0 || dto.Offset > 0 {
-		query = query.Offset(int(dto.Offset - 1)).Limit(int(dto.Limit))
-	}
-
 	// Получить данные с учетом пагинации
-	if err := query.Find(data).Error; err != nil {
+	if err := query.Scopes(utils.Paginate(dto.Offset, dto.Limit)).
+		Find(data).Error; err != nil {
 		return 0, utils.ErrInternal
 	}
 

@@ -1,19 +1,9 @@
 package utils
 
 import (
-	"errors"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
-)
-
-var (
-	ErrorGenAccessToken   = errors.New("не удалось сгенерировать токен доступа")
-	ErrorGenRefreshToken  = errors.New("не удалось создать токен обновления")
-	ErrorSigningMethod    = errors.New("неверный метод подписи токена")
-	ErrorInvalidToken     = errors.New("неверный токен")
-	ErrorTokenExpired     = errors.New("токен истёк")
-	ErrorTokenNotYetValid = errors.New("токен больше не валидный")
 )
 
 type JwtCustomClaim struct {

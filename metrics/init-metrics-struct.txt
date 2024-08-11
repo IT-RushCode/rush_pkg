@@ -1,0 +1,22 @@
+// Инициализация экспортера для Prometheus
+_, err := otelutil.InitPrometheus()
+if err != nil {
+    log.Fatalf("Failed to initialize Prometheus exporter: %v", err)
+}
+
+// Инициализация экспортера для Jaeger
+tp, err := otelutil.InitJaeger("my-service")
+if err != nil {
+    log.Fatalf("Failed to initialize Jaeger exporter: %v", err)
+}
+defer otelutil.ShutdownTracer(tp)
+
+
+// Инициализация экспортера OTLP
+
+tp, mp, err := InitOTLP("my-service")
+if err != nil {
+    log.Fatalf("Failed to initialize OTLP exporter: %v", err)
+}
+defer tp.Shutdown(context.Background())
+defer mp.Shutdown(context.Background())

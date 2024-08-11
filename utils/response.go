@@ -90,6 +90,11 @@ func ErrorForbiddenResponse(ctx *fiber.Ctx, message string, body interface{}) er
 	return SendResponse(ctx, false, message, body, fiber.StatusForbidden)
 }
 
+// ErrorRefreshTokenResponse отправляет ответ об ошибке "Токен обновления истек".
+func ErrorRefreshTokenResponse(ctx *fiber.Ctx) error {
+	return SendResponse(ctx, false, ErrorTokenExpired.Error(), nil, 419)
+}
+
 // ErrorConflictResponse отправляет ответ об ошибке "Конфликт" с указанным сообщением и телом данных.
 func ErrorConflictResponse(ctx *fiber.Ctx, message string, body interface{}) error {
 	return SendResponse(ctx, false, message, body, fiber.StatusConflict)

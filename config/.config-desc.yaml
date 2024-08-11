@@ -47,10 +47,21 @@ APISMS:
 MAIL:
   SMTP_HOST: "smtp.example.com" # хост smtp сервера
   SMTP_PORT: 587 # порт smtp сервера
-  SMTP_USER: "your-email@example.com" # пользователь smtp сервера
-  SMTP_PASSWORD: "your-email-password" # пароль smtp сервера
+  SMTP_USER: "email@example.com" # пользователь smtp сервера
+  SMTP_PASSWORD: "email-password" # пароль smtp сервера
   SENDER_EMAIL: "no-reply@example.com" # от чьего имени отправляется почта
   SENDER_NAME: "Example App" # имя отправителя
+
+FIREBASE:
+  PROJECT_ID: "rushcode-69efc"
+  PRIVATE_KEY_ID: "private-key-id"
+  PRIVATE_KEY: "KyF_SxXYyVHhx2eRAY2t4tljl2n4YfRYAy2jYUXifDM"
+  CLIENT_EMAIL: "client-email@project-id.iam.gserviceaccount.com"
+  CLIENT_ID: "client-id"
+  AUTH_URI: "https://accounts.google.com/o/oauth2/auth"
+  TOKEN_URI: "https://oauth2.googleapis.com/token"
+  AUTH_PROVIDER_X509_CERT_URL: "https://www.googleapis.com/oauth2/v1/certs"
+  CLIENT_X509_CERT_URL: "https://www.googleapis.com/robot/v1/metadata/x509/client-email%40project-id.iam.gserviceaccount.com"
 
 FIBER:
   # Если установлено в true, это приведет к запуску нескольких процессов Go,

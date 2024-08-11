@@ -17,6 +17,7 @@ type Config struct {
 	MONGODB  MongoDBConfig  `mapstructure:"MONGODB"`
 	APISMS   APISMS         `mapstructure:"APISMS"`
 	MAIL     MailConfig     `mapstructure:"MAIL"`
+	FIREBASE FirebaseConfig `mapstructure:"FIREBASE"`
 	FIBER    FiberConfig    `mapstructure:"FIBER"`
 }
 

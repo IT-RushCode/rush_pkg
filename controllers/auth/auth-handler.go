@@ -222,7 +222,7 @@ func (h *AuthController) RefreshToken(ctx *fiber.Ctx) error {
 
 	valid, err := h.jWTService.ValidateToken(input.RefreshToken)
 	if err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return utils.ErrorRefreshTokenResponse(ctx)
 
 	}
 

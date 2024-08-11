@@ -19,12 +19,20 @@ var (
 	ErrRecordsNotFound = errors.New("записи не найдены")
 	ErrDuplicate       = errors.New("дубликат записи")
 
+	// JWT errors
+	ErrorGenAccessToken   = errors.New("не удалось сгенерировать токен доступа")
+	ErrorGenRefreshToken  = errors.New("не удалось создать токен обновления")
+	ErrorSigningMethod    = errors.New("неверный метод подписи токена")
+	ErrorInvalidToken     = errors.New("неверный токен")
+	ErrorTokenExpired     = errors.New("токен истёк")
+	ErrorTokenNotYetValid = errors.New("токен больше не валидный")
+	ErrRefreshToken       = errors.New("неверный токен обновления")
+	ErrNotRefreshToken    = errors.New("полученный токен не является refresh токеном")
+
 	// Global errors
-	ErrInternal        = errors.New("внутренняя ошибка сервера")
-	ErrPermission      = errors.New("нет прав на редактирование")
-	ErrForbidden       = errors.New("нет прав")
-	ErrRefreshToken    = errors.New("неверный токен обновления")
-	ErrNotRefreshToken = errors.New("полученный токен не является refresh токеном")
+	ErrInternal   = errors.New("внутренняя ошибка сервера")
+	ErrPermission = errors.New("нет прав на редактирование")
+	ErrForbidden  = errors.New("нет прав")
 
 	// File handler errors
 	ErrUploadFile    = errors.New("ошибка загрузки файла")

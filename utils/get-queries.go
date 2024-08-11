@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"fmt"
-
 	"github.com/IT-RushCode/rush_pkg/dto"
 	"github.com/gofiber/fiber/v2"
 )
@@ -36,8 +34,6 @@ func GetAllQueries(ctx *fiber.Ctx) (*dto.GetAllRequest, error) {
 		}
 	}
 	req.Filters = filters
-
-	fmt.Println(req)
 
 	return &req, nil
 }

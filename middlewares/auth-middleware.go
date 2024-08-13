@@ -4,10 +4,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-
 	"github.com/IT-RushCode/rush_pkg/config"
 	"github.com/IT-RushCode/rush_pkg/utils"
+	"github.com/gofiber/fiber/v2"
 )
 
 type AuthData struct {
@@ -19,11 +18,11 @@ type AuthData struct {
 type AuthMiddleware struct {
 	jwtTTL          time.Duration
 	jwt             utils.JWTService
-	whiteListRoutes []string
+	whiteListRoutes map[string][]string
 }
 
 // NewAuthMiddleware создает новый экземпляр AuthMiddleware.
-func NewAuthMiddleware(cfg *config.Config, whitelistRoutes []string) *AuthMiddleware {
+func NewAuthMiddleware(cfg *config.Config, routes map[string][]string) *AuthMiddleware {
 	jwtTTL := time.Duration(cfg.JWT.JWT_TTL) * time.Second
 	jwtRTTL := time.Duration(cfg.JWT.REFRESH_TTL) * time.Second
 	jwtService := utils.NewJWTService(cfg.JWT.JWT_SECRET, jwtTTL, jwtRTTL)
@@ -31,16 +30,21 @@ func NewAuthMiddleware(cfg *config.Config, whitelistRoutes []string) *AuthMiddle
 	return &AuthMiddleware{
 		jwtTTL:          jwtTTL,
 		jwt:             jwtService,
-		whiteListRoutes: whitelistRoutes,
+		whiteListRoutes: routes,
 	}
 }
 
 // VerifyToken проверяет токен аутентификации пользователя.
 func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
-
-	for _, route := range m.whiteListRoutes {
-		if ctx.Path() == route {
-			return ctx.Next()
+	// Проверка маршрута и метода в белом списке
+	for route, methods := range m.whiteListRoutes {
+		if isRouteMatch(ctx.Path(), route) {
+			for _, method := range methods {
+				if ctx.Method() == method {
+					// Если маршрут и метод в белом списке, пропускаем проверку токена
+					return ctx.Next()
+				}
+			}
 		}
 	}
 
@@ -65,12 +69,24 @@ func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
 		return utils.ErrorUnauthorizedResponse(ctx, "неверный токен авторизации", nil)
 	}
 
-	// Проверка привилегий пользователя
-	// if err := m.checkPermissions(ctx, claims.UserID); err != nil {
-	// 	return err
-	// }
-
 	ctx.Locals("UserID", claims.UserID)
 
 	return ctx.Next()
+}
+
+// isRouteMatch проверяет, соответствует ли путь маршруту, включая поддержку параметров.
+func isRouteMatch(path, route string) bool {
+	routeParts := strings.Split(route, "/")
+	pathParts := strings.Split(path, "/")
+
+	if len(routeParts) != len(pathParts) {
+		return false
+	}
+
+	for i := range routeParts {
+		if routeParts[i] != pathParts[i] && !strings.HasPrefix(routeParts[i], ":") {
+			return false
+		}
+	}
+	return true
 }

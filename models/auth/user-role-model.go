@@ -1,15 +1,15 @@
-package auth
+	package auth
 
-// Роли пользователей
-type UserRole struct {
-	UserID uint `gorm:"primaryKey;autoIncrement:false"`
-	RoleID uint `gorm:"primaryKey;autoIncrement:false"`
-	User   User `gorm:"foreignKey:UserID"`
-	Role   Role `gorm:"foreignKey:RoleID"`
-}
+	// Роли пользователей
+	type UserRole struct {
+		UserID uint `gorm:"primaryKey;autoIncrement:false"`
+		RoleID uint `gorm:"primaryKey;autoIncrement:false"`
+		User   User `gorm:"foreignKey:UserID"`
+		Role   Role `gorm:"foreignKey:RoleID"`
+	}
 
-type UserRoles []UserRole
+	type UserRoles []UserRole
 
-func (UserRole) TableName() string {
-	return "UserRoles"
-}
+	func (UserRole) TableName() string {
+		return "UserRoles"
+	}

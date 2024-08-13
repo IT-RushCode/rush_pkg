@@ -8,7 +8,7 @@ type YooKassaSetting struct {
 	PointID   uint   `gorm:"uniqueIndex"` // Связь с любой моделью (магазин, салон и т.д.)
 	StoreID   string `gorm:"not null"`
 	SecretKey string `gorm:"not null"`
-	rpBase.BaseModel
+	rpBase.BaseModel	
 }
 
 // Настройки Юкассы

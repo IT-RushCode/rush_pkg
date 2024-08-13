@@ -32,7 +32,8 @@ type User struct {
 
 	Roles Roles `gorm:"-"` // Связанные роли, отключение автосоздания таблицы many2many
 
-	rpBase.BaseModel // Встроенная базовая модель с общими полями
+	rpBase.BaseModel  // Встроенная базовая модель с общими полями
+	rpBase.SoftDelete // Мягкое удаление
 }
 
 type Users []User

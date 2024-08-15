@@ -70,17 +70,17 @@ func HandleDuplicateKeyError(err error) error {
 
 		if len(match) > 2 {
 			uniqueConstraint := match[2]
-			fieldParts := strings.Split(uniqueConstraint, "_")
+			// fieldParts := strings.Split(uniqueConstraint, "_")
 
 			// Предполагаем, что имя ограничения состоит из таблицы и поля
 			// Например, "Points_pkey" -> "Points", "pkey"
-			if len(fieldParts) > 1 {
-				fieldCamelCase := ToCamelCase(strings.Join(fieldParts[1:], "_"))
-				return &DuplicateKeyError{
-					Field: fieldCamelCase,
-					Msg:   ErrExists.Error() + ": " + fieldCamelCase,
-				}
+			// if len(fieldParts) > 1 {
+			// fieldCamelCase := ToCamelCase(strings.Join(fieldParts[1:], "_"))
+			return &DuplicateKeyError{
+				Field: uniqueConstraint,
+				Msg:   ErrExists.Error() + ": " + uniqueConstraint,
 			}
+			// }
 		}
 
 		return &DuplicateKeyError{

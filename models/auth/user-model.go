@@ -12,23 +12,23 @@ import (
 
 // Пользователи
 type User struct {
-	ID                      uint      `gorm:"primaryKey;autoincrement"`       // Идентификатор пользователя
-	FirstName               string    `gorm:"type:varchar(100)"`              // Имя
-	LastName                string    `gorm:"type:varchar(100)"`              // Фамилия
-	MiddleName              string    `gorm:"type:varchar(100);default:null"` // Отчество
-	Email                   string    `gorm:"type:varchar(100);unique"`       // Email
-	EmailConfirmed          *bool     `gorm:"default:false"`                  // Подтверждение Email
-	PhoneNumber             string    `gorm:"type:varchar(20);unique"`        // Номер телефона
-	PhoneConfirmed          *bool     `gorm:"default:false"`                  // Подтверждение номера телефона
-	BirthDate               time.Time `gorm:"type:date"`                      // Дата рождения
-	Status                  *bool     `gorm:"default:true"`                   // Статус
-	AvatarUrl               string    `gorm:"type:varchar(255);default:null"` // URL аватара
-	UserName                string    `gorm:"type:varchar(100);unique"`       // Имя пользователя
-	HashPassword            string    `gorm:"type:varchar(255)"`              // Хеш пароля
-	Salt                    string    `gorm:"type:varchar(255)"`              // Соль для пароля
-	ChangePasswordWhenLogin *bool     `gorm:"default:false"`                  // Требование изменения пароля при следующем входе
-	IsStaff                 *bool     `gorm:"default:false"`                  // Флаг сотрудника
-	LastActivity            time.Time `gorm:"default:null"`                   // Время последней активности
+	ID                      uint      `gorm:"primaryKey;autoincrement"`          // Идентификатор пользователя
+	FirstName               string    `gorm:"type:varchar(100)"`                 // Имя
+	LastName                string    `gorm:"type:varchar(100)"`                 // Фамилия
+	MiddleName              string    `gorm:"type:varchar(100);default:null"`    // Отчество
+	Email                   string    `gorm:"type:varchar(100);not null;unique"` // Email
+	EmailConfirmed          *bool     `gorm:"default:false"`                     // Подтверждение Email
+	PhoneNumber             string    `gorm:"type:varchar(20);unique"`           // Номер телефона
+	PhoneConfirmed          *bool     `gorm:"default:false"`                     // Подтверждение номера телефона
+	BirthDate               time.Time `gorm:"type:date"`                         // Дата рождения
+	Status                  *bool     `gorm:"default:true"`                      // Статус
+	AvatarUrl               string    `gorm:"type:varchar(255);default:null"`    // URL аватара
+	UserName                string    `gorm:"type:varchar(100);unique"`          // Имя пользователя
+	HashPassword            string    `gorm:"type:varchar(255)"`                 // Хеш пароля
+	Salt                    string    `gorm:"type:varchar(255)"`                 // Соль для пароля
+	ChangePasswordWhenLogin *bool     `gorm:"default:false"`                     // Требование изменения пароля при следующем входе
+	IsStaff                 *bool     `gorm:"default:false"`                     // Флаг сотрудника
+	LastActivity            time.Time `gorm:"default:null"`                      // Время последней активности
 
 	Roles Roles `gorm:"-"` // Связанные роли, отключение автосоздания таблицы many2many
 

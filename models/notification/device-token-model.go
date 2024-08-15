@@ -8,7 +8,7 @@ import (
 // DeviceToken модель для FirebaseNotification
 type DeviceToken struct {
 	ID           uint   `gorm:"primaryKey"`
-	UserID       uint   `gorm:"primaryKey;autoIncrement:false"`
+	UserID       uint   `gorm:"primaryKey;index;not null;autoIncrement:false"`
 	DeviceToken  string `gorm:"type:varchar(255);not null"`
 	PushIsActive string `gorm:"type:varchar(50);not null;"`
 

@@ -62,7 +62,7 @@ func (h *UserController) CreateUser(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	user, err := h.repo.User.FindByIDWithRoles(context.Background(), data.ID)
+	user, _, err := h.repo.User.FindByIDWithRoles(context.Background(), data.ID)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -104,7 +104,7 @@ func (h *UserController) UpdateUser(ctx *fiber.Ctx) error {
 		return utils.CheckErr(ctx, err)
 	}
 
-	user, err := h.repo.User.FindByIDWithRoles(context.Background(), data.ID)
+	user, _, err := h.repo.User.FindByIDWithRoles(context.Background(), data.ID)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -168,7 +168,7 @@ func (h *UserController) FindUserByID(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	data, err := h.repo.User.FindByIDWithRoles(context.Background(), id)
+	data, _, err := h.repo.User.FindByIDWithRoles(context.Background(), id)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}

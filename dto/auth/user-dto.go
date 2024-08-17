@@ -40,7 +40,8 @@ type UserResponseDTO struct {
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 
-	Roles RolesResponseDTO `json:"roles"`
+	Roles       RolesResponseDTO `json:"roles"`
+	Permissions []string         `json:"permissions"`
 }
 
 type UsersResponseDTO []UserResponseDTO

@@ -17,10 +17,10 @@ import (
 
 type UserRepository interface {
 	rp.BaseRepository
-	FindByUsernameAndPassword(ctx context.Context, data rpDTO.AuthWithLoginPasswordRequestDTO) (*rpModels.User, error)
-	FindByEmailAndPassword(ctx context.Context, data rpDTO.AuthWithEmailPasswordRequestDTO) (*rpModels.User, error)
+	FindByUsernameAndPassword(ctx context.Context, data rpDTO.AuthWithLoginPasswordRequestDTO) (*rpModels.User, []string, error)
+	FindByEmailAndPassword(ctx context.Context, data rpDTO.AuthWithEmailPasswordRequestDTO) (*rpModels.User, []string, error)
 	FindByPhone(ctx context.Context, data rpDTO.AuthWithPhoneRequestDTO) (*rpModels.User, error)
-	FindByIDWithRoles(ctx context.Context, id uint) (*rpModels.User, error)
+	FindByIDWithRoles(ctx context.Context, id uint) (*rpModels.User, []string, error)
 	ChangePassword(ctx context.Context, userID uint, dto rpDTO.ChangePasswordRequestDTO) error
 	ResetPassword(ctx context.Context, userID uint, newPassword string) (string, error)
 
@@ -51,7 +51,7 @@ var (
 func (repo *userRepository) FindByUsernameAndPassword(
 	ctx context.Context,
 	data rpDTO.AuthWithLoginPasswordRequestDTO,
-) (*rpModels.User, error) {
+) (*rpModels.User, []string, error) {
 	var user *rpModels.User
 
 	// Поиск пользователя по username
@@ -59,28 +59,29 @@ func (repo *userRepository) FindByUsernameAndPassword(
 		Where("user_name = ?", data.Username).
 		First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrUsernameOrPassword
+			return nil, nil, ErrUsernameOrPassword
 		}
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Сравниваем хеши пароля из запроса с паролем из базы
 	if !utils.ComparePasswordWithSalt(user.HashPassword, data.Password, user.Salt) {
-		return nil, ErrUsernameOrPassword
+		return nil, nil, ErrUsernameOrPassword
 	}
 
-	if err := repo.getRoles(ctx, user); err != nil {
-		return nil, err
+	permissions, err := repo.getRolesAndPermissions(ctx, user)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return user, nil
+	return user, permissions, nil
 }
 
 // Аутентификация пользователя по логин-паролю.
 func (repo *userRepository) FindByEmailAndPassword(
 	ctx context.Context,
 	data rpDTO.AuthWithEmailPasswordRequestDTO,
-) (*rpModels.User, error) {
+) (*rpModels.User, []string, error) {
 	var user *rpModels.User
 
 	// Поиск пользователя по email
@@ -88,21 +89,22 @@ func (repo *userRepository) FindByEmailAndPassword(
 		Where("email = ?", data.Email).
 		First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrEmailOrPassword
+			return nil, nil, ErrEmailOrPassword
 		}
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Сравниваем хеши пароля из запроса с паролем из базы
 	if !utils.ComparePasswordWithSalt(user.HashPassword, data.Password, user.Salt) {
-		return nil, ErrEmailOrPassword
+		return nil, nil, ErrEmailOrPassword
 	}
 
-	if err := repo.getRoles(ctx, user); err != nil {
-		return nil, err
+	permissions, err := repo.getRolesAndPermissions(ctx, user)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return user, nil
+	return user, permissions, nil
 }
 
 // Аутентификация пользователя по логин-паролю.
@@ -227,31 +229,60 @@ func (repo *userRepository) CheckUserBirthDays(ctx context.Context) error {
 	return nil
 }
 
-func (repo *userRepository) FindByIDWithRoles(ctx context.Context, id uint) (*rpModels.User, error) {
+func (repo *userRepository) FindByIDWithRoles(ctx context.Context, id uint) (*rpModels.User, []string, error) {
 	user := &rpModels.User{}
 	if err := repo.BaseRepository.FindByID(ctx, id, user); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	if err := repo.getRoles(ctx, user); err != nil {
-		return nil, err
+	permissions, err := repo.getRolesAndPermissions(ctx, user)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return user, nil
+	return user, permissions, nil
 }
 
-func (repo *userRepository) getRoles(ctx context.Context, user *rpModels.User) error {
-	var roles rpModels.Roles
+// Получение всех ролей и привилегий
+func (repo *userRepository) getRolesAndPermissions(ctx context.Context, user *rpModels.User) ([]string, error) {
+	var roles []rpModels.Role
 	if err := repo.db.WithContext(ctx).
 		Table(`"Roles"`).
 		Select(`"Roles".*`).
 		Joins(`JOIN "UserRoles" ON "UserRoles".role_id = "Roles".id`).
 		Where(`"UserRoles".user_id = ?`, user.ID).
 		Find(&roles).Error; err != nil {
-		return err
+		return nil, err
 	}
 
 	user.Roles = roles
 
-	return nil
+	// Маппинг для удаления дубликатов привилегий
+	permissionsMap := make(map[string]struct{})
+
+	// Получение всех привилегий для ролей
+	for _, role := range roles {
+		var permissions []string
+		if err := repo.db.WithContext(ctx).
+			Table(`"Permissions"`).
+			Select(`"Permissions".name`).
+			Joins(`JOIN "RolePermissions" ON "RolePermissions".permission_id = "Permissions".id`).
+			Where(`"RolePermissions".role_id = ?`, role.ID).
+			Pluck("name", &permissions).Error; err != nil {
+			return nil, err
+		}
+
+		// Добавление привилегий в маппинг, удаляя дубликаты
+		for _, permission := range permissions {
+			permissionsMap[permission] = struct{}{}
+		}
+	}
+
+	// Преобразование маппинга в слайс
+	uniquePermissions := make([]string, 0, len(permissionsMap))
+	for permission := range permissionsMap {
+		uniquePermissions = append(uniquePermissions, permission)
+	}
+
+	return uniquePermissions, nil
 }

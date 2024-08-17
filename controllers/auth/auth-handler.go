@@ -96,7 +96,7 @@ func (h *AuthController) Login(ctx *fiber.Ctx) error {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
 
-	repoRes, err := h.repo.User.FindByUsernameAndPassword(context.Background(), *input)
+	repoRes, permissions, err := h.repo.User.FindByUsernameAndPassword(context.Background(), *input)
 	if err != nil {
 		return utils.ErrorUnauthorizedResponse(ctx, err.Error(), nil)
 	}
@@ -121,6 +121,7 @@ func (h *AuthController) Login(ctx *fiber.Ctx) error {
 	if err := copier.Copy(&userRes, &repoRes); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
+	userRes.Permissions = append(userRes.Permissions, permissions...)
 
 	res := &rpAuthDTO.AuthResponseDTO{
 		Token: &rpAuthDTO.TokenResponseDTO{
@@ -145,7 +146,7 @@ func (h *AuthController) EmailLogin(ctx *fiber.Ctx) error {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
 
-	repoRes, err := h.repo.User.FindByEmailAndPassword(context.Background(), *input)
+	repoRes, permissions, err := h.repo.User.FindByEmailAndPassword(context.Background(), *input)
 	if err != nil {
 		return utils.ErrorUnauthorizedResponse(ctx, err.Error(), nil)
 	}
@@ -156,6 +157,7 @@ func (h *AuthController) EmailLogin(ctx *fiber.Ctx) error {
 	// Обновляем даты последней активности "LastActivity"
 	h.updateLastActivity(context.Background(), repoRes.ID)
 
+	// Генерация токена
 	accessToken, refreshToken, err := h.jWTService.GenerateTokens(
 		repoRes.ID,
 		repoRes.FirstName,
@@ -170,6 +172,8 @@ func (h *AuthController) EmailLogin(ctx *fiber.Ctx) error {
 	if err := copier.Copy(&userRes, &repoRes); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
+
+	userRes.Permissions = append(userRes.Permissions, permissions...)
 
 	res := &rpAuthDTO.AuthResponseDTO{
 		Token: &rpAuthDTO.TokenResponseDTO{
@@ -193,7 +197,7 @@ func (h *AuthController) Me(ctx *fiber.Ctx) error {
 	}
 
 	// Получение данных пользователя по UserID
-	data, err := h.repo.User.FindByIDWithRoles(context.Background(), userID)
+	data, permissions, err := h.repo.User.FindByIDWithRoles(context.Background(), userID)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -206,6 +210,7 @@ func (h *AuthController) Me(ctx *fiber.Ctx) error {
 	if err := copier.Copy(userDTO, data); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
+	userDTO.Permissions = append(userDTO.Permissions, permissions...)
 
 	return utils.SuccessResponse(ctx, utils.Success, userDTO)
 }

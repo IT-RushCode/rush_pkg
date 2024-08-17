@@ -110,12 +110,14 @@ func (h *PermissionController) GetPermissions(ctx *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	pagination := false
 
 	repoRes := &rpModels.Permissions{}
 	count, err := h.repo.Permission.GetAll(
 		context.Background(),
 		repoRes,
 		req,
+		pagination,
 	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
@@ -125,14 +127,19 @@ func (h *PermissionController) GetPermissions(ctx *fiber.Ctx) error {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
 
-	res := &rpDTO.PaginationDTO{
-		List: resDTO,
-		Meta: rpDTO.MetaDTO{
-			Limit:  req.Limit,
-			Offset: req.Offset,
-		},
-		TotalCount: count,
+	if pagination {
+		res := &rpDTO.PaginationDTO{
+			List: resDTO,
+			Meta: rpDTO.MetaDTO{
+				Limit:  req.Limit,
+				Offset: req.Offset,
+			},
+			TotalCount: count,
+		}
+
+		return utils.SuccessResponse(ctx, utils.Success, res)
+	} else {
+		return utils.SuccessResponse(ctx, utils.Success, resDTO)
 	}
 
-	return utils.SuccessResponse(ctx, utils.Success, res)
 }

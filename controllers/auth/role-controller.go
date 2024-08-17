@@ -139,6 +139,7 @@ func (h *RoleController) GetRoles(ctx *fiber.Ctx) error {
 		context.Background(),
 		repoRes,
 		req,
+		true,
 	)
 	if err != nil {
 		return utils.CheckErr(ctx, err)

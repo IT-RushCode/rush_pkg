@@ -14,7 +14,7 @@ import (
 
 // BaseRepository интерфейс представляет базовый набор методов для работы с сущностями
 type BaseRepository interface {
-	GetAll(ctx context.Context, data interface{}, dto *dto.GetAllRequest, preloads ...string) (int64, error)
+	GetAll(ctx context.Context, data interface{}, dto *dto.GetAllRequest, pagination bool, preloads ...string) (int64, error)
 	Create(ctx context.Context, data interface{}) error
 	FindByID(ctx context.Context, id uint, data interface{}, preloads ...string) error
 	Update(ctx context.Context, data interface{}) error
@@ -39,7 +39,7 @@ func NewBaseRepository(db *gorm.DB) BaseRepository {
 // ----------- Реализация базовых методов интерфейса Repository -----------
 
 // Получение всех или с пагинацией
-func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.GetAllRequest, preloads ...string) (int64, error) {
+func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.GetAllRequest, pagination bool, preloads ...string) (int64, error) {
 	var count int64
 	query := r.db.WithContext(ctx).Model(data)
 
@@ -90,10 +90,17 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 		query = query.Order(fmt.Sprintf("%s %s", dto.SortBy, order))
 	}
 
-	// Получить данные с учетом пагинации
-	if err := query.Scopes(utils.Paginate(dto.Offset, dto.Limit)).
-		Find(data).Error; err != nil {
-		return 0, utils.ErrInternal
+	if pagination {
+		// Получить данные с учетом пагинации
+		if err := query.Scopes(utils.Paginate(dto.Offset, dto.Limit)).
+			Find(data).Error; err != nil {
+			return 0, utils.ErrInternal
+		}
+	} else {
+		// Получить данные без учета пагинации
+		if err := query.Find(data).Error; err != nil {
+			return 0, utils.ErrInternal
+		}
 	}
 
 	return count, nil

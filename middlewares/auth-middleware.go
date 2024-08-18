@@ -36,6 +36,9 @@ func NewAuthMiddleware(cfg *config.Config, routes map[string][]string) *AuthMidd
 
 // VerifyToken проверяет токен аутентификации пользователя.
 func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
+	// Удаление последнего слеша, если он есть
+	ctx.Path(strings.TrimRight(ctx.Path(), "/"))
+
 	// Проверка маршрута и метода в бело		м списке
 	for route, methods := range m.whiteListRoutes {
 		if isRouteMatch(ctx.Path(), route) {

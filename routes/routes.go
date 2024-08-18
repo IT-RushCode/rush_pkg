@@ -3,20 +3,12 @@ package routes
 import (
 	"github.com/IT-RushCode/rush_pkg/controllers"
 	"github.com/IT-RushCode/rush_pkg/handlers"
-	auth "github.com/IT-RushCode/rush_pkg/routes/auth"
 
 	sms "github.com/IT-RushCode/rush_pkg/routes/sms"
 	yookassa "github.com/IT-RushCode/rush_pkg/routes/yookassa"
 
 	"github.com/gofiber/fiber/v2"
 )
-
-func RUN_AUTH_ROUTES(api fiber.Router, ctrl *controllers.Controllers) {
-	auth.RUN_AUTH(api, ctrl)
-	auth.RUN_USER(api, ctrl)
-	auth.RUN_ROLE(api, ctrl)
-	auth.RUN_PERMISSION(api, ctrl)
-}
 
 // РОУТЫ ПРОВЕДЕНИЯ ПЛАТЕЖЕЙ ЮКАССЫ
 func RUN_YOOKASSA_PAYMENT_ROUTES(api fiber.Router, ctrl *controllers.Controllers, h *handlers.Handlers) {

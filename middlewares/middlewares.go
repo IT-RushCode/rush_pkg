@@ -10,7 +10,6 @@ import (
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
@@ -60,21 +59,21 @@ func InitMiddlewares(app *fiber.App, apiVersion string, cfg *config.Config) {
 	))
 
 	// Cache middleware
-	app.Use(cache.New(cache.Config{
-		// Конфигурация по умолчанию
-		// Next:         nil,
-		// Expiration:   1 * time.Minute,
-		// CacheHeader:  "X-Cache",
-		// CacheControl: false,
-		// KeyGenerator: func(c *fiber.Ctx) string {
-		// 	return utils.CopyString(c.Path())
-		// },
-		// ExpirationGenerator:  nil,
-		// StoreResponseHeaders: false,
-		// Storage:              nil,
-		// MaxBytes:             0,
-		// Methods:              []string{fiber.MethodGet, fiber.MethodHead},
-	}))
+	// app.Use(cache.New(cache.Config{
+	// 	// Конфигурация по умолчанию
+	// 	// Next:         nil,
+	// 	// Expiration:   1 * time.Minute,
+	// 	// CacheHeader:  "X-Cache",
+	// 	// CacheControl: false,
+	// 	// KeyGenerator: func(c *fiber.Ctx) string {
+	// 	// 	return utils.CopyString(c.Path())
+	// 	// },
+	// 	// ExpirationGenerator:  nil,
+	// 	// StoreResponseHeaders: false,
+	// 	// Storage:              nil,
+	// 	// MaxBytes:             0,
+	// 	// Methods:              []string{fiber.MethodGet, fiber.MethodHead},
+	// }))
 
 	// HELMET middleware -
 	app.Use(helmet.New(helmet.Config{

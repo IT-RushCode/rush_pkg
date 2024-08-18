@@ -39,7 +39,7 @@ func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
 	// Удаление последнего слеша, если он есть
 	ctx.Path(strings.TrimRight(ctx.Path(), "/"))
 
-	// Проверка маршрута и метода в бело		м списке
+	// Проверка маршрута и метода в белом списке
 	for route, methods := range m.whiteListRoutes {
 		if isRouteMatch(ctx.Path(), route) {
 			for _, method := range methods {

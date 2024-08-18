@@ -1,6 +1,8 @@
 package middlewares
 
 import (
+	"strings"
+
 	"github.com/IT-RushCode/rush_pkg/config"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -8,6 +10,10 @@ import (
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -54,65 +60,58 @@ func InitMiddlewares(app *fiber.App, apiVersion string, cfg *config.Config) {
 	))
 
 	// Cache middleware
-	// app.Use(cache.New(cache.Config{
-	// 	// Конфигурация по умолчанию
-	// 	// Next:         nil,
-	// 	// Expiration:   1 * time.Minute,
-	// 	// CacheHeader:  "X-Cache",
-	// 	// CacheControl: false,
-	// 	// KeyGenerator: func(c *fiber.Ctx) string {
-	// 	// 	return utils.CopyString(c.Path())
-	// 	// },
-	// 	// ExpirationGenerator:  nil,
-	// 	// StoreResponseHeaders: false,
-	// 	// Storage:              nil,
-	// 	// MaxBytes:             0,
-	// 	// Methods:              []string{fiber.MethodGet, fiber.MethodHead},
-	// }))
+	app.Use(cache.New(cache.Config{
+		// Конфигурация по умолчанию
+		// Next:         nil,
+		// Expiration:   1 * time.Minute,
+		// CacheHeader:  "X-Cache",
+		// CacheControl: false,
+		// KeyGenerator: func(c *fiber.Ctx) string {
+		// 	return utils.CopyString(c.Path())
+		// },
+		// ExpirationGenerator:  nil,
+		// StoreResponseHeaders: false,
+		// Storage:              nil,
+		// MaxBytes:             0,
+		// Methods:              []string{fiber.MethodGet, fiber.MethodHead},
+	}))
 
 	// HELMET middleware -
-	// app.Use(helmet.New(helmet.Config{
-	// 	HSTSMaxAge:                0,
-	// 	HSTSExcludeSubdomains:     false,
-	// 	ContentSecurityPolicy:     "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self';",
-	// 	CSPReportOnly:             false,
-	// 	HSTSPreloadEnabled:        false,
-	// 	PermissionPolicy:          "",
-	// 	XSSProtection:             "1",
-	// 	ContentTypeNosniff:        "nosniff",
-	// 	XFrameOptions:             "SAMEORIGIN",
-	// 	ReferrerPolicy:            "no-referrer",
-	// 	CrossOriginEmbedderPolicy: "require-corp",
-	// 	CrossOriginOpenerPolicy:   "same-origin",
-	// 	CrossOriginResourcePolicy: "same-origin",
-	// 	OriginAgentCluster:        "?1",
-	// 	XDNSPrefetchControl:       "off",
-	// 	XDownloadOptions:          "noopen",
-	// 	XPermittedCrossDomain:     "none",
-	// }))
+	app.Use(helmet.New(helmet.Config{
+		HSTSMaxAge:                0,
+		HSTSExcludeSubdomains:     false,
+		ContentSecurityPolicy:     "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self';",
+		CSPReportOnly:             false,
+		HSTSPreloadEnabled:        false,
+		PermissionPolicy:          "",
+		XSSProtection:             "1",
+		ContentTypeNosniff:        "nosniff",
+		XFrameOptions:             "SAMEORIGIN",
+		ReferrerPolicy:            "no-referrer",
+		CrossOriginEmbedderPolicy: "require-corp",
+		CrossOriginOpenerPolicy:   "same-origin",
+		CrossOriginResourcePolicy: "same-origin",
+		OriginAgentCluster:        "?1",
+		XDNSPrefetchControl:       "off",
+		XDownloadOptions:          "noopen",
+		XPermittedCrossDomain:     "none",
+	}))
 
 	// CORS middleware
-	// app.Use(cors.New(cors.Config{
-	// 	AllowOriginsFunc: func(origin string) bool {
-	// 		// Пример: Разрешаем запросы только с "http://localhost:4200" и "http://example.com"
-	// 		if origin == "http://localhost:4200" || origin == "http://example.com" {
-	// 			return true
-	// 		}
-	// 		return false
-	// 	},
-	// 	AllowOrigins:     "http://localhost:4200",
-	// 	AllowMethods:     strings.Join(fiber.DefaultMethods, ","),
-	// 	AllowHeaders:     "",
-	// 	AllowCredentials: false,
-	// 	ExposeHeaders:    "",
-	// 	MaxAge:           0,
-	// }))
+	app.Use(cors.New(cors.Config{
+		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization",
+		AllowCredentials: false, // false для тестового окружения
+		AllowOrigins:     "*",   // не может быть wildcard - "*", если AllowCredentials == true
+		AllowMethods:     strings.Join(fiber.DefaultMethods, ","),
+		// ExposeHeaders: "",
+		// MaxAge:        0,
+	}))
 
 	// Compressor (сжатие) middleware
-	// app.Use(compress.New(
-	// 	compress.Config{
-	// 		Level: compress.LevelDefault,
-	// 	}))
+	app.Use(compress.New(
+		compress.Config{
+			Level: compress.LevelDefault,
+		}))
 
 	// Auth middleware
 	// authMiddleware := NewAuthMiddleware(cfg, nil)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/IT-RushCode/rush_pkg/dto"
@@ -54,24 +55,29 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 	if len(dto.Filters) > 0 {
 		for field, value := range dto.Filters {
 			if field != "" && value != "" {
-				switch {
-				case value == "true" || value == "false":
-					// Булевое значение
-					query = query.Where(fmt.Sprintf("%s = ?", field), value)
-				case isRFC3339(value):
-					// Дата и время в формате RFC3339
-					query = query.Where(fmt.Sprintf("%s = ?", field), value)
-				case isDate(value):
-					// Дата (формат: YYYY-MM-DD)
-					query = query.Where(fmt.Sprintf("%s = ?", field), value)
-				case isNumber(value):
-					// Числовое значение
-					query = query.Where(fmt.Sprintf("%s ILIKE ?", field), "%"+value+"%")
-				default:
-					// Строковое значение
-					query = query.Where(fmt.Sprintf("%s ILIKE ?", field), "%"+value+"%")
+				if isPKOrFK(field) && isUint(value) {
+					// Если это PK или FK и значение является uint
+					uintValue, _ := strconv.ParseUint(value, 10, 64)
+					query = query.Where(fmt.Sprintf("%s = ?", field), uintValue)
+				} else {
+					switch {
+					case value == "true" || value == "false":
+						// Булевое значение
+						query = query.Where(fmt.Sprintf("%s = ?", field), value)
+					case isRFC3339(value):
+						// Дата и время в формате RFC3339
+						query = query.Where(fmt.Sprintf("%s = ?", field), value)
+					case isDate(value):
+						// Дата (формат: YYYY-MM-DD)
+						query = query.Where(fmt.Sprintf("%s = ?", field), value)
+					case isNumber(value):
+						// Числовое значение (например, целые числа)
+						query = query.Where(fmt.Sprintf("%s = ?", field), value)
+					default:
+						// Строковое значение
+						query = query.Where(fmt.Sprintf("%s ILIKE ?", field), "%"+value+"%")
+					}
 				}
-
 			}
 		}
 	}
@@ -240,4 +246,15 @@ func isRFC3339(value string) bool {
 func isNumber(value string) bool {
 	_, err := strconv.Atoi(value)
 	return err == nil
+}
+
+func isUint(value string) bool {
+	_, err := strconv.ParseUint(value, 10, 64)
+	return err == nil
+}
+
+func isPKOrFK(field string) bool {
+	// Пример: определяем PK/FK по названию поля
+	lowerField := strings.ToLower(field)
+	return strings.HasSuffix(lowerField, "id") || lowerField == "id"
 }

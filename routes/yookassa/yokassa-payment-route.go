@@ -8,5 +8,5 @@ import (
 func RUN_PAYMENT_ROUTES(api fiber.Router, h *handlers.Handlers) {
 	payment := api.Group("payment")
 
-	payment.Post("/", h.PaymentHandler.CreatePayment)
+	payment.Post("/", h.PaymentHandler.CreatePayment).Name("create:yookassa_payment")
 }

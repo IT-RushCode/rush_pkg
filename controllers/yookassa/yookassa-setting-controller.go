@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"context"
-
 	dto "github.com/IT-RushCode/rush_pkg/dto/payment"
 	ykModel "github.com/IT-RushCode/rush_pkg/models/yookassa"
 	"github.com/IT-RushCode/rush_pkg/repositories"
@@ -35,7 +33,7 @@ func (h *YookassasettingController) CreateYooKassaSetting(ctx *fiber.Ctx) error 
 	data.ID = 0
 
 	// TODO: ДОБАВИТЬ ХЕШ ШИФРОВАНИЕ ДЛЯ SECRET KEY
-	if err := h.repo.YooKassaSetting.Create(context.Background(), data); err != nil {
+	if err := h.repo.YooKassaSetting.Create(ctx.Context(), data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
@@ -65,7 +63,7 @@ func (h *YookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error 
 	data.ID = id
 
 	// TODO: ДОБАВИТЬ ХЕШ ШИФРОВАНИЕ ДЛЯ SECRET KEY
-	if err := h.repo.YooKassaSetting.Update(context.Background(), data); err != nil {
+	if err := h.repo.YooKassaSetting.Update(ctx.Context(), data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
@@ -81,7 +79,7 @@ func (h *YookassasettingController) DeleteYooKassaSetting(ctx *fiber.Ctx) error 
 	}
 
 	data := &ykModel.YooKassaSetting{ID: id}
-	if err := h.repo.YooKassaSetting.Delete(context.Background(), data); err != nil {
+	if err := h.repo.YooKassaSetting.Delete(ctx.Context(), data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
@@ -96,7 +94,7 @@ func (h *YookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) erro
 	}
 
 	data := &ykModel.YooKassaSetting{}
-	if err := h.repo.YooKassaSetting.FindByID(context.Background(), id, data); err != nil {
+	if err := h.repo.YooKassaSetting.FindByID(ctx.Context(), id, data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
 
@@ -109,7 +107,7 @@ func (h *YookassasettingController) FindYooKassaSettingByPointID(ctx *fiber.Ctx)
 
 	data := &ykModel.YooKassaSetting{}
 	if err := h.repo.YooKassaSetting.Filter(
-		context.Background(),
+		ctx.Context(),
 		map[string]interface{}{"point_id": uint(ctx.QueryInt("pointId"))},
 		data,
 	); err != nil {

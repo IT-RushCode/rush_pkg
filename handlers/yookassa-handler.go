@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
 
 	dto "github.com/IT-RushCode/rush_pkg/dto/payment"
@@ -39,7 +38,7 @@ func (h *PaymentHandler) CreatePayment(ctx *fiber.Ctx) error {
 
 	store := &rpYKassa.YooKassaSetting{}
 	if err := h.repo.YooKassaSetting.Filter(
-		context.Background(),
+		ctx.Context(),
 		map[string]interface{}{"point_id": req.PointID},
 		store,
 	); err != nil {
@@ -81,8 +80,7 @@ func (h *PaymentHandler) CreatePayment(ctx *fiber.Ctx) error {
 			},
 			Description: req.Description,
 		})
-	case yoopayment.PaymentTypeTinkoffBank,
-		yoopayment.PaymentTypeSberbank,
+	case yoopayment.PaymentTypeSberbank,
 		yoopayment.PaymentTypeYooMoney,
 		yoopayment.PaymentTypeSBP:
 		payment, err = paymentKassa.CreatePayment(&yoopayment.Payment{
@@ -120,7 +118,7 @@ func (h *PaymentHandler) CreatePayment(ctx *fiber.Ctx) error {
 				yoopayment.PaymentTypeCash,
 				yoopayment.PaymentTypeBankCard,
 				yoopayment.PaymentTypeYooMoney,
-				yoopayment.PaymentTypeTinkoffBank,
+				yoopayment.PaymentTypeSBP,
 				yoopayment.PaymentTypeSberbank,
 			),
 			nil,

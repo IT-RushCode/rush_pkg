@@ -30,15 +30,29 @@ var (
 	ErrNotRefreshToken    = errors.New("полученный токен не является refresh токеном")
 
 	// Global errors
-	ErrInternal   = errors.New("внутренняя ошибка сервера")
-	ErrPermission = errors.New("нет прав на редактирование")
-	ErrForbidden  = errors.New("нет прав")
+	ErrInternal       = errors.New("внутренняя ошибка сервера")
+	ErrPermission     = errors.New("нет прав на редактирование")
+	ErrForbidden      = errors.New("нет прав")
+	ErrRecordImageble = errors.New("запись с указанным imagebleID не существует")
 
 	// File handler errors
 	ErrUploadFile    = errors.New("ошибка загрузки файла")
 	ErrUpdateFile    = errors.New("ошибка обновления файла")
+	ErrDeleteFile    = errors.New("ошибка удаления файла")
+	ErrDeleteOldFile = errors.New("ошибка удаления старого файла")
+	ErrSaveFile      = errors.New("ошибка сохранения файла")
 	ErrFileNotFound  = errors.New("файл не найден")
 	ErrFilesNotFound = errors.New("файлы не найдены")
+	ErrCreateDir     = errors.New("ошибка создания директории")
+
+	// File Metadata
+	ErrSaveMetaData   = errors.New("ошибка сохранения метаданных файла")
+	ErrUpdateMetaData = errors.New("ошибка обновления метаданных файла")
+	ErrDeleteMetaData = errors.New("ошибка удаления метаданных файла")
+
+	// UUID errors
+	ErrGetUUID     = errors.New("не указан uuid")
+	ErrInvalidUUID = errors.New("неверный формат UUID")
 
 	// Controller errors
 	ErrorIncorrectID     = errors.New("некорректный :id в параметре пути").Error()

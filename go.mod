@@ -3,6 +3,7 @@ module github.com/IT-RushCode/rush_pkg
 go 1.22
 
 require (
+	github.com/chai2010/webp v1.1.1
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/contrib/swagger v1.2.0
 	github.com/gofiber/fiber/v2 v2.52.5

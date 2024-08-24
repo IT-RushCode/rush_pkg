@@ -27,8 +27,8 @@ func GetAllQueries(ctx *fiber.Ctx) (*dto.GetAllRequest, error) {
 	queryParams := ctx.Queries()
 	for key, value := range queryParams {
 		if value != "" {
-			if len(key) > 8 && key[:8] == "filters[" && key[len(key)-1] == ']' {
-				filterKey := key[8 : len(key)-1]
+			if len(key) > 2 && key[:2] == "f[" && key[len(key)-1] == ']' {
+				filterKey := key[2 : len(key)-1]
 				filters[filterKey] = value
 			}
 		}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -84,6 +86,9 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 
 	// Получить общее количество записей
 	if err := query.Count(&count).Error; err != nil {
+		if strings.Contains(err.Error(), "SQLSTATE 42703") {
+			return 0, extractFieldFromError(err)
+		}
 		return 0, utils.ErrInternal
 	}
 
@@ -98,7 +103,8 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 
 	if pagination {
 		// Получить данные с учетом пагинации
-		if err := query.Scopes(utils.Paginate(dto.Offset, dto.Limit)).
+		if err := query.
+			Scopes(utils.Paginate(dto.Offset, dto.Limit)).
 			Find(data).Error; err != nil {
 			return 0, utils.ErrInternal
 		}
@@ -257,4 +263,18 @@ func isPKOrFK(field string) bool {
 	// Пример: определяем PK/FK по названию поля
 	lowerField := strings.ToLower(field)
 	return strings.HasSuffix(lowerField, "id") || lowerField == "id"
+}
+
+// ExtractFieldFromError извлекает название поля из текста ошибки
+func extractFieldFromError(err error) error {
+	// Регулярное выражение для поиска текста между кавычками
+	re := regexp.MustCompile(`column "(.*?)" does not exist`)
+	matches := re.FindStringSubmatch(err.Error())
+
+	if len(matches) < 2 {
+		log.Println("не удалось извлечь название поля из ошибки")
+		return utils.ErrInternal
+	}
+
+	return fmt.Errorf(utils.ErrFieldNotSupported, matches[1])
 }

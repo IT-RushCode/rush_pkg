@@ -10,14 +10,15 @@ import (
 
 var (
 	// Repositoriy errors
-	ErrId              = errors.New("неверный id")
-	ErrCreate          = errors.New("ошибка создания записи")
-	ErrUpdate          = errors.New("ошибка обновления записи")
-	ErrDelete          = errors.New("ошибка удаления записи")
-	ErrExists          = errors.New("запись с такими же параметрами уже существует")
-	ErrRecordNotFound  = errors.New("запись не найдена")
-	ErrRecordsNotFound = errors.New("записи не найдены")
-	ErrDuplicate       = errors.New("дубликат записи")
+	ErrId                = errors.New("неверный id")
+	ErrCreate            = errors.New("ошибка создания записи")
+	ErrUpdate            = errors.New("ошибка обновления записи")
+	ErrDelete            = errors.New("ошибка удаления записи")
+	ErrExists            = errors.New("запись с такими же параметрами уже существует")
+	ErrRecordNotFound    = errors.New("запись не найдена")
+	ErrRecordsNotFound   = errors.New("записи не найдены")
+	ErrDuplicate         = errors.New("дубликат записи")
+	ErrFieldNotSupported = "фильтрация по полю '%s' не поддерживается"
 
 	// JWT errors
 	ErrorGenAccessToken   = errors.New("не удалось сгенерировать токен доступа")
@@ -84,17 +85,10 @@ func HandleDuplicateKeyError(err error) error {
 
 		if len(match) > 2 {
 			uniqueConstraint := match[2]
-			// fieldParts := strings.Split(uniqueConstraint, "_")
-
-			// Предполагаем, что имя ограничения состоит из таблицы и поля
-			// Например, "Points_pkey" -> "Points", "pkey"
-			// if len(fieldParts) > 1 {
-			// fieldCamelCase := ToCamelCase(strings.Join(fieldParts[1:], "_"))
 			return &DuplicateKeyError{
 				Field: uniqueConstraint,
 				Msg:   ErrExists.Error() + ": " + uniqueConstraint,
 			}
-			// }
 		}
 
 		return &DuplicateKeyError{

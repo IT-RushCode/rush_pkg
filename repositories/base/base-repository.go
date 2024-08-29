@@ -46,50 +46,15 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 	var count int64
 	query := r.db.WithContext(ctx).Model(data)
 
-	// Применить preloads
 	for _, preload := range preloads {
-		if preload != "" {
-			query = query.Preload(preload)
-		}
+		query = query.Preload(preload)
 	}
 
-	// Применить фильтры, если они есть
-	if len(dto.Filters) > 0 {
-		for field, value := range dto.Filters {
-			if field != "" && value != "" {
-				if isPKOrFK(field) && isUint(value) {
-					// Если это PK или FK и значение является uint
-					uintValue, _ := strconv.ParseUint(value, 10, 64)
-					query = query.Where(fmt.Sprintf("%s = ?", field), uintValue)
-				} else {
-					switch {
-					case value == "true" || value == "false":
-						// Булевое значение
-						query = query.Where(fmt.Sprintf("%s = ?", field), value)
-					case isRFC3339(value):
-						// Дата и время в формате RFC3339
-						query = query.Where(fmt.Sprintf("%s = ?", field), value)
-					case isDate(value):
-						// Дата (формат: YYYY-MM-DD)
-						query = query.Where(fmt.Sprintf("%s = ?", field), value)
-					case isNumber(value):
-						// Числовое значение (например, целые числа)
-						query = query.Where(fmt.Sprintf("%s = ?", field), value)
-					default:
-						// Строковое значение
-						query = query.Where(fmt.Sprintf("%s ILIKE ?", field), "%"+value+"%")
-					}
-				}
-			}
+	// Применить фильтры, используя более оптимизированный подход
+	for field, value := range dto.Filters {
+		if field != "" && value != "" {
+			query = r.applyFilter(query, field, value)
 		}
-	}
-
-	// Получить общее количество записей
-	if err := query.Count(&count).Error; err != nil {
-		if strings.Contains(err.Error(), "SQLSTATE 42703") {
-			return 0, extractFieldFromError(err)
-		}
-		return 0, utils.ErrInternal
 	}
 
 	// Применить сортировку
@@ -101,21 +66,43 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 		query = query.Order(fmt.Sprintf("%s %s", dto.SortBy, order))
 	}
 
+	// Получить общее количество записей
+	if err := query.Count(&count).Error; err != nil {
+		if strings.Contains(err.Error(), "SQLSTATE 42703") {
+			return 0, extractFieldFromError(err)
+		}
+		return 0, utils.ErrInternal
+	}
+
+	// Применить пагинацию и получить данные
 	if pagination {
-		// Получить данные с учетом пагинации
-		if err := query.
-			Scopes(utils.Paginate(dto.Offset, dto.Limit)).
-			Find(data).Error; err != nil {
-			return 0, utils.ErrInternal
-		}
-	} else {
-		// Получить данные без учета пагинации
-		if err := query.Find(data).Error; err != nil {
-			return 0, utils.ErrInternal
-		}
+		query = query.Scopes(utils.Paginate(dto.Offset, dto.Limit))
+	}
+
+	if err := query.Find(data).Error; err != nil {
+		return 0, utils.ErrInternal
 	}
 
 	return count, nil
+}
+
+// Вспомогательная функция для применения фильтров
+func (r *baseRepository) applyFilter(query *gorm.DB, field, value string) *gorm.DB {
+	switch {
+	case isPKOrFK(field) && isUint(value):
+		uintValue, _ := strconv.ParseUint(value, 10, 64)
+		return query.Where(fmt.Sprintf("%s = ?", field), uintValue)
+	case value == "true" || value == "false":
+		return query.Where(fmt.Sprintf("%s = ?", field), value)
+	case isRFC3339(value):
+		return query.Where(fmt.Sprintf("%s = ?", field), value)
+	case isDate(value):
+		return query.Where(fmt.Sprintf("%s = ?", field), value)
+	case isNumber(value):
+		return query.Where(fmt.Sprintf("%s = ?", field), value)
+	default:
+		return query.Where(fmt.Sprintf("%s ILIKE ?", field), "%"+value+"%")
+	}
 }
 
 // Создание записи

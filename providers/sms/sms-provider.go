@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/IT-RushCode/rush_pkg/config"
 	dto "github.com/IT-RushCode/rush_pkg/dto/sms"
@@ -33,7 +34,8 @@ func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse
 	// Если IsOTP true, то отправляем OTP код на номер тел.
 	if data.IsOTP {
 		otpCode = utils.GenerateOTP()
-		data.Messages[0].Text = otpCode
+		msgCode, _ := strconv.Atoi(otpCode)
+		data.Messages[0].Text = fmt.Sprintf("Ваш код подтверждения в приложении DOM: %d", msgCode)
 	}
 
 	// Если Channel пустой, то для всех сообщений устанавливаем буквенный канал сообщений
@@ -78,6 +80,8 @@ func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при чтении ответа: %v", err)
 	}
+
+	fmt.Println(string(body))
 	// Промежуточная десериализация для получения статуса
 	var intermRes intermediateResponse
 	err = json.Unmarshal(body, &intermRes)

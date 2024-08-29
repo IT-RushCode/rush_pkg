@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
-	"strconv"
+	"strings"
 
 	"github.com/IT-RushCode/rush_pkg/config"
 	dto "github.com/IT-RushCode/rush_pkg/dto/sms"
@@ -21,21 +22,20 @@ type intermediateResponse struct {
 
 // SendSMS делает POST-запрос к указанному URL с предоставленным payload.
 func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse, error) {
-	url := "https://admin.p1sms.ru/apiSms/create"
-	method := "POST"
+	url := cfg.SMS.URL
+	method := cfg.SMS.METHOD
 
 	var (
-		phone   = data.Messages[0].Phone
+		phone   = strings.TrimSpace(data.Messages[0].Phone)
 		otpCode string
 	)
 
-	data.Messages[0].Sender = cfg.APISMS.SENDER
+	data.Messages[0].Sender = cfg.SMS.SENDER
 
 	// Если IsOTP true, то отправляем OTP код на номер тел.
 	if data.IsOTP {
 		otpCode = utils.GenerateOTP()
-		msgCode, _ := strconv.Atoi(otpCode)
-		data.Messages[0].Text = fmt.Sprintf("Ваш код подтверждения в приложении DOM: %d", msgCode)
+		data.Messages[0].Text = fmt.Sprintf(cfg.SMS.TEMPLATE, otpCode)
 	}
 
 	// Если Channel пустой, то для всех сообщений устанавливаем буквенный канал сообщений
@@ -45,7 +45,7 @@ func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse
 		}
 
 		if data.Messages[i].Channel == "char" {
-			data.Messages[0].Sender = cfg.APISMS.SENDER
+			data.Messages[0].Sender = cfg.SMS.SENDER
 		}
 	}
 
@@ -53,7 +53,7 @@ func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse
 		APIKey string           `json:"apiKey"`
 		SMS    []dto.SMSMessage `json:"sms"`
 	}{
-		APIKey: cfg.APISMS.API,
+		APIKey: cfg.SMS.TOKEN,
 		SMS:    data.Messages,
 	}
 
@@ -80,8 +80,8 @@ func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при чтении ответа: %v", err)
 	}
+	log.Println(string(body))
 
-	fmt.Println(string(body))
 	// Промежуточная десериализация для получения статуса
 	var intermRes intermediateResponse
 	err = json.Unmarshal(body, &intermRes)

@@ -1,7 +1,10 @@
 package config
 
 // ------------ API SMS ------------
-type APISMS struct {
-	API    string `mapstructure:"API"`
-	SENDER string `mapstructure:"SENDER"`
+type SMS struct {
+	URL      string `mapstructure:"URL"`
+	METHOD   string `mapstructure:"METHOD"`
+	TOKEN    string `mapstructure:"TOKEN"`
+	SENDER   string `mapstructure:"SENDER"`
+	TEMPLATE string `mapstructure:"TEMPLATE"`
 }

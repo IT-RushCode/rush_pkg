@@ -15,13 +15,13 @@ import (
 
 type SmsHandler struct {
 	cfg   *config.Config
-	redis *redis.Client
+	cache *redis.Client
 }
 
-func NewSMSHandler(cfg *config.Config, redis *redis.Client) *SmsHandler {
+func NewSMSHandler(cfg *config.Config, cache *redis.Client) *SmsHandler {
 	return &SmsHandler{
 		cfg:   cfg,
-		redis: redis,
+		cache: cache,
 	}
 }
 
@@ -46,7 +46,7 @@ func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
 
 	// Если OTP код успешно отправлен то сохраняем его в кеше для дальнейшей верификации
 	if req.IsOTP && res.Message.Data[0].Status == "sent" {
-		err = h.redis.Set(ctx.Context(), res.Phone, res.OTPCode, 5*time.Minute).Err() // Установка времени истечения в 5 минут
+		err = h.cache.Set(ctx.Context(), res.Phone, res.OTPCode, 5*time.Minute).Err() // Установка времени истечения в 5 минут
 		if err != nil {
 			return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при сохранении OTP кода в кеш: "+err.Error(), nil)
 		}
@@ -71,7 +71,7 @@ func (h *SmsHandler) VerifySMSCode(ctx *fiber.Ctx) error {
 	}
 
 	// Проверка OTP кода в Redis
-	otp, err := h.redis.Get(ctx.Context(), req.PhoneNumber).Result()
+	otp, err := h.cache.Get(ctx.Context(), req.PhoneNumber).Result()
 	if err == redis.Nil {
 		return utils.ErrorBadRequestResponse(ctx, "Неверный или истекший код подтверждения", nil)
 	} else if err != nil {
@@ -83,7 +83,7 @@ func (h *SmsHandler) VerifySMSCode(ctx *fiber.Ctx) error {
 	}
 
 	// Удаляем OTP код из Redis
-	err = h.redis.Del(ctx.Context(), req.PhoneNumber).Err()
+	err = h.cache.Del(ctx.Context(), req.PhoneNumber).Err()
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при удалении OTP кода из кеша: "+err.Error(), nil)
 	}

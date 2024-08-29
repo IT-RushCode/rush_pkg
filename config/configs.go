@@ -15,7 +15,7 @@ type Config struct {
 	KAFKA    KafKaConfig    `mapstructure:"KAFKA"`
 	RABBITMQ RabbitMQConfig `mapstructure:"RABBITMQ"`
 	MONGODB  MongoDBConfig  `mapstructure:"MONGODB"`
-	APISMS   APISMS         `mapstructure:"APISMS"`
+	SMS      SMS            `mapstructure:"SMS"`
 	MAIL     MailConfig     `mapstructure:"MAIL"`
 	FIREBASE FirebaseConfig `mapstructure:"FIREBASE"`
 	FIBER    FiberConfig    `mapstructure:"FIBER"`

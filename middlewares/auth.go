@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,11 +15,16 @@ type AuthData struct {
 	IP     string `json:"ip"`
 }
 
+// PermissionChecker определяет метод для проверки прав пользователя.
+type PermissionChecker interface {
+	HasPermission(userID uint, permission string) bool
+}
+
 // AuthMiddleware представляет собой middleware для аутентификации пользователя.
 type AuthMiddleware struct {
 	jwtTTL            time.Duration
 	jwt               utils.JWTService
-	whiteListRoutes   map[string][]string
+	publicRoutes      map[string][]string
 	permissionChecker PermissionChecker
 }
 
@@ -33,47 +39,48 @@ func NewAuthMiddleware(
 	jwtService := utils.NewJWTService(cfg.JWT.JWT_SECRET, jwtTTL, jwtRTTL)
 
 	return &AuthMiddleware{
-		jwtTTL:          jwtTTL,
-		jwt:             jwtService,
-		whiteListRoutes: routes,
+		jwtTTL:            jwtTTL,
+		jwt:               jwtService,
+		publicRoutes:      routes,
+		permissionChecker: checker,
 	}
 }
 
 // VerifyToken выполняет основную проверку токена и привилегий.
-func (m *AuthMiddleware) VerifyToken(ctx *fiber.Ctx) error {
+func (m *AuthMiddleware) Auth(ctx *fiber.Ctx) error {
 	// Удаление последнего слеша
 	normalizePath(ctx)
 
-	// Проверка на белый список маршрутов
+	// Проверка на публичный список маршрутов
 	if m.isWhiteListedRoute(ctx) {
 		return ctx.Next()
 	}
 
 	// Проверка и извлечение данных из токена
 	claims, err := m.extractTokenClaims(ctx)
-	if err != nil {
+	if claims == nil {
 		return err
 	}
 
 	// Сохранение данных пользователя в контексте
 	ctx.Locals("UserID", claims.UserID)
 
-	// Проверка привилегий пользователя на основе имени маршрута
-	if err := m.CheckPermissions(ctx, claims); err != nil {
+	// Вызов `ctx.Next()` для перехода к следующему обработчику маршрута
+	if err := ctx.Next(); err != nil {
 		return err
 	}
 
-	return ctx.Next()
-}
+	// Проверка привилегий пользователя на основе имени маршрута
+	if err := m.checkPermissions(ctx, claims); err != nil {
+		return err
+	}
 
-// normalizePath нормализует путь, удаляя последний слеш, если он есть.
-func normalizePath(ctx *fiber.Ctx) {
-	ctx.Path(strings.TrimRight(ctx.Path(), "/"))
+	return nil
 }
 
 // isWhiteListedRoute проверяет, является ли маршрут и метод запросом в белом списке.
 func (m *AuthMiddleware) isWhiteListedRoute(ctx *fiber.Ctx) bool {
-	for route, methods := range m.whiteListRoutes {
+	for route, methods := range m.publicRoutes {
 		if isRouteMatch(ctx.Path(), route) {
 			for _, method := range methods {
 				if method == "*" || ctx.Method() == method {
@@ -98,7 +105,6 @@ func (m *AuthMiddleware) extractTokenClaims(ctx *fiber.Ctx) (*utils.JwtCustomCla
 	}
 
 	token := parts[1]
-
 	// Проверка токена через сервис JWT
 	claims, err := m.jwt.ValidateToken(token)
 	if err != nil {
@@ -106,6 +112,30 @@ func (m *AuthMiddleware) extractTokenClaims(ctx *fiber.Ctx) (*utils.JwtCustomCla
 	}
 
 	return claims, nil
+}
+
+// CheckPermissions проверяет, есть ли у пользователя привилегия для те	кущего маршрута.
+func (m *AuthMiddleware) checkPermissions(ctx *fiber.Ctx, claims *utils.JwtCustomClaim) error {
+	routeName := ctx.Route().Name
+	if routeName == "" {
+		return utils.ErrorForbiddenResponse(ctx, fmt.Sprintf("маршрут %s не имеет привилегии", ctx.Route().Path), nil)
+	}
+
+	if routeName == "me" {
+		return nil
+	}
+
+	// Проверка привилегий через интерфейс PermissionChecker
+	if !m.permissionChecker.HasPermission(claims.UserID, routeName) {
+		return utils.ErrorForbiddenResponse(ctx, "доступ запрещен", nil)
+	}
+
+	return nil
+}
+
+// normalizePath нормализует путь, удаляя последний слеш, если он есть.
+func normalizePath(ctx *fiber.Ctx) {
+	ctx.Path(strings.TrimRight(ctx.Path(), "/"))
 }
 
 // isRouteMatch проверяет, соответствует ли путь маршруту, включая поддержку параметров.

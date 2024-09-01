@@ -32,8 +32,7 @@ var (
 
 	// Global errors
 	ErrInternal       = errors.New("внутренняя ошибка сервера")
-	ErrPermission     = errors.New("нет прав на редактирование")
-	ErrForbidden      = errors.New("нет прав")
+	ErrForbidden      = errors.New("доступ запрещен")
 	ErrRecordImageble = errors.New("запись с указанным imagebleID не существует")
 
 	// File handler errors
@@ -113,7 +112,7 @@ func CheckErr(ctx *fiber.Ctx, err error) error {
 		return ErrorConflictResponse(ctx, err.Error(), nil)
 	case errors.Is(err, ErrInvalidInput):
 		return ErrorBadRequestResponse(ctx, err.Error(), nil)
-	case errors.Is(err, ErrPermission):
+	case errors.Is(err, ErrForbidden):
 		return ErrorForbiddenResponse(ctx, err.Error(), nil)
 	case errors.Is(err, ErrInternal):
 		return ErrorInternalServerErrorResponse(ctx, err.Error(), nil)

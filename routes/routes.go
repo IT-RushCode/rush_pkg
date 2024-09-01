@@ -11,13 +11,20 @@ import (
 )
 
 // РОУТЫ ПРОВЕДЕНИЯ ПЛАТЕЖЕЙ ЮКАССЫ
-func RUN_YOOKASSA_PAYMENT_ROUTES(api fiber.Router, ctrl *controllers.Controllers, h *handlers.Handlers) {
+func RUN_YOOKASSA_PAYMENT_ROUTES(
+	api fiber.Router,
+	ctrl *controllers.Controllers,
+	h *handlers.Handlers,
+) {
 	yookassa.RUN_YOOKASSA_SETTINGS_ROUTES(api, ctrl)
 	yookassa.RUN_PAYMENT_ROUTES(api, h)
 }
 
 // РОУТЫ SMS
-func RUN_SMS_ROUTES(api fiber.Router, h *handlers.Handlers) {
+func RUN_SMS_ROUTES(
+	api fiber.Router,
+	h *handlers.Handlers,
+) {
 	sms.RUN_SMS_ROUTES(api, h)
 }
 

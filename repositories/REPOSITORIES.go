@@ -24,7 +24,11 @@ type Repositories struct {
 }
 
 // Инициализация всех репозиториев с учетом переданных флагов
-func NewRepositories(db *database.Storage, flags RepoFlags, mongoDB string) *Repositories {
+func NewRepositories(
+	db *database.Storage,
+	flags RepoFlags,
+	mongoDB string,
+) *Repositories {
 	DB := db.PSQL
 
 	repos := &Repositories{}

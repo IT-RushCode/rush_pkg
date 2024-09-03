@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/IT-RushCode/rush_pkg/config"
@@ -31,6 +32,8 @@ func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
+	req.Messages[0].Phone = strings.TrimSpace(req.Messages[0].Phone)
+
 	if err := utils.ValidateStruct(req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
@@ -66,6 +69,7 @@ func (h *SmsHandler) VerifySMSCode(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка парсинга тела запроса: "+err.Error(), nil)
 	}
+	req.PhoneNumber = strings.TrimSpace(req.PhoneNumber)
 	if err := utils.ValidateStruct(req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка валидации данных запроса: "+err.Error(), nil)
 	}

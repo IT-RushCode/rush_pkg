@@ -37,8 +37,8 @@ func (m *SMSMessage) Validate() error {
 }
 
 type VerifyRequest struct {
-	PhoneNumber string `json:"phoneNumber" validate:"required"`
-	OTPCode     string `json:"code" validate:"required"`
+	PhoneNumber string `json:"phoneNumber" validate:"required,min=11,max=12"`
+	OTPCode     string `json:"code" validate:"required,len=4"`
 }
 
 type SmsSenderResponse struct {

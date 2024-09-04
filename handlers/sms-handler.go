@@ -28,8 +28,6 @@ func NewSMSHandler(cfg *config.Config, cache *redis.Client) *SmsHandler {
 
 // SendSMS обрабатывает запрос на отправку SMS
 func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
-
-	return utils.SuccessResponse(ctx, "Сообщения отправлены", nil)
 	var req dto.SMSRequestDTO
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)

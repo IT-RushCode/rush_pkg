@@ -26,13 +26,22 @@ func ValidateStruct(data interface{}) error {
 			return fmt.Errorf("валидация не удалась: %s", err)
 		}
 
-		errMsg.WriteString("Ошибка валидации: ")
-
 		errors := err.(validator.ValidationErrors)
 		for i, err := range errors {
-			errMsg.WriteString(fmt.Sprintf("'%s' не прошло валидацию по правилу '%s'", err.StructField(), err.Tag()))
-			if err.Param() != "" {
-				errMsg.WriteString(fmt.Sprintf(" = %+v", err.Param()))
+			// Формирование детализированного сообщения об ошибке
+			switch err.Tag() {
+			case "required":
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' обязательно для заполнения", err.Field()))
+			case "email":
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно быть валидным email адресом", err.Field()))
+			case "min":
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно содержать минимум %s символов", err.Field(), err.Param()))
+			case "max":
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно содержать не более %s символов", err.Field(), err.Param()))
+			case "phone":
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно быть валидным номером телефона (+7XXXXXXXXXX)", err.Field()))
+			default:
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' не прошло валидацию: %s", err.Field(), err.Tag()))
 			}
 
 			if i < len(errors)-1 {

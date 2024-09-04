@@ -52,7 +52,7 @@ func (m *AuthMiddleware) Auth(ctx *fiber.Ctx) error {
 	normalizePath(ctx)
 
 	// Проверка на публичный список маршрутов
-	if m.isWhiteListedRoute(ctx) {
+	if m.isPublicRoute(ctx) {
 		return ctx.Next()
 	}
 
@@ -65,21 +65,26 @@ func (m *AuthMiddleware) Auth(ctx *fiber.Ctx) error {
 	// Сохранение данных пользователя в контексте
 	ctx.Locals("UserID", claims.UserID)
 
-	// Вызов `ctx.Next()` для перехода к следующему обработчику маршрута
-	if err := ctx.Next(); err != nil {
-		return err
-	}
+	// // Захват текущего маршрута для дальнейшего использования
+	// route := ctx.Route()
 
-	// Проверка привилегий пользователя на основе имени маршрута
-	if err := m.checkPermissions(ctx, claims); err != nil {
-		return err
-	}
+	// // Проверка привилегий пользователя на основе имени маршрута
+	// routeName := route.Name
+	// if routeName == "" {
+	// 	return utils.ErrorForbiddenResponse(ctx, fmt.Sprintf("маршрут %s не имеет привилегии", route.Path), nil)
+	// }
 
-	return nil
+	// if routeName != "me" && !m.permissionChecker.HasPermission(claims.UserID, routeName) {
+	// 	// Если привилегии не соответствуют, возвращаем ошибку и не продолжаем выполнение
+	// 	return utils.ErrorForbiddenResponse(ctx, "доступ запрещен", nil)
+	// }
+
+	// Если привилегии проверены, выполняем следующего обработчика
+	return ctx.Next()
 }
 
-// isWhiteListedRoute проверяет, является ли маршрут и метод запросом в белом списке.
-func (m *AuthMiddleware) isWhiteListedRoute(ctx *fiber.Ctx) bool {
+// isPublicRoute проверяет, является ли маршрут и метод запросом в белом списке.
+func (m *AuthMiddleware) isPublicRoute(ctx *fiber.Ctx) bool {
 	for route, methods := range m.publicRoutes {
 		if isRouteMatch(ctx.Path(), route) {
 			for _, method := range methods {

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IT-RushCode/rush_pkg/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
 )
@@ -28,7 +29,7 @@ func CacheMiddleware(cache *redis.Client, cacheTime uint, noCachePaths []string,
 	return func(ctx *fiber.Ctx) error {
 		// Проверка на URL, которые не должны кэшироваться
 		for _, noCachePath := range noCachePaths {
-			if ctx.Path() == noCachePath {
+			if utils.IsRouteMatch(ctx.Path(), noCachePath) {
 				return ctx.Next()
 			}
 		}

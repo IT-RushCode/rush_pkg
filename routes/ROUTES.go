@@ -27,6 +27,7 @@ func RUN_YOOKASSA_PAYMENT_ROUTES(
 func RUN_SMS_ROUTES(
 	api fiber.Router,
 	h *handlers.Handlers,
+	m *middlewares.Middlewares,
 ) {
 	sms.RUN_SMS_ROUTES(api, h)
 }
@@ -35,8 +36,9 @@ func RUN_SMS_ROUTES(
 func RUN_NOTIFICATION_ROUTES(
 	api fiber.Router,
 	h *handlers.Handlers,
+	m *middlewares.Middlewares,
 ) {
-	ntf.RUN_NOTIFICATION_ROUTES(api, h)
+	ntf.RUN_NOTIFICATION_ROUTES(api, h, m)
 }
 
 // РОУТЫ УВЕДОМЛЕНИЙ SMS/EMAIL/PUSH

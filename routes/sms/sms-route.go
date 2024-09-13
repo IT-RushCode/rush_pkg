@@ -9,6 +9,6 @@ import (
 func RUN_SMS_ROUTES(api fiber.Router, h *handlers.Handlers) {
 	sms := api.Group("sms")
 
-	sms.Post("/send-sms", h.Sms.SendSMS).Name("create:sms")
-	sms.Post("/verify-code", h.Sms.VerifySMSCode).Name("verify:sms_code")
+	sms.Post("/send-sms", h.Sms.SendSMS)
+	sms.Post("/verify-code", h.Sms.VerifySMSCode)
 }

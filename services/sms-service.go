@@ -1,4 +1,4 @@
-package providers
+package services
 
 import (
 	"bytes"
@@ -20,8 +20,16 @@ type intermediateResponse struct {
 	Data   json.RawMessage `json:"data"`
 }
 
+type SmsService struct {
+	cfg *config.SMS
+}
+
+func NewSmsService(cfg *config.SMS) *SmsService {
+	return &SmsService{cfg: cfg}
+}
+
 // SendSMS делает POST-запрос к указанному URL с предоставленным payload.
-func SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse, error) {
+func (s SmsService) SendSMS(cfg *config.Config, data dto.SMSRequestDTO) (*dto.SmsSenderResponse, error) {
 	url := cfg.SMS.URL
 	method := cfg.SMS.METHOD
 

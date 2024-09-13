@@ -12,8 +12,8 @@ type Controllers struct {
 
 // NewControllers - создает новый экземпляр Controllers с инициализированными контроллерами
 func NewControllers(
-	repo *repositories.Repositories,
 	cfg *config.Config,
+	repo *repositories.Repositories,
 ) *Controllers {
 	return &Controllers{
 		// YOOKASSA CONTROLLERS

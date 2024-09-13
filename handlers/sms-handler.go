@@ -7,7 +7,7 @@ import (
 
 	"github.com/IT-RushCode/rush_pkg/config"
 	dto "github.com/IT-RushCode/rush_pkg/dto/sms"
-	providers "github.com/IT-RushCode/rush_pkg/providers/sms"
+	"github.com/IT-RushCode/rush_pkg/services"
 	"github.com/IT-RushCode/rush_pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,12 +16,18 @@ import (
 
 type SmsHandler struct {
 	cfg   *config.Config
+	srv   *services.Services
 	cache *redis.Client
 }
 
-func NewSMSHandler(cfg *config.Config, cache *redis.Client) *SmsHandler {
+func NewSMSHandler(
+	cfg *config.Config,
+	srv *services.Services,
+	cache *redis.Client,
+) *SmsHandler {
 	return &SmsHandler{
 		cfg:   cfg,
+		srv:   srv,
 		cache: cache,
 	}
 }
@@ -38,7 +44,7 @@ func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
 
-	res, err := providers.SendSMS(h.cfg, req)
+	res, err := h.srv.Sms.SendSMS(h.cfg, req)
 	if err != nil {
 		return utils.CheckErr(ctx, err)
 	}

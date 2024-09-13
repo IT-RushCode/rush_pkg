@@ -1,4 +1,4 @@
-package iiko
+package services
 
 import (
 	"bytes"

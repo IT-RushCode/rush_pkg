@@ -1,6 +1,4 @@
-package providers
-
-import rpBase "github.com/IT-RushCode/rush_pkg/models"
+package models
 
 // Интеграция с iiko
 type IikoIntegration struct {
@@ -10,7 +8,7 @@ type IikoIntegration struct {
 	APIURL   string `gorm:"type:varchar(255)"`
 	Username string `gorm:"type:varchar(100);default:null"`
 	Password string `gorm:"type:varchar(100);default:null"`
-	rpBase.BaseModel
+	BaseModel
 }
 
 type IikoIntegrations []IikoIntegration

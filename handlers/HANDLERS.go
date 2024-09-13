@@ -3,19 +3,23 @@ package handlers
 import (
 	"github.com/IT-RushCode/rush_pkg/config"
 	"github.com/IT-RushCode/rush_pkg/repositories"
+	"github.com/IT-RushCode/rush_pkg/services"
 )
 
 type Handlers struct {
-	Payment *PaymentHandler
-	Sms     *SmsHandler
+	Payment      *PaymentHandler
+	Sms          *SmsHandler
+	Notification *NotificationHandler
 }
 
 func NewHandlers(
-	repo *repositories.Repositories,
 	cfg *config.Config,
+	repo *repositories.Repositories,
+	srv *services.Services,
 ) *Handlers {
 	return &Handlers{
-		Payment: NewPaymentHandler(repo),
-		Sms:     NewSMSHandler(cfg, repo.Redis),
+		Payment:      NewPaymentHandler(srv),
+		Sms:          NewSMSHandler(cfg, srv, repo.Redis),
+		Notification: NewNotificationHandler(cfg, srv, repo.Redis),
 	}
 }

@@ -2,7 +2,7 @@ package controllers
 
 import (
 	dto "github.com/IT-RushCode/rush_pkg/dto/payment"
-	ykModel "github.com/IT-RushCode/rush_pkg/models/yookassa"
+	"github.com/IT-RushCode/rush_pkg/models"
 	"github.com/IT-RushCode/rush_pkg/repositories"
 	"github.com/IT-RushCode/rush_pkg/utils"
 
@@ -26,7 +26,7 @@ func (h *YookassasettingController) CreateYooKassaSetting(ctx *fiber.Ctx) error 
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
 
-	data := &ykModel.YooKassaSetting{}
+	data := &models.YooKassaSetting{}
 	if err := copier.Copy(data, input); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
@@ -51,7 +51,7 @@ func (h *YookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error 
 		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
 	}
 
-	data := &ykModel.YooKassaSetting{}
+	data := &models.YooKassaSetting{}
 	if err := copier.Copy(data, input); err != nil {
 		return utils.ErrorResponse(ctx, err.Error(), nil)
 	}
@@ -78,7 +78,7 @@ func (h *YookassasettingController) DeleteYooKassaSetting(ctx *fiber.Ctx) error 
 		return err
 	}
 
-	data := &ykModel.YooKassaSetting{ID: id}
+	data := &models.YooKassaSetting{ID: id}
 	if err := h.repo.YooKassaSetting.Delete(ctx.Context(), data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -93,7 +93,7 @@ func (h *YookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) erro
 		return err
 	}
 
-	data := &ykModel.YooKassaSetting{}
+	data := &models.YooKassaSetting{}
 	if err := h.repo.YooKassaSetting.FindByID(ctx.Context(), id, data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -104,11 +104,15 @@ func (h *YookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) erro
 
 // Получение разрешения по ID
 func (h *YookassasettingController) FindYooKassaSettingByPointID(ctx *fiber.Ctx) error {
+	pointID, err := ctx.ParamsInt("pointId")
+	if err != nil {
+		return err
+	}
 
-	data := &ykModel.YooKassaSetting{}
+	data := &models.YooKassaSetting{}
 	if err := h.repo.YooKassaSetting.Filter(
 		ctx.Context(),
-		map[string]interface{}{"point_id": uint(ctx.QueryInt("pointId"))},
+		map[string]interface{}{"point_id": pointID},
 		data,
 	); err != nil {
 		return utils.CheckErr(ctx, err)

@@ -217,6 +217,7 @@ func (r *baseRepository) Filter(ctx context.Context, filters map[string]interfac
 	for key, value := range filters {
 		query = query.Where(key, value)
 	}
+
 	if err := query.Find(entities).Error; err != nil {
 		return utils.ErrInternal
 	}

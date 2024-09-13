@@ -38,13 +38,14 @@ func NewAuthMiddleware(
 	}
 }
 
-// VerifyToken выполняет основную проверку токена и привилегий.
+// VerifyToken выполняет основную проверку токена.
 func (m *AuthMiddleware) Auth(ctx *fiber.Ctx) error {
 	// Удаление последнего слеша
 	ctx.Path(strings.TrimRight(ctx.Path(), "/"))
 
 	// Проверка на публичный список маршрутов
 	if m.isPublicRoute(ctx) {
+		ctx.Locals("IsPublic", true)
 		return ctx.Next()
 	}
 

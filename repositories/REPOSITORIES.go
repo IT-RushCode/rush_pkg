@@ -1,9 +1,9 @@
 package repositories
 
 import (
-	"github.com/IT-RushCode/rush_pkg/database"
 	rpBase "github.com/IT-RushCode/rush_pkg/repositories/base"
 	rpYKassa "github.com/IT-RushCode/rush_pkg/repositories/yookassa"
+	"github.com/IT-RushCode/rush_pkg/storage"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -25,7 +25,7 @@ type Repositories struct {
 
 // Инициализация всех репозиториев с учетом переданных флагов
 func NewRepositories(
-	db *database.Storage,
+	db *storage.Storage,
 	flags RepoFlags,
 	mongoDB string,
 ) *Repositories {

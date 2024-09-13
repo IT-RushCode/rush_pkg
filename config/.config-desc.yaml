@@ -53,15 +53,15 @@ MAIL:
   SENDER_NAME: "Example App" # имя отправителя
 
 FIREBASE:
-  PROJECT_ID: "rushcode-69efc"
-  PRIVATE_KEY_ID: "private-key-id"
-  PRIVATE_KEY: "KyF_SxXYyVHhx2eRAY2t4tljl2n4YfRYAy2jYUXifDM"
-  CLIENT_EMAIL: "client-email@project-id.iam.gserviceaccount.com"
-  CLIENT_ID: "client-id"
-  AUTH_URI: "https://accounts.google.com/o/oauth2/auth"
-  TOKEN_URI: "https://oauth2.googleapis.com/token"
-  AUTH_PROVIDER_X509_CERT_URL: "https://www.googleapis.com/oauth2/v1/certs"
-  CLIENT_X509_CERT_URL: "https://www.googleapis.com/robot/v1/metadata/x509/client-email%40project-id.iam.gserviceaccount.com"
+  PROJECT_ID: ""
+  PRIVATE_KEY_ID: ""
+  PRIVATE_KEY: ""
+  CLIENT_EMAIL: ""
+  CLIENT_ID: ""
+  AUTH_URI: ""
+  TOKEN_URI: ""
+  AUTH_PROVIDER_X509_CERT_URL: ""
+  CLIENT_X509_CERT_URL: ""
 
 FIBER:
   # Если установлено в true, это приведет к запуску нескольких процессов Go,
@@ -189,10 +189,10 @@ FIBER:
   #   2. c.IP() НЕ будет получать значение из заголовка ProxyHeader, вернет RemoteIP() из контекста fasthttp.
   #   3. c.Hostname() НЕ будет получать значение из заголовка X-Forwarded-Host, будет использовать fasthttp.Request.URI().Host()
   #    для получения имени хоста.
-  EnableTrustedProxyCheck: false
+  EnableTrustedProxyCheck: true
 
   # Список доверенных прокси.
-  TrustedProxies: []
+  TrustedProxies: ["192.168.0.0/16", "127.0.0.1"]
 
   # Если установлено в true, c.IP() и c.IPs() будут проверять IP-адреса перед их возвратом.
   EnableIPValidation: true

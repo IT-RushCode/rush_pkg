@@ -4,6 +4,7 @@ import (
 	"github.com/IT-RushCode/rush_pkg/controllers"
 	"github.com/IT-RushCode/rush_pkg/handlers"
 
+	ntf "github.com/IT-RushCode/rush_pkg/routes/notification"
 	sms "github.com/IT-RushCode/rush_pkg/routes/sms"
 	yookassa "github.com/IT-RushCode/rush_pkg/routes/yookassa"
 
@@ -26,6 +27,14 @@ func RUN_SMS_ROUTES(
 	h *handlers.Handlers,
 ) {
 	sms.RUN_SMS_ROUTES(api, h)
+}
+
+// РОУТЫ NOTIFICATION
+func RUN_NOTIFICATION_ROUTES(
+	api fiber.Router,
+	h *handlers.Handlers,
+) {
+	ntf.RUN_NOTIFICATION_ROUTES(api, h)
 }
 
 // РОУТЫ УВЕДОМЛЕНИЙ SMS/EMAIL/PUSH

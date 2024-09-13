@@ -51,10 +51,9 @@ func CacheMiddleware(cache *redis.Client, cacheTime uint, noCachePaths []string,
 		// Попробуем получить значение из кеша
 		cached, err := cache.Get(ctx.Context(), cacheKey).Result()
 		if err == nil && cached != "" {
-			// Возвращаем декодированный ответ как сырые байты
-			ctx.Context().SetContentType("application/json")
-			ctx.Send([]byte(cached))
-			return nil
+			// Возвращаем кэшированный ответ
+			ctx.Set("Content-Type", "application/json")
+			return ctx.SendString(cached)
 		} else if err != redis.Nil {
 			// Если произошла ошибка, отличная от "ключ не найден"
 			return err
@@ -64,6 +63,13 @@ func CacheMiddleware(cache *redis.Client, cacheTime uint, noCachePaths []string,
 		err = ctx.Next()
 		if err != nil {
 			return err
+		}
+
+		// После выполнения обработчика проверяем статус код ответа
+		resStatus := ctx.Response().StatusCode()
+		if resStatus == fiber.StatusUnauthorized || resStatus == fiber.StatusForbidden {
+			// Не кэшируем ответы с ошибками 401 или 403
+			return nil
 		}
 
 		// Сохраняем ответ в кеш на указанное время

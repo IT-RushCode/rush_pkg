@@ -152,7 +152,7 @@ func (f *CacheMiddleware) CacheInvalidation(cacheablePaths []string) fiber.Handl
 				// Проверяем, начинается ли текущий путь с кэшируемого пути
 				if strings.HasPrefix(ctx.Path(), path) {
 					// Создаем префикс для поиска ключей в Redis
-					prefix := fmt.Sprintf("cache_%s", path)
+					prefix := fmt.Sprintf("route_cache_%s", path)
 
 					// Используем SCAN для поиска всех ключей, начинающихся с указанного префикса
 					var cursor uint64

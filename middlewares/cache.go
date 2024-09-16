@@ -5,93 +5,38 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IT-RushCode/rush_pkg/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
 )
 
 // CacheMiddleware содержит все middleware для кэширования и их конфигурации.
 type CacheMiddleware struct {
-	cache *redis.Client
+	cache       *redis.Client
+	activeCache bool
+	cacheTime   int64
 }
 
 // NewCacheMiddleware создаёт новый экземпляр CacheMiddleware с Redis клиентом.
-func NewCacheMiddleware(redisClient *redis.Client) *CacheMiddleware {
+//
+// activeCache - определяет кэшировать запросы или вызвать следующий обработчик (пропустить).
+func NewCacheMiddleware(redisClient *redis.Client, activeCache bool, cacheTime int64) *CacheMiddleware {
 	return &CacheMiddleware{
-		cache: redisClient,
-	}
-}
-
-// GlobalCache глобально кэширует запросы и возвращает кэшированные ответы, если они имеются.
-func (f *CacheMiddleware) GlobalCache(
-	cacheTime uint,
-	noCachePaths []string,
-	cacheMethods []string,
-) fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-		// Проверка на URL, которые не должны кэшироваться
-		for _, noCachePath := range noCachePaths {
-			if utils.IsRouteMatch(ctx.Path(), noCachePath) {
-				return ctx.Next()
-			}
-		}
-
-		// Проверка на методы, которые должны кэшироваться
-		methodInCacheList := make(map[string]struct{}, len(cacheMethods))
-		for _, method := range cacheMethods {
-			methodInCacheList[method] = struct{}{}
-		}
-
-		// Если метод не должен кэшироваться, пропустить кэширование
-		if _, shouldCacheMethod := methodInCacheList[ctx.Method()]; !shouldCacheMethod {
-			return ctx.Next()
-		}
-
-		// Создаем ключ для кэша на основе URL запроса
-		cacheKey := fmt.Sprintf("cache_%s", ctx.OriginalURL())
-
-		// Попробуем получить значение из кеша
-		cached, err := f.cache.Get(ctx.Context(), cacheKey).Result()
-		if err == nil && cached != "" {
-			// Возвращаем кэшированный ответ
-			ctx.Set("Content-Type", "application/json")
-			return ctx.SendString(cached)
-		} else if err != redis.Nil {
-			// Если произошла ошибка, отличная от "ключ не найден"
-			return err
-		}
-
-		// Выполняем следующие middleware и контроллер, включая PermissionMiddleware
-		err = ctx.Next()
-		if err != nil {
-			return err
-		}
-
-		// Проверяем статус ответа после выполнения PermissionMiddleware
-		resStatus := ctx.Response().StatusCode()
-		if resStatus < 200 || resStatus >= 300 {
-			// Не кэшируем неуспешные ответы, такие как 401 или 403
-			return nil
-		}
-
-		// Сохраняем ответ в кеш на указанное время
-		if cacheTime == 0 {
-			cacheTime = 5
-		}
-		expiration := time.Duration(cacheTime) * time.Minute
-
-		// Сохраняем данные в кэше в виде строки
-		if err := f.cache.Set(ctx.Context(), cacheKey, string(ctx.Response().Body()), expiration).Err(); err != nil {
-			return err
-		}
-
-		return nil
+		cache:       redisClient,
+		activeCache: activeCache,
+		cacheTime:   cacheTime,
 	}
 }
 
 // RouteCache создает кэширование на уровне маршрутов.
-func (f *CacheMiddleware) RouteCache(cacheTime uint) fiber.Handler {
+//
+// Если на уровне роута cacheTime > 0, то указанное время будет приоритетом, иначе будет используется глобальный cacheTime мидлвейра.
+func (f *CacheMiddleware) RouteCache(cacheTime int64) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
+		// Если кэширование не активно, пропускаем кэширование и выполняем следующий обработчик
+		if !f.activeCache {
+			return ctx.Next()
+		}
+
 		// Создаем ключ кэша на основе URL запроса
 		cacheKey := fmt.Sprintf("route_cache_%s", ctx.OriginalURL())
 
@@ -119,9 +64,8 @@ func (f *CacheMiddleware) RouteCache(cacheTime uint) fiber.Handler {
 			return nil
 		}
 
-		// Сохраняем ответ в кэш на указанное время
 		if cacheTime == 0 {
-			cacheTime = 5
+			cacheTime = f.cacheTime
 		}
 		expiration := time.Duration(cacheTime) * time.Minute
 

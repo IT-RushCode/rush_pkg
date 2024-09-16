@@ -12,7 +12,7 @@ func CheckIsMobile(ctx *fiber.Ctx) (uint, error) {
 	var userId uint
 	var err error
 
-	if ctx.QueryBool("mob") {
+	if ctx.Locals("IsMob").(bool) {
 		// Получение userId из локальных данных контекста
 		userId, err = GetUserIDFromLocals(ctx)
 		if err != nil {

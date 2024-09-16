@@ -57,6 +57,7 @@ func (m *AuthMiddleware) Auth(ctx *fiber.Ctx) error {
 
 	// Сохранение данных пользователя в контексте
 	ctx.Locals("UserID", claims.UserID)
+	ctx.Locals("IsMob", claims.IsMob)
 
 	// Если привилегии проверены, выполняем следующего обработчика
 	return ctx.Next()

@@ -11,5 +11,6 @@ func RUN_NOTIFICATION_ROUTES(api fiber.Router, h *handlers.Handlers, m *middlewa
 	sms := api.Group("notifications")
 
 	sms.Post("/send", m.Permission.CheckPermission("send:notification"), h.Notification.SendNotificationsHandler)
-	sms.Post("/toggle", h.Notification.ToggleNotificationHandler)
+	sms.Post("/get-toggle-status", h.Notification.GetToggleNotificationHandler)
+	sms.Put("/toggle", h.Notification.ToggleNotificationHandler)
 }

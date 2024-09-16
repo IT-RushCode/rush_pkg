@@ -106,42 +106,50 @@ func (s *FirebaseService) ToggleNotificationStatus(userID, deviceToken string, e
 	return nil
 }
 
-// UpdateAnonymousToken обновляет или добавляет токен анонимного пользователя в Firestore
-func (s *FirebaseService) UpdateAnonymousToken(deviceToken string, enable bool) error {
+// GetToggleNotificationStatus получает текущий статус уведомлений для указанного токена устройства.
+func (s *FirebaseService) GetToggleNotificationStatus(userID, deviceToken string) (bool, error) {
 	ctx := context.Background()
 	client, err := s.App.Firestore(ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer client.Close()
 
-	// Проверяем, существует ли токен в коллекции users
-	query := client.Collection("users").Where("token", "==", deviceToken).Limit(1)
-	iter := query.Documents(ctx)
-	doc, err := iter.Next()
-	if err == nil && doc.Exists() {
-		// Токен существует, обновляем статус уведомлений
-		_, err = doc.Ref.Update(ctx, []firestore.Update{
-			{Path: "notifications_enabled", Value: enable},
-		})
-		if err != nil {
-			return err
-		}
-		log.Printf("Статус уведомлений для анонимного устройства %s обновлен на %v", deviceToken, enable)
+	var query firestore.Query
+
+	if userID != "" {
+		// Поиск по userID для авторизованных пользователей
+		query = client.Collection("users").Where("user_id", "==", userID).Where("token", "==", deviceToken).Limit(1)
 	} else {
-		// Токен не найден, добавляем новый документ
-		_, _, err = client.Collection("anonymous_tokens").Add(ctx, map[string]interface{}{
-			"token":                 deviceToken,
-			"notifications_enabled": enable,
-			"created_at":            time.Now(),
-		})
-		if err != nil {
-			return err
-		}
-		log.Printf("Новый анонимный токен устройства добавлен: %s", deviceToken)
+		// Поиск по токену для анонимных пользователей
+		query = client.Collection("users").Where("token", "==", deviceToken).Limit(1)
 	}
 
-	return nil
+	iter := query.Documents(ctx)
+	doc, err := iter.Next()
+	if err != nil {
+		if err == iterator.Done {
+			// Если документ не найден, возвращаем false и nil, так как статус не существует
+			log.Printf("Токен устройства не найден: %s", deviceToken)
+			return false, nil
+		}
+		return false, err
+	}
+
+	// Получаем текущий статус уведомлений
+	if doc.Exists() {
+		notificationsEnabled, ok := doc.Data()["notifications_enabled"].(bool)
+		if !ok {
+			// Если ключ не найден или имеет неверный тип, возвращаем false
+			log.Printf("Статус уведомлений для устройства %s не найден или имеет неверный тип", deviceToken)
+			return false, nil
+		}
+		log.Printf("Текущий статус уведомлений для устройства %s: %v", deviceToken, notificationsEnabled)
+		return notificationsEnabled, nil
+	}
+
+	// Возвращаем false, если токен не существует
+	return false, nil
 }
 
 // SendNotifications отправляет уведомления всем пользователям с включенными уведомлениями

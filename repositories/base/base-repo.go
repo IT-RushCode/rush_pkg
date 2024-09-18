@@ -18,9 +18,9 @@ import (
 // BaseRepository интерфейс представляет базовый набор методов для работы с сущностями
 type BaseRepository interface {
 	GetAll(ctx context.Context, data interface{}, dto *dto.GetAllRequest, pagination bool, preloads ...string) (int64, error)
-	Create(ctx context.Context, data interface{}) error
+	Create(ctx context.Context, data interface{}, preloads ...string) error
 	FindByID(ctx context.Context, id uint, data interface{}, preloads ...string) error
-	Update(ctx context.Context, data interface{}) error
+	Update(ctx context.Context, data interface{}, preloads ...string) error
 	Delete(ctx context.Context, data interface{}) error
 	UpdateField(ctx context.Context, id uint, field string, value interface{}, data interface{}) error
 	SoftDelete(ctx context.Context, data interface{}) error
@@ -106,8 +106,13 @@ func (r *baseRepository) applyFilter(query *gorm.DB, field, value string) *gorm.
 }
 
 // Создание записи
-func (r *baseRepository) Create(ctx context.Context, data interface{}) error {
-	if err := r.db.WithContext(ctx).Create(data).Error; err != nil {
+func (r *baseRepository) Create(ctx context.Context, data interface{}, preloads ...string) error {
+	query := r.db.WithContext(ctx)
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+
+	if err := query.Create(data).Error; err != nil {
 		if err := utils.HandleDuplicateKeyError(err); err != nil {
 			return err
 		}
@@ -139,9 +144,13 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 }
 
 // Полное обновление
-func (r *baseRepository) Update(ctx context.Context, data interface{}) error {
-	if err := r.db.WithContext(ctx).
-		Updates(data).
+func (r *baseRepository) Update(ctx context.Context, data interface{}, preloads ...string) error {
+	query := r.db.WithContext(ctx)
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+
+	if err := query.Updates(data).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrRecordNotFound

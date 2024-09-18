@@ -14,7 +14,7 @@ import (
 )
 
 // ConvertToWebP конвертирует изображение в формат WebP.
-func ConvertToWebP(inputPath, outputPath string, lossless bool) error {
+func ConvertToWebP(inputPath, outputPath string, lossless bool, quality int) error {
 	// Открываем исходный файл изображения
 	file, err := os.Open(inputPath)
 	if err != nil {
@@ -46,7 +46,10 @@ func ConvertToWebP(inputPath, outputPath string, lossless bool) error {
 	var buf bytes.Buffer
 
 	// Кодируем изображение в формат WebP
-	options := &webp.Options{Lossless: lossless}
+	if quality == 0 {
+		quality = 85 // Установим качество на 85 для уменьшения размера
+	}
+	options := &webp.Options{Lossless: lossless, Quality: float32(quality)}
 	if err := webp.Encode(&buf, img, options); err != nil {
 		return fmt.Errorf("не удалось закодировать изображение в WebP: %v", err)
 	}

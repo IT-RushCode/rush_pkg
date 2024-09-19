@@ -15,14 +15,60 @@ import (
 // Константы ошибок
 var (
 	ErrFileType       = errors.New("необходимо указать один из допустимых типов (например, PDF, видео, изображения)")
-	ErrFileMaxSize    = errors.New("файл слишком большой. Максимальный размер 5 МБ")
-	ErrFileTypeFormat = errors.New("недопустимый тип файла (разрешены только JPG, JPEG, PNG, WEBP и другие)")
+	ErrFileMaxSize    = errors.New("файл слишком большой. Максимальный размер: ")
+	ErrFileTypeFormat = errors.New("недопустимый тип файла (разрешены только PDF, JPG, JPEG, PNG, WEBP и другие)")
 	ErrFileConvert    = errors.New("ошибка конвертации файла в WebP")
 	ErrUnprocessable  = errors.New("не удалось обработать файл")
 )
 
+// UploadFile - функция для обработки уже загруженного файла (например, конвертация)
+func UploadFile(savedFilePath string, options *FileUploadOptions) (string, string, error) {
+	ext := strings.ToLower(filepath.Ext(savedFilePath))
+	fileName := strings.TrimSuffix(filepath.Base(savedFilePath), ext)
+
+	// Если это изображение, конвертируем его в WebP
+	if ext == ".jpg" || ext == ".jpeg" || ext == ".png" {
+		webpFilePath := filepath.Join(options.BaseDir, fmt.Sprintf("%s.webp", fileName))
+		err := ConvertToWebP(savedFilePath, webpFilePath, options.Lossless, options.Quality)
+		if err != nil {
+			return "", "", fmt.Errorf("%w: %s", ErrFileConvert, err.Error()) // Ошибка конвертации файла
+		}
+
+		// Удаление оригинального файла после конвертации
+		os.Remove(savedFilePath)
+
+		// Возвращаем путь к WebP и имя файла
+		return webpFilePath, fileName, nil
+	}
+
+	// Возвращаем путь к файлу и имя файла для других типов файлов
+	return savedFilePath, fileName, nil
+}
+
+// UploadFileFromCtx - функция для сохранения файла на диск через Fiber контекст
+func UploadFileFromCtx(ctx *fiber.Ctx, formFieldName string, options *FileUploadOptions) (string, string, error) {
+	// Получение файла из контекста
+	file, err := ctx.FormFile(formFieldName)
+	if err == fiber.ErrUnprocessableEntity || file == nil {
+		return "", "", nil // Возвращаем nil, если файла нет
+	}
+
+	// Генерация уникального имени файла (UUID)
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	fileName := uuid.New().String()
+	filePath := filepath.Join(options.BaseDir, fmt.Sprintf("%s%s", fileName, ext))
+
+	// Сохраняем файл на диск
+	if err := ctx.SaveFile(file, filePath); err != nil {
+		return "", "", ErrSaveFile // Ошибка сохранения файла
+	}
+
+	// Возвращаем путь к файлу и имя файла
+	return filePath, fileName, nil
+}
+
 // UploadFile - универсальный метод для загрузки файлов
-func UploadFile(fileHeader *multipart.FileHeader, options *FileUploadOptions) (string, string, error) {
+func OldUploadFile(fileHeader *multipart.FileHeader, options *FileUploadOptions) (string, string, error) {
 	// Установка максимального размера по умолчанию, если не указан
 	if options.MaxSize == 0 {
 		options.MaxSize = 10 * 1024 * 1024 // 10 MB по умолчанию
@@ -30,7 +76,7 @@ func UploadFile(fileHeader *multipart.FileHeader, options *FileUploadOptions) (s
 
 	// Проверка размера файла
 	if fileHeader.Size > int64(options.MaxSize) {
-		return "", "", ErrFileMaxSize // Ошибка при превышении размера файла
+		return "", "", fmt.Errorf("%s%d%s", ErrFileMaxSize, options.MaxSize, " МБ") // Ошибка при превышении размера файла
 	}
 
 	// Проверка расширения файла
@@ -88,15 +134,14 @@ func UploadFile(fileHeader *multipart.FileHeader, options *FileUploadOptions) (s
 }
 
 // Обертка для загрузки файла через контекст fiber
-func UploadFileFromCtx(ctx *fiber.Ctx, formFieldName string, options *FileUploadOptions) (string, string, error) {
+func OldUploadFileFromCtx(ctx *fiber.Ctx, formFieldName string, options *FileUploadOptions) (string, string, error) {
 	// Получение файла из контекста
 	file, err := ctx.FormFile(formFieldName)
-	if file == nil {
-		return "", "", err // Ошибка загрузки файла
+	if err == fiber.ErrUnprocessableEntity || file == nil {
+		return "", "", nil // Возвращаем nil, если файла нет
 	}
-
 	// Используем основную функцию для загрузки файла
-	return UploadFile(file, options)
+	return OldUploadFile(file, options)
 }
 
 // FileUploadOptions - структура для хранения параметров загрузки файлов
@@ -109,10 +154,11 @@ type FileUploadOptions struct {
 }
 
 // DefaultImageOptions - параметры по умолчанию для изображений
-func DefaultImageOptions() *FileUploadOptions {
+func DefaultFileOptions() *FileUploadOptions {
 	return &FileUploadOptions{
-		MaxSize: 5 * 1024 * 1024, // 5 MB
+		MaxSize: 10 * 1024 * 1024, // 10 MB
 		AllowedTypes: map[string]bool{
+			".pdf":  true,
 			".jpg":  true,
 			".jpeg": true,
 			".png":  true,
@@ -132,16 +178,6 @@ func DefaultVideoOptions() *FileUploadOptions {
 			".mov": true,
 			".avi": true,
 			".mkv": true,
-		},
-	}
-}
-
-// DefaultPDFOptions - параметры по умолчанию для PDF
-func DefaultPDFOptions() *FileUploadOptions {
-	return &FileUploadOptions{
-		MaxSize: 10 * 1024 * 1024, // 10 MB
-		AllowedTypes: map[string]bool{
-			".pdf": true,
 		},
 	}
 }

@@ -69,8 +69,10 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 	// Получить общее количество записей
 	if err := query.Count(&count).Error; err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 42703") {
+			log.Print(err)
 			return 0, extractFieldFromError(err)
 		}
+		log.Print(err)
 		return 0, utils.ErrInternal
 	}
 
@@ -80,6 +82,7 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 	}
 
 	if err := query.Find(data).Error; err != nil {
+		log.Print(err)
 		return 0, utils.ErrInternal
 	}
 
@@ -116,6 +119,7 @@ func (r *baseRepository) Create(ctx context.Context, data interface{}, preloads 
 		if err := utils.HandleDuplicateKeyError(err); err != nil {
 			return err
 		}
+		log.Print(err)
 		return utils.ErrInternal
 	}
 	return nil
@@ -138,6 +142,7 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrRecordNotFound
 		}
+		log.Print(err)
 		return utils.ErrInternal
 	}
 	return nil
@@ -153,11 +158,14 @@ func (r *baseRepository) Update(ctx context.Context, data interface{}, preloads 
 	if err := query.Updates(data).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Print(err)
 			return utils.ErrRecordNotFound
 		}
 		if err := utils.HandleDuplicateKeyError(err); err != nil {
+			log.Print(err)
 			return err
 		}
+		log.Print(err)
 		return utils.ErrInternal
 	}
 
@@ -165,8 +173,10 @@ func (r *baseRepository) Update(ctx context.Context, data interface{}, preloads 
 		First(data).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Print(err)
 			return utils.ErrRecordNotFound
 		}
+		log.Print(err)
 		return utils.ErrInternal
 	}
 
@@ -181,14 +191,18 @@ func (r *baseRepository) UpdateField(ctx context.Context, id uint, field string,
 		Update(field, value).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Print(err)
 			return utils.ErrRecordNotFound
 		}
+		log.Print(err)
 		return utils.ErrInternal
 	}
 	if err := r.db.WithContext(ctx).First(data, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Print(err)
 			return utils.ErrRecordNotFound
 		}
+		log.Print(err)
 		return utils.ErrInternal
 	}
 	return nil
@@ -199,8 +213,10 @@ func (r *baseRepository) Delete(ctx context.Context, data interface{}) error {
 	err := r.db.WithContext(ctx).Delete(data).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Print(err)
 			return utils.ErrRecordNotFound
 		}
+		log.Print(err)
 		return utils.ErrInternal
 	}
 	return nil
@@ -213,8 +229,10 @@ func (r *baseRepository) SoftDelete(ctx context.Context, data interface{}) error
 		Update("deleted_at", gorm.DeletedAt{}).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Print(err)
 			return utils.ErrRecordNotFound
 		}
+		log.Print(err)
 		return utils.ErrInternal
 	}
 	return nil
@@ -228,6 +246,7 @@ func (r *baseRepository) Filter(ctx context.Context, filters map[string]interfac
 	}
 
 	if err := query.Find(entities).Error; err != nil {
+		log.Print(err)
 		return utils.ErrInternal
 	}
 	return nil

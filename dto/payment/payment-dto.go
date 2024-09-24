@@ -1,15 +1,10 @@
 package payment
 
 type PaymentRequest struct {
-	PaymentMethod string `json:"paymentMethod,omitempty"`
-	PointID       uint   `json:"pointId"`
-	Amount        string `json:"amount"`
-	Currency      string `json:"currency"`
-	Description   string `json:"description"`
-	CardNumber    string `json:"cardNumber,omitempty"`
-	ExpiryMonth   string `json:"expiryMonth,omitempty"`
-	ExpiryYear    string `json:"expiryYear,omitempty"`
-	Cvc           string `json:"cvc,omitempty"`
-	PhoneNumber   string `json:"phoneNumber,omitempty"`
-	ReturnURL     string `json:"returnUrl"`
+	PointID     uint   `json:"pointId" validate:"required"`
+	Amount      string `json:"amount" validate:"required"`
+	Currency    string `json:"currency" validate:"required"`
+	OrderNumber string `json:"orderNumber" validate:"required"`
+	ReturnURL   string `json:"returnUrl" validate:"required"`
+	Description string `json:"description" validate:"required"`
 }

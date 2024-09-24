@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -28,20 +29,23 @@ func ValidateStruct(data interface{}) error {
 
 		errors := err.(validator.ValidationErrors)
 		for i, err := range errors {
+			// Получаем имя поля из тега json
+			fieldName := getJSONTag(data, err.StructField())
+
 			// Формирование детализированного сообщения об ошибке
 			switch err.Tag() {
 			case "required":
-				errMsg.WriteString(fmt.Sprintf("Поле '%s' обязательно для заполнения", err.Field()))
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' обязательно для заполнения", fieldName))
 			case "email":
-				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно быть валидным email адресом", err.Field()))
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно быть валидным email адресом", fieldName))
 			case "min":
-				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно содержать минимум %s символов", err.Field(), err.Param()))
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно содержать минимум %s символов", fieldName, err.Param()))
 			case "max":
-				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно содержать не более %s символов", err.Field(), err.Param()))
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно содержать не более %s символов", fieldName, err.Param()))
 			case "phone":
-				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно быть валидным номером телефона (+7XXXXXXXXXX)", err.Field()))
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно быть валидным номером телефона (+7XXXXXXXXXX)", fieldName))
 			default:
-				errMsg.WriteString(fmt.Sprintf("Поле '%s' не прошло валидацию: %s", err.Field(), err.Tag()))
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' не прошло валидацию: %s", fieldName, err.Tag()))
 			}
 
 			if i < len(errors)-1 {
@@ -55,6 +59,29 @@ func ValidateStruct(data interface{}) error {
 	}
 
 	return nil
+}
+
+// Функция для извлечения имени поля из тега json
+func getJSONTag(data interface{}, fieldName string) string {
+	// Получаем тип переданной структуры
+	val := reflect.TypeOf(data)
+	// Проверяем, является ли она указателем, и получаем значение, если это так
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	// Получаем поле по имени
+	field, ok := val.FieldByName(fieldName)
+	if !ok {
+		// Если поле не найдено, возвращаем исходное имя структуры
+		return fieldName
+	}
+	// Извлекаем тег json
+	jsonTag := field.Tag.Get("json")
+	if jsonTag == "" {
+		return fieldName
+	}
+	// В случае наличия нескольких тегов (например, `json:"field,omitempty"`), берем первое слово
+	return strings.Split(jsonTag, ",")[0]
 }
 
 // validatePhone проверяет формат телефонного номера

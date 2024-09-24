@@ -15,7 +15,6 @@ import (
 // subject - заголовок письма
 //
 // body - текст письма
-
 func SendEmail(cfg *config.MailConfig, to, subject, body string) error {
 	message := fmt.Sprintf(
 		"From: %s <%s>\nTo: %s\nSubject: %s\n\n%s",

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -193,5 +194,48 @@ func (s *FirebaseService) SendNotifications(title, message string) error {
 	}
 
 	log.Println("Уведомления отправлены пользователям.")
+	return nil
+}
+
+// SendNotificationToUser отправляет уведомление конкретному пользователю на основе его userID
+func (s *FirebaseService) SendNotificationToUser(userID, title, message string) error {
+	ctx := context.Background()
+	client, err := s.App.Firestore(ctx)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	// Поиск токена устройства по userID
+	iter := client.Collection("users").Where("user_id", "==", userID).Where("notifications_enabled", "==", true).Documents(ctx)
+	messagingClient, err := s.App.Messaging(ctx)
+	if err != nil {
+		return err
+	}
+
+	doc, err := iter.Next()
+	if err != nil {
+		if err == iterator.Done {
+			return fmt.Errorf("у пользователя с userID %s нет доступных устройств с включенными уведомлениями", userID)
+		}
+		return err
+	}
+
+	token := doc.Data()["token"].(string)
+	msg := &messaging.Message{
+		Token: token,
+		Notification: &messaging.Notification{
+			Title: title,
+			Body:  message,
+		},
+	}
+
+	_, err = messagingClient.Send(ctx, msg)
+	if err != nil {
+		log.Printf("Ошибка при отправке уведомления на токен %s: %v", token, err)
+		return err
+	}
+
+	log.Printf("Уведомление отправлено пользователю с userID %s", userID)
 	return nil
 }

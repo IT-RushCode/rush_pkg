@@ -68,7 +68,7 @@ func (h *NotificationHandler) ToggleNotificationHandler(ctx *fiber.Ctx) error {
 	return utils.SuccessResponse(ctx, "Статус уведомлений успешно обновлен", nil)
 }
 
-// ToggleNotificationHandler обрабатывает запрос на добавление и управление статусом уведомлений
+// GetToggleNotification получает текущий статус уведомлений для указанного токена устройства.
 func (h *NotificationHandler) GetToggleNotificationHandler(ctx *fiber.Ctx) error {
 	var req struct {
 		UserID      string `json:"userId"`      // Поле для авторизованных пользователей, может быть пустым для анонимных
@@ -90,4 +90,25 @@ func (h *NotificationHandler) GetToggleNotificationHandler(ctx *fiber.Ctx) error
 	}
 
 	return utils.SuccessResponse(ctx, utils.Success, Status{NotificationStatus: status})
+}
+
+// SendNotificationToUserHandler обрабатывает запрос на отправку уведомления одному пользователю
+func (h *NotificationHandler) SendNotificationToUserHandler(ctx *fiber.Ctx) error {
+	var req struct {
+		UserID  string `json:"userId"`
+		Title   string `json:"title"`
+		Message string `json:"message"`
+	}
+
+	if err := ctx.BodyParser(&req); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
+	}
+
+	// Вызов сервиса для отправки уведомления конкретному пользователю
+	err := h.srv.Firebase.SendNotificationToUser(req.UserID, req.Title, req.Message)
+	if err != nil {
+		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при отправке уведомления: "+err.Error(), nil)
+	}
+
+	return utils.SuccessResponse(ctx, "Уведомление успешно отправлено", nil)
 }

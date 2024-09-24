@@ -1,6 +1,6 @@
 module github.com/IT-RushCode/rush_pkg
 
-go 1.23
+go 1.23.1
 
 require (
 	cloud.google.com/go/firestore v1.15.0

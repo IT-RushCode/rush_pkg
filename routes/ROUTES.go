@@ -20,7 +20,6 @@ func RUN_YOOKASSA_PAYMENT_ROUTES(
 	m *middlewares.Middlewares,
 ) {
 	yookassa.RUN_YOOKASSA_SETTINGS_ROUTES(api, ctrl, m)
-	yookassa.RUN_PAYMENT_ROUTES(api, h)
 }
 
 // РОУТЫ SMS

@@ -7,7 +7,6 @@ import (
 )
 
 type Handlers struct {
-	Payment      *PaymentHandler
 	Sms          *SmsHandler
 	Notification *NotificationHandler
 }
@@ -18,7 +17,6 @@ func NewHandlers(
 	srv *services.Services,
 ) *Handlers {
 	return &Handlers{
-		Payment:      NewPaymentHandler(srv),
 		Sms:          NewSMSHandler(cfg, srv, repo.Redis),
 		Notification: NewNotificationHandler(cfg, srv, repo.Redis),
 	}

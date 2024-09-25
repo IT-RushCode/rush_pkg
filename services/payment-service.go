@@ -2,12 +2,10 @@ package services
 
 import (
 	"context"
-	"fmt"
 
 	dto "github.com/IT-RushCode/rush_pkg/dto/payment"
 	"github.com/IT-RushCode/rush_pkg/models"
 	"github.com/IT-RushCode/rush_pkg/repositories"
-	"github.com/IT-RushCode/rush_pkg/utils"
 
 	yookassa "github.com/rvinnie/yookassa-sdk-go/yookassa"
 	yoocommon "github.com/rvinnie/yookassa-sdk-go/yookassa/common"
@@ -22,20 +20,7 @@ func NewPaymentService(repo *repositories.Repositories) *PaymentService {
 	return &PaymentService{repo: repo}
 }
 
-func (s *PaymentService) CreatePayment(ctx context.Context, req *dto.PaymentRequest) (*yoopayment.Payment, error) {
-	if err := utils.ValidateStruct(req); err != nil {
-		return nil, err
-	}
-
-	store := &models.YooKassaSetting{}
-	if err := s.repo.YooKassaSetting.Filter(
-		ctx,
-		map[string]interface{}{"point_id": req.PointID},
-		store,
-	); err != nil {
-		return nil, fmt.Errorf("настройки YooKassa для PointID = %d не найдены", req.PointID)
-	}
-
+func (s *PaymentService) CreatePayment(ctx context.Context, store *models.YooKassaSetting, req *dto.PaymentRequest) (*yoopayment.Payment, error) {
 	client := yookassa.NewClient(store.StoreID, store.SecretKey)
 	paymentKassa := yookassa.NewPaymentHandler(client)
 
@@ -52,6 +37,7 @@ func (s *PaymentService) CreatePayment(ctx context.Context, req *dto.PaymentRequ
 			Type:      "redirect",
 			ReturnURL: req.ReturnURL,
 		},
+		Test: *store.IsTest,
 	})
 	if err != nil {
 		return nil, err

@@ -44,6 +44,8 @@ func ValidateStruct(data interface{}) error {
 				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно содержать не более %s символов", fieldName, err.Param()))
 			case "phone":
 				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно быть валидным номером телефона (+7XXXXXXXXXX)", fieldName))
+			case "required_if_false":
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' обязательно, если поле '%s' имеет значение false", fieldName, err.Param()))
 			default:
 				errMsg.WriteString(fmt.Sprintf("Поле '%s' не прошло валидацию: %s", fieldName, err.Tag()))
 			}
@@ -98,5 +100,30 @@ func registerCustomValidators(validate *validator.Validate) error {
 	if err := validate.RegisterValidation("phone", validatePhone); err != nil {
 		return err
 	}
+
+	// Регистрируем кастомный валидатор для логики зависимости полей
+	if err := validate.RegisterValidation("required_if_false", validateRequiredIfFalse); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// validateRequiredIfFalse проверяет, что одно поле обязательно, если другое имеет значение false
+func validateRequiredIfFalse(fl validator.FieldLevel) bool {
+	param := fl.Param() // Получаем имя зависимого поля
+	field := fl.Field() // Текущее поле
+
+	// Проверяем значение зависимого поля
+	otherField := fl.Parent().FieldByName(param)
+	if !otherField.IsValid() {
+		return false
+	}
+
+	// Если зависимое поле имеет значение false, текущее поле должно быть заполнено
+	if otherField.Kind() == reflect.Bool && !otherField.Bool() {
+		return field.Uint() != 0
+	}
+
+	return true
 }

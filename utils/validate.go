@@ -5,19 +5,24 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/go-playground/validator/v10"
 )
 
 var (
-	validate = validator.New()
+	validate  = validator.New()
+	once      sync.Once // Используем для того, чтобы регистрация произошла только один раз
 )
 
 func ValidateStruct(data interface{}) error {
-	// Регистрация кастомных валидаторов
-	if err := registerCustomValidators(validate); err != nil {
-		return fmt.Errorf("ошибка при регистрации кастомных валидаторов: %v", err)
-	}
+	// Используем sync.Once, чтобы гарантировать однократную регистрацию кастомных валидаторов
+	once.Do(func() {
+		err := registerCustomValidators(validate)
+		if err != nil {
+			panic(fmt.Sprintf("ошибка при регистрации кастомных валидаторов: %v", err))
+		}
+	})
 
 	err := validate.Struct(data)
 	if err != nil {

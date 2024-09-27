@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	validate  = validator.New()
-	once      sync.Once // Используем для того, чтобы регистрация произошла только один раз
+	validate = validator.New()
+	once     sync.Once // Используем для того, чтобы регистрация произошла только один раз
 )
 
 func ValidateStruct(data interface{}) error {

@@ -40,9 +40,6 @@ func NewAuthMiddleware(
 
 // VerifyToken выполняет основную проверку токена.
 func (m *AuthMiddleware) Auth(ctx *fiber.Ctx) error {
-	// Удаление последнего слеша
-	ctx.Path(strings.TrimRight(ctx.Path(), "/"))
-
 	// Проверка на публичный список маршрутов
 	if m.isPublicRoute(ctx) {
 		ctx.Locals("IsPublic", true)
@@ -65,8 +62,23 @@ func (m *AuthMiddleware) Auth(ctx *fiber.Ctx) error {
 
 // isPublicRoute проверяет, является ли маршрут и метод запросом в белом списке.
 func (m *AuthMiddleware) isPublicRoute(ctx *fiber.Ctx) bool {
+	path := ctx.Path()
+
+	// Специальная обработка корневого маршрута
+	if path == "/" || path == "" {
+		for _, method := range m.publicRoutes["/"] {
+			if method == "*" || ctx.Method() == method {
+				return true
+			}
+		}
+	}
+
+	// Удаление последнего слеша
+	path = strings.TrimRight(path, "/")
+
+	// Проверка других маршрутов
 	for route, methods := range m.publicRoutes {
-		if utils.IsRouteMatch(ctx.Path(), route) {
+		if utils.IsRouteMatch(path, route) {
 			for _, method := range methods {
 				if method == "*" || ctx.Method() == method {
 					return true

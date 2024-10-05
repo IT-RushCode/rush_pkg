@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // Notification
@@ -22,6 +24,16 @@ type Notifications []Notification
 
 func (Notification) TableName() string {
 	return "Notification"
+}
+
+func (a *Notification) BeforeCreate(tx *gorm.DB) (err error) {
+	// Проверка последовательности id в таблице при автоинкременте
+	err = tx.Exec("SELECT setval('\"Notifications_id_seq\"', (SELECT MAX(id) FROM \"Notifications\"));").Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // NotificationFilter определяет типы фильтров для выборки уведомлений

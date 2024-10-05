@@ -87,10 +87,10 @@ func (s *FirebaseService) sendFirebaseNotification(token, title, message string)
 
 // SendNotificationToUser отправляет уведомление конкретному пользователю и сохраняет его в базе данных
 // isGeneral определяет, общее это уведомление или личное
-func (s *FirebaseService) SendNotificationToUser(userID uint, title, message string, isGeneral bool) error {
+func (s *FirebaseService) SendNotificationToUser(userID uint, title, message string, isGeneral bool, notificationType models.NotificationType) error {
 	if isGeneral {
 		// Если уведомление общее, отправляем его всем пользователям
-		return s.SendNotifications(title, message)
+		return s.SendNotifications(title, message, notificationType)
 	}
 
 	// Проверяем статус уведомлений пользователя
@@ -115,8 +115,8 @@ func (s *FirebaseService) SendNotificationToUser(userID uint, title, message str
 		}
 	}
 
-	// Сохраняем уведомление в базе данных
-	err = s.Repo.Notification.SaveNotification(userID, "", title, message, false) // Личное уведомление
+	// Сохраняем уведомление в базе данных как личное с указанным типом
+	err = s.Repo.Notification.SaveNotification(userID, "", title, message, false, notificationType)
 	if err != nil {
 		log.Printf("Ошибка при сохранении уведомления для пользователя %d: %v", userID, err)
 		return err
@@ -127,7 +127,7 @@ func (s *FirebaseService) SendNotificationToUser(userID uint, title, message str
 }
 
 // SendNotifications отправляет общие уведомления всем пользователям с включенными уведомлениями через Firebase
-func (s *FirebaseService) SendNotifications(title, message string) error {
+func (s *FirebaseService) SendNotifications(title, message string, notificationType models.NotificationType) error {
 	// Получаем все устройства с включенными уведомлениями
 	tokens, err := s.Repo.Notification.GetEnabledDeviceTokens()
 	if err != nil {
@@ -142,8 +142,8 @@ func (s *FirebaseService) SendNotifications(title, message string) error {
 		}
 	}
 
-	// Сохраняем уведомление как общее
-	err = s.Repo.Notification.SaveNotification(0, "", title, message, true) // Общее уведомление
+	// Сохраняем уведомление как общее с указанным типом
+	err = s.Repo.Notification.SaveNotification(0, "", title, message, true, notificationType)
 	if err != nil {
 		log.Printf("Ошибка при сохранении общего уведомления: %v", err)
 		return err

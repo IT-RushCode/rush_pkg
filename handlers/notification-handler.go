@@ -37,8 +37,13 @@ func (h *NotificationHandler) SendNotificationsHandler(ctx *fiber.Ctx) error {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
 	}
 
-	// Вызов сервиса для отправки общих уведомлений
-	err := h.srv.Firebase.SendNotifications(req.Title, req.Message)
+	// Проверка типа уведомления
+	if req.Type == "" {
+		return utils.ErrorBadRequestResponse(ctx, "Необходимо указать тип уведомления", nil)
+	}
+
+	// Вызов сервиса для отправки общих уведомлений с указанным типом
+	err := h.srv.Firebase.SendNotifications(req.Title, req.Message, req.Type)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при отправке уведомлений: "+err.Error(), nil)
 	}
@@ -54,9 +59,14 @@ func (h *NotificationHandler) SendNotificationToUserHandler(ctx *fiber.Ctx) erro
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
 	}
 
+	// Проверка типа уведомления
+	if req.Type == "" {
+		return utils.ErrorBadRequestResponse(ctx, "Необходимо указать тип уведомления", nil)
+	}
+
 	if req.IsGeneral {
 		// Общее уведомление
-		err := h.srv.Firebase.SendNotifications(req.Title, req.Message)
+		err := h.srv.Firebase.SendNotifications(req.Title, req.Message, req.Type)
 		if err != nil {
 			return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при отправке общего уведомления: "+err.Error(), nil)
 		}
@@ -64,7 +74,7 @@ func (h *NotificationHandler) SendNotificationToUserHandler(ctx *fiber.Ctx) erro
 	}
 
 	// Личное уведомление
-	err := h.srv.Firebase.SendNotificationToUser(*req.UserID, req.Title, req.Message, req.IsGeneral)
+	err := h.srv.Firebase.SendNotificationToUser(*req.UserID, req.Title, req.Message, req.IsGeneral, req.Type)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при отправке личного уведомления: "+err.Error(), nil)
 	}
@@ -74,14 +84,20 @@ func (h *NotificationHandler) SendNotificationToUserHandler(ctx *fiber.Ctx) erro
 
 // ToggleNotificationHandler обрабатывает запрос на добавление и управление статусом уведомлений
 func (h *NotificationHandler) ToggleNotificationHandler(ctx *fiber.Ctx) error {
-	var req dto.ToggleNotificationDTO
+	// Используем CheckIsMobile для получения userId в зависимости от устройства
+	userId, err := utils.CheckIsMobile(ctx)
+	if err != nil {
+		return err // Ошибка будет возвращена из CheckIsMobile в нужном формате
+	}
 
+	var req dto.ToggleNotificationDTO
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
 	}
+	req.UserID = userId
 
 	// Вызов сервиса для обновления статуса уведомлений или добавления токена
-	err := h.srv.Firebase.ToggleNotificationStatus(req.UserID, req.DeviceToken, req.Enable)
+	err = h.srv.Firebase.ToggleNotificationStatus(req.UserID, req.DeviceToken, req.Enable)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при обновлении статуса уведомлений: "+err.Error(), nil)
 	}
@@ -118,7 +134,7 @@ func (h *NotificationHandler) GetGeneralNotificationsHandler(ctx *fiber.Ctx) err
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при получении общих уведомлений: "+err.Error(), nil)
 	}
 
-	return utils.SuccessResponse(ctx, "Общие уведомления успешно получены", notifications)
+	return utils.SuccessResponse(ctx, "Общие уведомления успешно получены", mapModelToDTO(notifications))
 }
 
 // GetUserNotificationsHandler обрабатывает запрос на получение личных уведомлений (и общих)
@@ -140,10 +156,13 @@ func (h *NotificationHandler) GetUserNotificationsHandler(ctx *fiber.Ctx) error 
 	switch req.Filter {
 	case 0:
 		filter = models.UserNotifications
+		req.UserID = &userId
 	case 1:
 		filter = models.GeneralNotifications
 	case 2:
 		filter = models.AllNotifications
+		req.UserID = &userId
+
 	default:
 		return utils.ErrorBadRequestResponse(ctx, "Неверное значение фильтра", nil)
 	}
@@ -154,5 +173,21 @@ func (h *NotificationHandler) GetUserNotificationsHandler(ctx *fiber.Ctx) error 
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при получении уведомлений: "+err.Error(), nil)
 	}
 
-	return utils.SuccessResponse(ctx, "Уведомления успешно получены", notifications)
+	return utils.SuccessResponse(ctx, "Уведомления успешно получены", mapModelToDTO(notifications))
+}
+
+func mapModelToDTO(notifications models.Notifications) []dto.NotificationResponseDTO {
+	res := make([]dto.NotificationResponseDTO, len(notifications))
+	for i, n := range notifications {
+		res[i] = dto.NotificationResponseDTO{
+			Id:        n.ID,
+			UserID:    n.UserID,
+			Title:     n.Title,
+			Message:   n.Message,
+			Type:      string(n.Type),
+			IsGeneral: n.IsGeneral,
+			SentAt:    n.SentAt,
+		}
+	}
+	return res
 }

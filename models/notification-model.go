@@ -41,8 +41,15 @@ const (
 	AllNotifications
 
 	// Типы уведомлений
-	BirthdayNotification  NotificationType = "birthday"
-	ReminderNotification  NotificationType = "reminder"
-	GeneralNotification   NotificationType = "general"
+	// BirthdayNotification используется для уведомлений, связанных с днями рождения
+	BirthdayNotification NotificationType = "birthday"
+
+	// ReminderNotification используется для уведомлений, напоминающих о каком-либо событии
+	ReminderNotification NotificationType = "reminder"
+
+	// GeneralNotification используется для общих уведомлений, которые не привязаны к конкретному пользователю
+	GeneralNotification NotificationType = "general"
+
+	// PromotionNotification используется для уведомлений о скидках, акциях и специальных предложениях
 	PromotionNotification NotificationType = "promotion"
 )

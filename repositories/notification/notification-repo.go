@@ -9,7 +9,7 @@ import (
 
 // NotificationRepository определяет методы для работы с уведомлениями в базе данных
 type NotificationRepository interface {
-	SaveNotification(userID uint, deviceToken, title, message string, isGeneral bool) error
+	SaveNotification(userID uint, deviceToken, title, message string, isGeneral bool, notificationType models.NotificationType) error
 	ToggleNotificationStatus(userID uint, deviceToken string, enable bool) error
 	GetNotificationStatus(userID uint, deviceToken string) (bool, error)
 	GetEnabledDeviceTokens() ([]string, error)
@@ -29,13 +29,15 @@ func NewNotificationRepository(db *gorm.DB) NotificationRepository {
 }
 
 // SaveNotification сохраняет уведомление в базу данных
-func (r *notificationRepository) SaveNotification(userID uint, deviceToken, title, message string, isGeneral bool) error {
+// userID = 0 для общих уведомлений
+func (r *notificationRepository) SaveNotification(userID uint, deviceToken, title, message string, isGeneral bool, notificationType models.NotificationType) error {
 	notification := models.Notification{
 		UserID:      &userID,
 		DeviceToken: &deviceToken,
 		Title:       title,
 		Message:     message,
 		IsGeneral:   isGeneral,
+		Type:        notificationType, // Указываем тип уведомления
 		SentAt:      time.Now(),
 	}
 	return r.db.Create(&notification).Error

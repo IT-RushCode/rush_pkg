@@ -3,44 +3,45 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"strings"
-	"time"
 
-	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
-
 	"github.com/IT-RushCode/rush_pkg/config"
+	"github.com/IT-RushCode/rush_pkg/models"
+	"github.com/IT-RushCode/rush_pkg/repositories"
+	"google.golang.org/api/option"
 )
 
-// FirebaseService предоставляет методы для работы с Firebase
+// FirebaseService предоставляет методы для работы с уведомлениями через Firebase
 type FirebaseService struct {
-	App *firebase.App
+	Repo     *repositories.Repositories
+	Firebase *firebase.App
 }
 
-// NewFirebaseService создает новый экземпляр FirebaseService с данными из конфигурации
-func NewFirebaseService(cfg *config.FirebaseConfig) (*FirebaseService, error) {
+// NewFirebaseService создает новый экземпляр FirebaseService с интеграцией Firebase и локальной базой
+func NewFirebaseService(repo *repositories.Repositories, cfg *config.FirebaseConfig) (*FirebaseService, error) {
 	credsJSON, err := convertConfigToCredentialsJSON(*cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	opt := option.WithCredentialsJSON(credsJSON)
-	app, err := firebase.NewApp(context.Background(), nil, opt)
+	fbApp, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		return nil, err
 	}
 
-	return &FirebaseService{App: app}, nil
+	return &FirebaseService{
+		Repo:     repo,
+		Firebase: fbApp,
+	}, nil
 }
 
 // convertConfigToCredentialsJSON формирует JSON для аутентификации Firebase из конфигурации
 func convertConfigToCredentialsJSON(cfg config.FirebaseConfig) ([]byte, error) {
-	credentials := map[string]string{
+	return json.Marshal(map[string]string{
 		"type":                        "service_account",
 		"project_id":                  cfg.PROJECT_ID,
 		"private_key_id":              cfg.PRIVATE_KEY_ID,
@@ -52,176 +53,19 @@ func convertConfigToCredentialsJSON(cfg config.FirebaseConfig) ([]byte, error) {
 		"auth_provider_x509_cert_url": cfg.AUTH_PROVIDER_X509_CERT_URL,
 		"client_x509_cert_url":        cfg.CLIENT_X509_CERT_URL,
 		"universe_domain":             "googleapis.com",
-	}
-
-	return json.Marshal(credentials)
+	})
 }
 
-// ToggleNotificationStatus обновляет статус уведомлений для указанного токена устройства
-func (s *FirebaseService) ToggleNotificationStatus(userID, deviceToken string, enable bool) error {
+// sendFirebaseNotification отправляет уведомление через Firebase Cloud Messaging
+func (s *FirebaseService) sendFirebaseNotification(token, title, message string) error {
 	ctx := context.Background()
-	client, err := s.App.Firestore(ctx)
+	client, err := s.Firebase.Messaging(ctx)
 	if err != nil {
-		return err
-	}
-	defer client.Close()
-
-	var query firestore.Query
-
-	if userID != "" {
-		// Поиск по userID для авторизованных пользователей
-		query = client.Collection("users").Where("user_id", "==", userID).Where("token", "==", deviceToken).Limit(1)
-	} else {
-		// Поиск по токену для анонимных пользователей
-		query = client.Collection("users").Where("token", "==", deviceToken).Limit(1)
-	}
-
-	iter := query.Documents(ctx)
-	doc, err := iter.Next()
-	if err == nil && doc.Exists() {
-		// Токен существует, обновляем статус уведомлений
-		_, err = doc.Ref.Update(ctx, []firestore.Update{
-			{Path: "notifications_enabled", Value: enable},
-		})
-		if err != nil {
-			return err
-		}
-		log.Printf("Статус уведомлений для устройства %s обновлен на %v", deviceToken, enable)
-	} else {
-		// Токен не найден, добавляем новый документ
-		userData := map[string]interface{}{
-			"token":                 deviceToken,
-			"notifications_enabled": enable,
-			"created_at":            time.Now(),
-		}
-		if userID != "" {
-			userData["user_id"] = userID
-		}
-		_, _, err = client.Collection("users").Add(ctx, userData)
-		if err != nil {
-			return err
-		}
-		log.Printf("Новый токен устройства добавлен: %s", deviceToken)
-	}
-
-	return nil
-}
-
-// GetToggleNotificationStatus получает текущий статус уведомлений для указанного токена устройства.
-func (s *FirebaseService) GetToggleNotificationStatus(userID, deviceToken string) (bool, error) {
-	ctx := context.Background()
-	client, err := s.App.Firestore(ctx)
-	if err != nil {
-		return false, err
-	}
-	defer client.Close()
-
-	var query firestore.Query
-
-	if userID != "" {
-		// Поиск по userID для авторизованных пользователей
-		query = client.Collection("users").Where("user_id", "==", userID).Where("token", "==", deviceToken).Limit(1)
-	} else {
-		// Поиск по токену для анонимных пользователей
-		query = client.Collection("users").Where("token", "==", deviceToken).Limit(1)
-	}
-
-	iter := query.Documents(ctx)
-	doc, err := iter.Next()
-	if err != nil {
-		if err == iterator.Done {
-			// Если документ не найден, возвращаем false и nil, так как статус не существует
-			log.Printf("Токен устройства не найден: %s", deviceToken)
-			return false, nil
-		}
-		return false, err
-	}
-
-	// Получаем текущий статус уведомлений
-	if doc.Exists() {
-		notificationsEnabled, ok := doc.Data()["notifications_enabled"].(bool)
-		if !ok {
-			// Если ключ не найден или имеет неверный тип, возвращаем false
-			log.Printf("Статус уведомлений для устройства %s не найден или имеет неверный тип", deviceToken)
-			return false, nil
-		}
-		log.Printf("Текущий статус уведомлений для устройства %s: %v", deviceToken, notificationsEnabled)
-		return notificationsEnabled, nil
-	}
-
-	// Возвращаем false, если токен не существует
-	return false, nil
-}
-
-// SendNotifications отправляет уведомления всем пользователям с включенными уведомлениями
-func (s *FirebaseService) SendNotifications(title, message string) error {
-	ctx := context.Background()
-	client, err := s.App.Firestore(ctx)
-	if err != nil {
-		return err
-	}
-	defer client.Close()
-
-	// Поиск всех токенов с включенными уведомлениями
-	iter := client.Collection("users").Where("notifications_enabled", "==", true).Documents(ctx)
-	messagingClient, err := s.App.Messaging(ctx)
-	if err != nil {
+		log.Printf("Ошибка при создании клиента Firebase Messaging: %v", err)
 		return err
 	}
 
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		token := doc.Data()["token"].(string)
-		msg := &messaging.Message{
-			Token: token,
-			Notification: &messaging.Notification{
-				Title: title,
-				Body:  message,
-			},
-		}
-
-		_, err = messagingClient.Send(ctx, msg)
-		if err != nil {
-			log.Printf("Ошибка при отправке уведомления на токен %s: %v", token, err)
-		}
-	}
-
-	log.Println("Уведомления отправлены пользователям.")
-	return nil
-}
-
-// SendNotificationToUser отправляет уведомление конкретному пользователю на основе его userID
-func (s *FirebaseService) SendNotificationToUser(userID, title, message string) error {
-	ctx := context.Background()
-	client, err := s.App.Firestore(ctx)
-	if err != nil {
-		return err
-	}
-	defer client.Close()
-
-	// Поиск токена устройства по userID
-	iter := client.Collection("users").Where("user_id", "==", userID).Where("notifications_enabled", "==", true).Documents(ctx)
-	messagingClient, err := s.App.Messaging(ctx)
-	if err != nil {
-		return err
-	}
-
-	doc, err := iter.Next()
-	if err != nil {
-		if err == iterator.Done {
-			return fmt.Errorf("у пользователя с userID %s нет доступных устройств с включенными уведомлениями", userID)
-		}
-		return err
-	}
-
-	token := doc.Data()["token"].(string)
+	// Структура уведомления для отправки
 	msg := &messaging.Message{
 		Token: token,
 		Notification: &messaging.Notification{
@@ -230,12 +74,116 @@ func (s *FirebaseService) SendNotificationToUser(userID, title, message string) 
 		},
 	}
 
-	_, err = messagingClient.Send(ctx, msg)
+	// Отправка уведомления
+	response, err := client.Send(ctx, msg)
 	if err != nil {
-		log.Printf("Ошибка при отправке уведомления на токен %s: %v", token, err)
+		log.Printf("Ошибка при отправке уведомления на устройство %s: %v", token, err)
 		return err
 	}
 
-	log.Printf("Уведомление отправлено пользователю с userID %s", userID)
+	log.Printf("Уведомление успешно отправлено на устройство %s: %s", token, response)
 	return nil
+}
+
+// SendNotificationToUser отправляет уведомление конкретному пользователю и сохраняет его в базе данных
+// isGeneral определяет, общее это уведомление или личное
+func (s *FirebaseService) SendNotificationToUser(userID uint, title, message string, isGeneral bool) error {
+	if isGeneral {
+		// Если уведомление общее, отправляем его всем пользователям
+		return s.SendNotifications(title, message)
+	}
+
+	// Проверяем статус уведомлений пользователя
+	status, err := s.Repo.Notification.GetNotificationStatus(userID, "")
+	if err != nil || !status {
+		log.Printf("У пользователя с userID %d нет доступных устройств или уведомления отключены", userID)
+		return err
+	}
+
+	// Получаем токен устройства с включенными уведомлениями
+	deviceTokens, err := s.Repo.Notification.GetEnabledDeviceTokens()
+	if err != nil || len(deviceTokens) == 0 {
+		log.Printf("Нет доступных токенов для пользователя с userID %d", userID)
+		return err
+	}
+
+	// Отправляем уведомление через Firebase для каждого токена
+	for _, token := range deviceTokens {
+		if err := s.sendFirebaseNotification(token, title, message); err != nil {
+			log.Printf("Ошибка при отправке уведомления пользователю с userID %d: %v", userID, err)
+			return err
+		}
+	}
+
+	// Сохраняем уведомление в базе данных
+	err = s.Repo.Notification.SaveNotification(userID, "", title, message, false) // Личное уведомление
+	if err != nil {
+		log.Printf("Ошибка при сохранении уведомления для пользователя %d: %v", userID, err)
+		return err
+	}
+
+	log.Printf("Личное уведомление отправлено и сохранено для пользователя с userID %d", userID)
+	return nil
+}
+
+// SendNotifications отправляет общие уведомления всем пользователям с включенными уведомлениями через Firebase
+func (s *FirebaseService) SendNotifications(title, message string) error {
+	// Получаем все устройства с включенными уведомлениями
+	tokens, err := s.Repo.Notification.GetEnabledDeviceTokens()
+	if err != nil {
+		log.Printf("Ошибка при получении токенов устройств: %v", err)
+		return err
+	}
+
+	for _, token := range tokens {
+		// Отправляем уведомление через Firebase
+		if err := s.sendFirebaseNotification(token, title, message); err != nil {
+			log.Printf("Ошибка при отправке уведомления на устройство с токеном %s: %v", token, err)
+		}
+	}
+
+	// Сохраняем уведомление как общее
+	err = s.Repo.Notification.SaveNotification(0, "", title, message, true) // Общее уведомление
+	if err != nil {
+		log.Printf("Ошибка при сохранении общего уведомления: %v", err)
+		return err
+	}
+
+	log.Println("Общие уведомления отправлены и сохранены.")
+	return nil
+}
+
+// ToggleNotificationStatus обновляет статус уведомлений для пользователя
+func (s *FirebaseService) ToggleNotificationStatus(userID uint, deviceToken string, enable bool) error {
+	err := s.Repo.Notification.ToggleNotificationStatus(userID, deviceToken, enable)
+	if err != nil {
+		log.Printf("Ошибка при обновлении статуса уведомлений: %v", err)
+		return err
+	}
+
+	log.Printf("Статус уведомлений для устройства %s обновлен на %v", deviceToken, enable)
+	return nil
+}
+
+// GetNotificationStatus получает текущий статус уведомлений для устройства
+func (s *FirebaseService) GetNotificationStatus(userID uint, deviceToken string) (bool, error) {
+	status, err := s.Repo.Notification.GetNotificationStatus(userID, deviceToken)
+	if err != nil {
+		log.Printf("Ошибка при получении статуса уведомлений: %v", err)
+		return false, err
+	}
+	return status, nil
+}
+
+// GetNotifications возвращает уведомления для пользователя в зависимости от фильтра
+// Если userID или deviceToken == "", возвращаем только общие уведомления
+func (s *FirebaseService) GetNotifications(userID uint, deviceToken *string, filter models.NotificationFilter) ([]models.Notification, error) {
+	// Получаем уведомления с использованием фильтра
+	notifications, err := s.Repo.Notification.GetNotificationsByUserID(&userID, deviceToken, filter)
+	if err != nil {
+		log.Printf("Ошибка при получении уведомлений: %v", err)
+		return nil, err
+	}
+
+	return notifications, nil
 }

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	rpBase "github.com/IT-RushCode/rush_pkg/repositories/base"
+	rpNtf "github.com/IT-RushCode/rush_pkg/repositories/notification"
 	rpYKassa "github.com/IT-RushCode/rush_pkg/repositories/yookassa"
 	"github.com/IT-RushCode/rush_pkg/storage"
 	"github.com/redis/go-redis/v9"
@@ -9,14 +10,16 @@ import (
 
 // Флаги для определения, какие репозитории инициализировать
 type RepoFlags struct {
-	InitYKassaRepo bool // Инициализировать ли YKassa репозиторий
-	InitCacheRepo  bool // Инициализировать ли кэш-репозиторий Redis
-	InitMongoRepo  bool // Инициализировать ли MongoDB репозиторий
+	InitYKassaRepo       bool // Инициализировать ли YKassa репозиторий
+	InitNotificationRepo bool // Инициализировать ли Notification репозиторий
+	InitCacheRepo        bool // Инициализировать ли кэш-репозиторий Redis
+	InitMongoRepo        bool // Инициализировать ли MongoDB репозиторий
 }
 
 // Все репозитории
 type Repositories struct {
 	YooKassaSetting rpYKassa.YooKassaSettingRepository
+	Notification    rpNtf.NotificationRepository
 
 	Redis *redis.Client
 
@@ -33,9 +36,14 @@ func NewRepositories(
 
 	repos := &Repositories{}
 
-	// Инициализация репозиториев для авторизации
+	// Инициализация репозиториев для YooKassaSetting
 	if flags.InitYKassaRepo {
 		repos.YooKassaSetting = rpYKassa.NewYooKassaSettingRepository(DB)
+	}
+
+	// Инициализация репозиториев для Notification
+	if flags.InitNotificationRepo {
+		repos.Notification = rpNtf.NewNotificationRepository(DB)
 	}
 
 	// Инициализация кэш-репозитория Redis

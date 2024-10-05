@@ -3,7 +3,6 @@ module github.com/IT-RushCode/rush_pkg
 go 1.23.1
 
 require (
-	cloud.google.com/go/firestore v1.15.0
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/chai2010/webp v1.1.1
 	github.com/go-playground/validator/v10 v10.22.0
@@ -34,6 +33,7 @@ require (
 require (
 	cloud.google.com/go v0.112.1 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
+	cloud.google.com/go/firestore v1.15.0 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
 	cloud.google.com/go/longrunning v0.5.5 // indirect
 	cloud.google.com/go/storage v1.38.0 // indirect

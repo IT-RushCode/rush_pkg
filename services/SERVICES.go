@@ -15,7 +15,7 @@ type Services struct {
 }
 
 func NewServices(cfg *config.Config, repo *repositories.Repositories) *Services {
-	fbSrv, err := NewFirebaseService(&cfg.FIREBASE)
+	fbSrv, err := NewFirebaseService(repo, &cfg.FIREBASE)
 	if err != nil {
 		log.Println(err)
 	}

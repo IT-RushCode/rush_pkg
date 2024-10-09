@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"errors"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -12,7 +10,14 @@ func CheckIsMobile(ctx *fiber.Ctx) (uint, error) {
 	var userId uint
 	var err error
 
-	if ctx.Locals("IsMob").(bool) {
+	// Безопасно извлекаем значение из контекста
+	isMob, ok := ctx.Locals("IsMob").(bool)
+	if !ok {
+		// Если значение IsMob не найдено или не является bool
+		isMob = false
+	}
+
+	if isMob {
 		// Получение userId из локальных данных контекста
 		userId, err = GetUserIDFromLocals(ctx)
 		if err != nil {
@@ -24,10 +29,9 @@ func CheckIsMobile(ctx *fiber.Ctx) (uint, error) {
 		if queryUserId == 0 {
 			return 0, ErrorBadRequestResponse(
 				ctx,
-				errors.New("необходимо указать userId").Error(),
+				"Необходимо указать userId",
 				nil,
 			)
-
 		}
 		userId = uint(queryUserId)
 	}

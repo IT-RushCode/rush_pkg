@@ -30,6 +30,22 @@ func NewNotificationHandler(
 }
 
 // SendNotificationsHandler обрабатывает запрос на отправку общих уведомлений
+func (h *NotificationHandler) SendNotificationsByIdHandler(ctx *fiber.Ctx) error {
+	id, err := ctx.ParamsInt("id")
+	if err != nil {
+		return err
+	}
+
+	// Вызов сервиса для отправки общих уведомлений с указанным типом
+	err = h.srv.Firebase.SendCreatedNotifications(ctx.Context(), uint(id))
+	if err != nil {
+		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при отправке уведомлений: "+err.Error(), nil)
+	}
+
+	return utils.SuccessResponse(ctx, "Общие уведомления успешно отправлены", nil)
+}
+
+// SendNotificationsHandler обрабатывает запрос на отправку общих уведомлений
 func (h *NotificationHandler) SendNotificationsHandler(ctx *fiber.Ctx) error {
 	var req dto.SendGeneralNotificationDTO
 
@@ -37,13 +53,8 @@ func (h *NotificationHandler) SendNotificationsHandler(ctx *fiber.Ctx) error {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
 	}
 
-	// Проверка типа уведомления
-	if req.Type == "" {
-		return utils.ErrorBadRequestResponse(ctx, "Необходимо указать тип уведомления", nil)
-	}
-
 	// Вызов сервиса для отправки общих уведомлений с указанным типом
-	err := h.srv.Firebase.SendNotifications(req.Title, req.Message, req.Type)
+	err := h.srv.Firebase.SendNotifications(ctx.Context(), req.Title, req.Message, models.GeneralNotification)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при отправке уведомлений: "+err.Error(), nil)
 	}
@@ -53,10 +64,13 @@ func (h *NotificationHandler) SendNotificationsHandler(ctx *fiber.Ctx) error {
 
 // SendNotificationToUserHandler обрабатывает запрос на отправку уведомления одному пользователю или общего уведомления
 func (h *NotificationHandler) SendNotificationToUserHandler(ctx *fiber.Ctx) error {
-	var req dto.SendUserNotificationDTO
-
+	req := dto.SendUserNotificationDTO{}
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
+	}
+
+	if req.Type == "general" {
+		return utils.ErrorBadRequestResponse(ctx, `поддерживаются только типы - birthday, reminder, promotion`, nil)
 	}
 
 	// Проверка типа уведомления
@@ -64,17 +78,8 @@ func (h *NotificationHandler) SendNotificationToUserHandler(ctx *fiber.Ctx) erro
 		return utils.ErrorBadRequestResponse(ctx, "Необходимо указать тип уведомления", nil)
 	}
 
-	if req.IsGeneral {
-		// Общее уведомление
-		err := h.srv.Firebase.SendNotifications(req.Title, req.Message, req.Type)
-		if err != nil {
-			return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при отправке общего уведомления: "+err.Error(), nil)
-		}
-		return utils.SuccessResponse(ctx, "Общее уведомление успешно отправлено", nil)
-	}
-
 	// Личное уведомление
-	err := h.srv.Firebase.SendNotificationToUser(*req.UserID, req.Title, req.Message, req.IsGeneral, req.Type)
+	err := h.srv.Firebase.SendNotificationToUser(ctx.Context(), req.UserID, req.Title, req.Message, req.Type)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при отправке личного уведомления: "+err.Error(), nil)
 	}
@@ -90,14 +95,13 @@ func (h *NotificationHandler) ToggleNotificationHandler(ctx *fiber.Ctx) error {
 		return err // Ошибка будет возвращена из CheckIsMobile в нужном формате
 	}
 
-	var req dto.ToggleNotificationDTO
+	req := dto.ToggleNotificationDTO{}
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
 	}
-	req.UserID = userId
 
 	// Вызов сервиса для обновления статуса уведомлений или добавления токена
-	err = h.srv.Firebase.ToggleNotificationStatus(req.UserID, req.DeviceToken, req.Enable)
+	err = h.srv.Firebase.ToggleNotificationStatus(ctx.Context(), userId, req.DeviceToken, req.Enable)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при обновлении статуса уведомлений: "+err.Error(), nil)
 	}
@@ -114,7 +118,7 @@ func (h *NotificationHandler) GetToggleNotificationHandler(ctx *fiber.Ctx) error
 	}
 
 	// Вызов сервиса для получения статуса уведомлений
-	status, err := h.srv.Firebase.GetNotificationStatus(req.UserID, req.DeviceToken)
+	status, err := h.srv.Firebase.GetNotificationStatus(ctx.Context(), req.UserID, req.DeviceToken)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при получении статуса уведомлений: "+err.Error(), nil)
 	}
@@ -129,7 +133,7 @@ func (h *NotificationHandler) GetToggleNotificationHandler(ctx *fiber.Ctx) error
 // GetGeneralNotificationsHandler обрабатывает запрос на получение только общих уведомлений
 func (h *NotificationHandler) GetGeneralNotificationsHandler(ctx *fiber.Ctx) error {
 	// Вызов сервиса для получения общих уведомлений
-	notifications, err := h.srv.Firebase.GetNotifications(0, nil, models.GeneralNotifications)
+	notifications, err := h.srv.Firebase.GetNotifications(ctx.Context(), 0, models.GeneralNotifications)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при получении общих уведомлений: "+err.Error(), nil)
 	}
@@ -162,13 +166,12 @@ func (h *NotificationHandler) GetUserNotificationsHandler(ctx *fiber.Ctx) error 
 	case 2:
 		filter = models.AllNotifications
 		req.UserID = &userId
-
 	default:
 		return utils.ErrorBadRequestResponse(ctx, "Неверное значение фильтра", nil)
 	}
 
 	// Вызов сервиса для получения уведомлений (userId передаем для фильтрации личных)
-	notifications, err := h.srv.Firebase.GetNotifications(userId, req.DeviceToken, filter)
+	notifications, err := h.srv.Firebase.GetNotifications(ctx.Context(), userId, filter)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при получении уведомлений: "+err.Error(), nil)
 	}
@@ -180,13 +183,11 @@ func mapModelToDTO(notifications models.Notifications) []dto.NotificationRespons
 	res := make([]dto.NotificationResponseDTO, len(notifications))
 	for i, n := range notifications {
 		res[i] = dto.NotificationResponseDTO{
-			Id:        n.ID,
-			UserID:    n.UserID,
-			Title:     n.Title,
-			Message:   n.Message,
-			Type:      string(n.Type),
-			IsGeneral: n.IsGeneral,
-			SentAt:    n.SentAt,
+			Id:      n.ID,
+			Title:   n.Title,
+			Message: n.Message,
+			Type:    string(n.Type),
+			SentAt:  n.SentAt,
 		}
 	}
 	return res

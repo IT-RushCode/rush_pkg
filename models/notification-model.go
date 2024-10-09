@@ -6,24 +6,22 @@ import (
 	"gorm.io/gorm"
 )
 
-// Notification
 type Notification struct {
-	ID                   uint             `gorm:"primaryKey;autoIncrement"`
-	UserID               *uint            `gorm:"type:varchar(255)"` // ID пользователя
-	DeviceToken          *string          `gorm:"type:varchar(255)"` // Токен устройства
-	Title                string           `gorm:"type:varchar(255)"` // Заголовок уведомелния
-	Message              string           `gorm:"type:text"`         // Текст уведомления
-	Type                 NotificationType `gorm:"type:varchar(50)"`  // Новое поле для типа уведомления
-	IsGeneral            bool             `gorm:"default:false"`     // Общее или личное уведомление
-	NotificationsEnabled *bool            `gorm:"default:true"`      // Статус активности получения уведомления пользователем
-	SentAt               time.Time        `gorm:"autoCreateTime"`    // Время отправки
+	ID      uint             `gorm:"primaryKey;autoIncrement"`
+	UserID  *uint            `gorm:"default:null"`      // ID пользователя
+	Title   string           `gorm:"type:varchar(255)"` // Заголовок уведомления
+	Message string           `gorm:"type:text"`         // Текст уведомления
+	Type    NotificationType `gorm:"type:varchar(50)"`  // Тип уведомления
+	SentAt  *time.Time       `gorm:"default:null"`      // Время отправки
+
+	BaseModel
 }
 
 // Настройки Notification
 type Notifications []Notification
 
 func (Notification) TableName() string {
-	return "Notification"
+	return "Notifications"
 }
 
 func (a *Notification) BeforeCreate(tx *gorm.DB) (err error) {

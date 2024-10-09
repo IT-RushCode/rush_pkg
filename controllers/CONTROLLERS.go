@@ -8,6 +8,7 @@ import (
 type Controllers struct {
 	// YOOKASSA CONTROLLERS
 	YookassaSetting *YookassasettingController
+	Notification    *NotificationController
 }
 
 // NewControllers - создает новый экземпляр Controllers с инициализированными контроллерами
@@ -18,5 +19,6 @@ func NewControllers(
 	return &Controllers{
 		// YOOKASSA CONTROLLERS
 		YookassaSetting: NewYooKassaSettingController(repo),
+		Notification:    NewNotificationController(repo),
 	}
 }

@@ -34,10 +34,11 @@ func RUN_SMS_ROUTES(
 // РОУТЫ NOTIFICATION
 func RUN_NOTIFICATION_ROUTES(
 	api fiber.Router,
+	ctrl *controllers.Controllers,
 	h *handlers.Handlers,
 	m *middlewares.Middlewares,
 ) {
-	ntf.RUN_NOTIFICATION_ROUTES(api, h, m)
+	ntf.RUN_NOTIFICATION_ROUTES(api, h, ctrl, m)
 }
 
 // РОУТЫ УВЕДОМЛЕНИЙ SMS/EMAIL/PUSH

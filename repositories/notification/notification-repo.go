@@ -1,75 +1,88 @@
 package repositories
 
 import (
+	"context"
 	"time"
 
 	"github.com/IT-RushCode/rush_pkg/models"
+	rp "github.com/IT-RushCode/rush_pkg/repositories/base"
+
 	"gorm.io/gorm"
 )
 
 // NotificationRepository определяет методы для работы с уведомлениями в базе данных
 type NotificationRepository interface {
-	SaveNotification(userID uint, deviceToken, title, message string, isGeneral bool, notificationType models.NotificationType) error
-	ToggleNotificationStatus(userID uint, deviceToken string, enable bool) error
-	GetNotificationStatus(userID uint, deviceToken string) (bool, error)
-	GetEnabledDeviceTokens() ([]string, error)
-	GetNotificationsByUserID(userID *uint, deviceToken *string, filter models.NotificationFilter) ([]models.Notification, error)
+	rp.BaseRepository
+	SaveNotification(ctx context.Context, userID uint, deviceToken, title, message string, notificationType models.NotificationType) error
+	ToggleNotificationStatus(ctx context.Context, userID uint, deviceToken string, enable bool) error
+	GetNotificationStatus(ctx context.Context, deviceToken string) (bool, error)
+	GetEnabledDeviceTokens(ctx context.Context, userID uint) ([]string, error)
+	GetNotificationsByUserID(ctx context.Context, userID *uint, filter models.NotificationFilter) ([]models.Notification, error)
 }
 
 // notificationRepository - реализация NotificationRepository
 type notificationRepository struct {
+	rp.BaseRepository
 	db *gorm.DB
 }
 
 // NewNotificationRepository создает новый экземпляр notificationRepository
 func NewNotificationRepository(db *gorm.DB) NotificationRepository {
 	return &notificationRepository{
-		db: db,
+		BaseRepository: rp.NewBaseRepository(db),
+		db:             db,
 	}
 }
 
 // SaveNotification сохраняет уведомление в базу данных
 // userID = 0 для общих уведомлений
-func (r *notificationRepository) SaveNotification(userID uint, deviceToken, title, message string, isGeneral bool, notificationType models.NotificationType) error {
+func (r *notificationRepository) SaveNotification(ctx context.Context, userID uint, deviceToken, title, message string, notificationType models.NotificationType) error {
+	now := time.Now()
 	notification := models.Notification{
-		UserID:      &userID,
-		DeviceToken: &deviceToken,
-		Title:       title,
-		Message:     message,
-		IsGeneral:   isGeneral,
-		Type:        notificationType, // Указываем тип уведомления
-		SentAt:      time.Now(),
+		UserID:  &userID,
+		Title:   title,
+		Message: message,
+		Type:    notificationType, // Указываем тип уведомления
+		SentAt:  &now,
 	}
-	return r.db.Create(&notification).Error
+	return r.db.WithContext(ctx).Create(&notification).Error
 }
 
 // ToggleNotificationStatus обновляет статус уведомлений для указанного устройства
-func (r *notificationRepository) ToggleNotificationStatus(userID uint, deviceToken string, enable bool) error {
-	var notification models.Notification
-	err := r.db.Where("device_token = ? AND user_id = ?", deviceToken, userID).First(&notification).Error
+func (r *notificationRepository) ToggleNotificationStatus(ctx context.Context, userID uint, deviceToken string, enable bool) error {
+	var notification models.NotificationDevice
+	err := r.db.WithContext(ctx).Where("device_token = ?", deviceToken).First(&notification).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Создаем новую запись, если не нашли
-			notification = models.Notification{
+			notification = models.NotificationDevice{
 				UserID:               &userID,
-				DeviceToken:          &deviceToken,
+				DeviceToken:          deviceToken,
 				NotificationsEnabled: &enable,
-				SentAt:               time.Now(),
 			}
 			return r.db.Create(&notification).Error
 		}
 		return err
 	}
 
-	// Обновляем статус, если запись найдена
+	// Если запись найдена, проверяем, нужно ли обновить userID
+	if notification.UserID == nil || *notification.UserID == 0 {
+		// Если userID не установлен, обновляем его
+		if userID != 0 {
+			notification.UserID = &userID
+		}
+	}
+
+	// Обновляем статус уведомлений
 	notification.NotificationsEnabled = &enable
+
 	return r.db.Save(&notification).Error
 }
 
 // GetNotificationStatus получает текущий статус уведомлений для указанного устройства
-func (r *notificationRepository) GetNotificationStatus(userID uint, deviceToken string) (bool, error) {
-	var notification models.Notification
-	err := r.db.Where("device_token = ? AND user_id = ?", deviceToken, userID).First(&notification).Error
+func (r *notificationRepository) GetNotificationStatus(ctx context.Context, deviceToken string) (bool, error) {
+	var notification models.NotificationDevice
+	err := r.db.WithContext(ctx).Where("device_token = ?", deviceToken).First(&notification).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false, nil // статус не найден
@@ -80,10 +93,16 @@ func (r *notificationRepository) GetNotificationStatus(userID uint, deviceToken 
 }
 
 // GetEnabledDeviceTokens получает все токены устройств с включенными уведомлениями
-func (r *notificationRepository) GetEnabledDeviceTokens() ([]string, error) {
+func (r *notificationRepository) GetEnabledDeviceTokens(ctx context.Context, userID uint) ([]string, error) {
 	var tokens []string
-	err := r.db.Model(&models.Notification{}).
-		Where("notifications_enabled = ?", true).
+
+	query := r.db.WithContext(ctx).Model(&models.NotificationDevice{})
+
+	if userID > 0 {
+		query = query.Where("user_id = ?", userID)
+	}
+
+	err := query.Where("notifications_enabled = ?", true).
 		Pluck("device_token", &tokens).Error
 	if err != nil {
 		return nil, err
@@ -93,32 +112,27 @@ func (r *notificationRepository) GetEnabledDeviceTokens() ([]string, error) {
 
 // GetNotificationsByUserID возвращает уведомления для пользователя
 // Фильтр определяет, какие уведомления возвращать: личные, общие или все
-func (r *notificationRepository) GetNotificationsByUserID(userID *uint, deviceToken *string, filter models.NotificationFilter) ([]models.Notification, error) {
+func (r *notificationRepository) GetNotificationsByUserID(ctx context.Context, userID *uint, filter models.NotificationFilter) ([]models.Notification, error) {
 	var notifications []models.Notification
 
 	// Создаем базовый запрос
-	query := r.db.Model(&models.Notification{})
+	query := r.db.WithContext(ctx).Model(&models.Notification{})
 
 	switch filter {
 	case models.UserNotifications:
 		// Возвращаем только личные уведомления
 		if userID != nil {
 			query = query.Where("user_id = ?", *userID)
-		} else if deviceToken != nil {
-			query = query.Where("device_token = ?", *deviceToken)
 		}
-
 	case models.GeneralNotifications:
 		// Возвращаем только общие уведомления
-		query = query.Where("is_general = ?", true)
+		query = query.Where("type = ?", "general")
 
 	case models.AllNotifications:
 		// Возвращаем как личные, так и общие уведомления
-		query = query.Where("is_general = ?", true)
+		query = query.Where("type = ?", "general")
 		if userID != nil {
 			query = query.Or("user_id = ?", *userID)
-		} else if deviceToken != nil {
-			query = query.Or("device_token = ?", *deviceToken)
 		}
 	}
 

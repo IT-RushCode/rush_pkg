@@ -62,7 +62,6 @@ func (h *YookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error 
 	}
 	data.ID = id
 
-	// TODO: ДОБАВИТЬ ХЕШ ШИФРОВАНИЕ ДЛЯ SECRET KEY
 	if err := h.repo.YooKassaSetting.Update(ctx.Context(), data); err != nil {
 		return utils.CheckErr(ctx, err)
 	}
@@ -86,7 +85,7 @@ func (h *YookassasettingController) DeleteYooKassaSetting(ctx *fiber.Ctx) error 
 	return utils.NoContentResponse(ctx)
 }
 
-// Получение разрешения по ID
+// Получение YooKassaSetting по ID
 func (h *YookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) error {
 	id, err := utils.GetID(ctx)
 	if err != nil {
@@ -102,7 +101,7 @@ func (h *YookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) erro
 	return utils.CopyAndRespond(ctx, data, res)
 }
 
-// Получение разрешения по ID
+// Получение YooKassaSetting по PointID
 func (h *YookassasettingController) FindYooKassaSettingByPointID(ctx *fiber.Ctx) error {
 	pointID, err := ctx.ParamsInt("pointId")
 	if err != nil {

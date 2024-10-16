@@ -151,9 +151,17 @@ func (s *FirebaseService) SendCreatedNotifications(ctx context.Context, notifica
 		return err
 	}
 
-	// Отправляем уведомление через Firebase
-	if err := s.sendFirebaseNotificationMulti(ctx, deviceTokens, notification.Title, notification.Message); err != nil {
-		log.Printf("Ошибка при отправке уведомления: %v", err)
+	// TODO: РЕШИТЬ МУЛЬТИКАСТ ОТПРАВКУ
+	// // Отправляем уведомление через Firebase
+	// if err := s.sendFirebaseNotificationMulti(ctx, token, notification.Title, notification.Message); err != nil {
+	// 	log.Printf("Ошибка при отправке уведомления: %v", err)
+	// }
+
+	for _, token := range deviceTokens {
+		// Отправляем уведомление через Firebase
+		if err := s.sendFirebaseNotification(ctx, token, notification.Title, notification.Message); err != nil {
+			log.Printf("Ошибка при отправке уведомления: %v", err)
+		}
 	}
 
 	err = s.repo.Notification.UpdateField(ctx, notificationID, "sent_at", time.Now(), notification)
@@ -180,10 +188,18 @@ func (s *FirebaseService) SendNotificationToUser(ctx context.Context, userID uin
 		return err
 	}
 
-	// Отправляем уведомление через Firebase для каждого токена
-	if err := s.sendFirebaseNotificationMulti(ctx, deviceTokens, title, message); err != nil {
-		log.Printf("Ошибка при отправке уведомления: %v", err)
-		return err
+	// TODO: РЕШИТЬ МУЛЬТИКАСТ ОТПРАВКУ
+	// // Отправляем уведомление через Firebase для каждого токена
+	// if err := s.sendFirebaseNotificationMulti(ctx, deviceTokens, title, message); err != nil {
+	// 	log.Printf("Ошибка при отправке уведомления: %v", err)
+	// 	return err
+	// }
+
+	for _, token := range deviceTokens {
+		// Отправляем уведомление через Firebase
+		if err := s.sendFirebaseNotification(ctx, token, title, message); err != nil {
+			log.Printf("Ошибка при отправке уведомления: %v", err)
+		}
 	}
 
 	// Сохраняем уведомление в базе данных как личное с указанным типом
@@ -200,15 +216,23 @@ func (s *FirebaseService) SendNotificationToUser(ctx context.Context, userID uin
 // SendNotifications отправляет общие уведомления всем пользователям с включенными уведомлениями через Firebase
 func (s *FirebaseService) SendNotifications(ctx context.Context, title, message string, notificationType models.NotificationType) error {
 	// Получаем все устройства с включенными уведомлениями
-	tokens, err := s.repo.Notification.GetEnabledDeviceTokens(ctx, 0)
+	deviceTokens, err := s.repo.Notification.GetEnabledDeviceTokens(ctx, 0)
 	if err != nil {
 		log.Printf("Ошибка при получении токенов устройств: %v", err)
 		return err
 	}
 
-	// Отправляем уведомление через Firebase
-	if err := s.sendFirebaseNotificationMulti(ctx, tokens, title, message); err != nil {
-		log.Printf("Ошибка при отправке уведомления: %v", err)
+	// TODO: РЕШИТЬ МУЛЬТИКАСТ ОТПРАВКУ
+	// // Отправляем уведомление через Firebase
+	// if err := s.sendFirebaseNotificationMulti(ctx, token, title, message); err != nil {
+	// 	log.Printf("Ошибка при отправке уведомления: %v", err)
+	// }
+
+	for _, token := range deviceTokens {
+		// Отправляем уведомление через Firebase
+		if err := s.sendFirebaseNotification(ctx, token, title, message); err != nil {
+			log.Printf("Ошибка при отправке уведомления: %v", err)
+		}
 	}
 
 	// Сохраняем уведомление как общее с указанным типом

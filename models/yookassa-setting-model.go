@@ -1,5 +1,7 @@
 package models
 
+import "gorm.io/gorm"
+
 // Настройка Юкассы
 type YooKassaSetting struct {
 	ID        uint   `gorm:"primaryKey"`
@@ -14,4 +16,14 @@ type YooKassaSettings []YooKassaSetting
 
 func (YooKassaSetting) TableName() string {
 	return "YooKassaSettings"
+}
+
+func (a *YooKassaSetting) BeforeCreate(tx *gorm.DB) (err error) {
+	// Проверка последовательности id в таблице при автоинкременте
+	err = tx.Exec("SELECT setval('\"YooKassaSettings_id_seq\"', (SELECT MAX(id) FROM \"YooKassaSettings\"));").Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

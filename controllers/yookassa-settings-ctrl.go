@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	dto "github.com/IT-RushCode/rush_pkg/dto/payment"
 	"github.com/IT-RushCode/rush_pkg/models"
 	"github.com/IT-RushCode/rush_pkg/repositories"
@@ -68,6 +70,32 @@ func (h *YookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error 
 
 	res := &dto.YooKassaSettingDTO{}
 	return utils.CopyAndRespond(ctx, data, res)
+}
+
+// Обновление YooKassaSetting
+func (h *YookassasettingController) UpdateYooKassaSettingByPointID(ctx *fiber.Ctx) error {
+	input := &dto.YooKassaSettingDTO{}
+	if err := ctx.BodyParser(input); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
+	if err := utils.ValidateStruct(input); err != nil {
+		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+	}
+
+	data := &models.YooKassaSetting{}
+	if err := copier.Copy(data, input); err != nil {
+		return utils.ErrorResponse(ctx, err.Error(), nil)
+	}
+
+	resRepo, err := h.repo.YooKassaSetting.UpdateByPointID(ctx.Context(), data)
+	if err != nil {
+		return utils.CheckErr(ctx, err)
+	}
+
+	fmt.Println(resRepo)
+
+	res := &dto.YooKassaSettingDTO{}
+	return utils.CopyAndRespond(ctx, resRepo, res)
 }
 
 // Удаление YooKassaSetting

@@ -15,9 +15,9 @@ func RUN_YOOKASSA_SETTINGS_ROUTES(api fiber.Router, ctrl *controllers.Controller
 		m.Cache.RouteCache(60),
 		ctrl.YookassaSetting.FindYooKassaSettingByPointID,
 	)
-
 	ykSetting.Get("/:id", m.Permission.CheckPermission("view:yookassa_setting_by_id"), m.Cache.RouteCache(60), ctrl.YookassaSetting.FindYooKassaSettingByID)
 	ykSetting.Post("/", m.Permission.CheckPermission("create:yookassa_setting"), ctrl.YookassaSetting.CreateYooKassaSetting)
 	ykSetting.Put("/:id", m.Permission.CheckPermission("update:yookassa_setting"), ctrl.YookassaSetting.UpdateYooKassaSetting)
+	ykSetting.Put("/", m.Permission.CheckPermission("update:yookassa_setting"), ctrl.YookassaSetting.UpdateYooKassaSettingByPointID)
 	ykSetting.Delete("/:id", m.Permission.CheckPermission("delete:yookassa_setting"), ctrl.YookassaSetting.DeleteYooKassaSetting)
 }

@@ -21,20 +21,20 @@ func NewNotificationController(repo *repositories.Repositories) *NotificationCon
 func (h *NotificationController) CreateGeneralNotification(ctx *fiber.Ctx) error {
 	input := &nDto.NotificationAdminDTO{}
 	if err := ctx.BodyParser(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 	if err := utils.ValidateStruct(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	data := &models.Notification{Type: models.GeneralNotification}
 	if err := copier.Copy(data, input); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return err
 	}
 	data.ID = 0
 
 	if err := h.repo.Notification.Create(ctx.Context(), data); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	res := &nDto.NotificationResponseDTO{}
@@ -45,15 +45,15 @@ func (h *NotificationController) CreateGeneralNotification(ctx *fiber.Ctx) error
 func (h *NotificationController) UpdateGeneralNotification(ctx *fiber.Ctx) error {
 	input := &nDto.NotificationAdminDTO{}
 	if err := ctx.BodyParser(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 	if err := utils.ValidateStruct(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	data := &models.Notification{Type: models.GeneralNotification}
 	if err := copier.Copy(data, input); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	id, err := utils.GetID(ctx)
@@ -63,7 +63,7 @@ func (h *NotificationController) UpdateGeneralNotification(ctx *fiber.Ctx) error
 	data.ID = id
 
 	if err := h.repo.Notification.Update(ctx.Context(), data); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	res := &nDto.NotificationResponseDTO{}
@@ -79,7 +79,7 @@ func (h *NotificationController) DeleteNotification(ctx *fiber.Ctx) error {
 
 	data := &models.Notification{ID: id}
 	if err := h.repo.Notification.Delete(ctx.Context(), data); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	return utils.NoContentResponse(ctx)
@@ -101,12 +101,12 @@ func (h *NotificationController) GetGeneralNotifications(ctx *fiber.Ctx) error {
 		true,
 	)
 	if err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	resDTO := &[]nDto.NotificationAdminDTO{}
 	if err := copier.Copy(resDTO, repoRes); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	res := &dto.PaginationDTO{
@@ -118,7 +118,7 @@ func (h *NotificationController) GetGeneralNotifications(ctx *fiber.Ctx) error {
 		},
 	}
 
-	return utils.SuccessResponse(ctx, utils.Success, res)
+	return utils.SuccessResponse(ctx, "", res)
 }
 
 // Получение общий по ID
@@ -133,7 +133,7 @@ func (h *NotificationController) FindNotificationByID(ctx *fiber.Ctx) error {
 		"id":   id,
 		"type": "general",
 	}, data); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	res := &nDto.NotificationAdminDTO{}

@@ -9,11 +9,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type AuthData struct {
-	UserID uint   `json:"userId"`
-	IP     string `json:"ip"`
-}
-
 // AuthMiddleware представляет собой middleware для аутентификации пользователя.
 type AuthMiddleware struct {
 	jwtTTL       time.Duration
@@ -25,7 +20,6 @@ type AuthMiddleware struct {
 func NewAuthMiddleware(
 	cfg *config.Config,
 	routes map[string][]string,
-
 ) *AuthMiddleware {
 	jwtTTL := time.Duration(cfg.JWT.JWT_TTL) * time.Second
 	jwtRTTL := time.Duration(cfg.JWT.REFRESH_TTL) * time.Second

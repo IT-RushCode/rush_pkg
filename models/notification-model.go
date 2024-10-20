@@ -25,12 +25,9 @@ func (Notification) TableName() string {
 }
 
 func (a *Notification) BeforeCreate(tx *gorm.DB) (err error) {
-	// Проверка последовательности id в таблице при автоинкременте
-	err = tx.Exec("SELECT setval('\"Notifications_id_seq\"', (SELECT MAX(id) FROM \"Notifications\"));").Error
-	if err != nil {
+	if err := CheckSequence("Notifications", tx); err != nil {
 		return err
 	}
-
 	return nil
 }
 

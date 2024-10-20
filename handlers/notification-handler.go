@@ -92,7 +92,7 @@ func (h *NotificationHandler) ToggleNotificationHandler(ctx *fiber.Ctx) error {
 	// Используем CheckIsMobile для получения userId в зависимости от устройства
 	userId, err := utils.CheckIsMobile(ctx)
 	if err != nil {
-		return err // Ошибка будет возвращена из CheckIsMobile в нужном формате
+		return err
 	}
 
 	req := dto.ToggleNotificationDTO{}
@@ -146,7 +146,7 @@ func (h *NotificationHandler) GetUserNotificationsHandler(ctx *fiber.Ctx) error 
 	// Используем CheckIsMobile для получения userId в зависимости от устройства
 	userId, err := utils.CheckIsMobile(ctx)
 	if err != nil {
-		return err // Ошибка будет возвращена из CheckIsMobile в нужном формате
+		return err
 	}
 
 	// Прочитываем фильтр из запроса

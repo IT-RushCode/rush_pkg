@@ -8,7 +8,7 @@ func GetUserIDFromLocals(ctx *fiber.Ctx) (uint, error) {
 	// Получение user_id из локальных данных
 	userID, ok := ctx.Locals("UserID").(uint)
 	if !ok {
-		return 0, ErrorResponse(ctx, "ошибка сервера", nil)
+		return 0, ErrorBadRequestResponse(ctx, ErrInvalidData.Error(), nil)
 	}
 
 	return userID, nil

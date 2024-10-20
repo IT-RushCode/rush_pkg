@@ -2,12 +2,9 @@ package repositories
 
 import (
 	"context"
-	"errors"
-	"log"
 
 	"github.com/IT-RushCode/rush_pkg/models"
 	rp "github.com/IT-RushCode/rush_pkg/repositories/base"
-	"github.com/IT-RushCode/rush_pkg/utils"
 
 	"gorm.io/gorm"
 )
@@ -35,28 +32,14 @@ func (r *yookassasettingRepository) UpdateByPointID(ctx context.Context, data *m
 		Where("point_id = ?", data.PointID).
 		Updates(&data).
 		Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Print(err)
-			return nil, utils.ErrRecordNotFound
-		}
-		if err := utils.HandleDuplicateKeyError(err); err != nil {
-			log.Print(err)
-			return nil, err
-		}
-		log.Print(err)
-		return nil, utils.ErrInternal
+		return nil, err
 	}
 
 	if err := r.db.WithContext(ctx).
 		Where("point_id = ?", data.PointID).
 		First(&data).
 		Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Print(err)
-			return nil, utils.ErrRecordNotFound
-		}
-		log.Print(err)
-		return nil, utils.ErrInternal
+		return nil, err
 	}
 
 	return data, nil

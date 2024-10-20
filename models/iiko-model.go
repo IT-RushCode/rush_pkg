@@ -1,5 +1,7 @@
 package models
 
+import "gorm.io/gorm"
+
 // Интеграция с iiko
 type IikoIntegration struct {
 	ID       uint   `gorm:"primaryKey"`
@@ -15,4 +17,11 @@ type IikoIntegrations []IikoIntegration
 
 func (IikoIntegration) TableName() string {
 	return "IikoIntegrations"
+}
+
+func (a *IikoIntegration) BeforeCreate(tx *gorm.DB) (err error) {
+	if err := CheckSequence("IikoIntegrations", tx); err != nil {
+		return err
+	}
+	return nil
 }

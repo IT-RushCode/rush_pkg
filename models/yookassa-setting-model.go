@@ -19,11 +19,8 @@ func (YooKassaSetting) TableName() string {
 }
 
 func (a *YooKassaSetting) BeforeCreate(tx *gorm.DB) (err error) {
-	// Проверка последовательности id в таблице при автоинкременте
-	err = tx.Exec("SELECT setval('\"YooKassaSettings_id_seq\"', (SELECT MAX(id) FROM \"YooKassaSettings\"));").Error
-	if err != nil {
+	if err := CheckSequence("YooKassaSettings", tx); err != nil {
 		return err
 	}
-
 	return nil
 }

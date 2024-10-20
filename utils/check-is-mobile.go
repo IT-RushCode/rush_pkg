@@ -24,12 +24,12 @@ func CheckIsMobile(ctx *fiber.Ctx) (uint, error) {
 			return 0, err
 		}
 	} else {
-		// Получение userId из параметров запроса
+		// Получение userId из query запроса
 		queryUserId := ctx.QueryInt("userId")
 		if queryUserId == 0 {
 			return 0, ErrorBadRequestResponse(
 				ctx,
-				"Необходимо указать userId",
+				"Необходимо указать ?userId в QueryParams",
 				nil,
 			)
 		}

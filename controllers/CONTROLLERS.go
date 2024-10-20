@@ -9,6 +9,7 @@ type Controllers struct {
 	// YOOKASSA CONTROLLERS
 	YookassaSetting *YookassasettingController
 	Notification    *NotificationController
+	Chat            *ChatController
 }
 
 // NewControllers - создает новый экземпляр Controllers с инициализированными контроллерами
@@ -20,5 +21,6 @@ func NewControllers(
 		// YOOKASSA CONTROLLERS
 		YookassaSetting: NewYooKassaSettingController(repo),
 		Notification:    NewNotificationController(repo),
+		Chat:            NewChatController(repo),
 	}
 }

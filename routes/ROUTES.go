@@ -40,13 +40,3 @@ func RUN_NOTIFICATION_ROUTES(
 ) {
 	ntf.RUN_NOTIFICATION_ROUTES(api, h, ctrl, m)
 }
-
-// РОУТЫ УВЕДОМЛЕНИЙ SMS/EMAIL/PUSH
-// func RUN_NOTIFICATION_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-// 	go review.RUN_NOTIFICATION(api, repo)
-// }
-
-// РОУТЫ GOOGLE КАРТ
-// func RUN_MAP_ROUTES(api fiber.Router, repo *repositories.Repositories) {
-// 	go review.RUN_MAP(api, repo)
-// }

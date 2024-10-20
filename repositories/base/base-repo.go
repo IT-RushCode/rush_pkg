@@ -2,7 +2,6 @@ package base_repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -69,11 +68,9 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 	// Получить общее количество записей
 	if err := query.Count(&count).Error; err != nil {
 		if strings.Contains(err.Error(), "SQLSTATE 42703") {
-			log.Print(err)
 			return 0, extractFieldFromError(err)
 		}
-		log.Print(err)
-		return 0, utils.ErrInternal
+		return 0, err
 	}
 
 	// Применить пагинацию и получить данные
@@ -82,8 +79,7 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 	}
 
 	if err := query.Find(data).Error; err != nil {
-		log.Print(err)
-		return 0, utils.ErrInternal
+		return 0, err
 	}
 
 	return count, nil
@@ -116,11 +112,7 @@ func (r *baseRepository) Create(ctx context.Context, data interface{}, preloads 
 	}
 
 	if err := query.Create(data).Error; err != nil {
-		if err := utils.HandleDuplicateKeyError(err); err != nil {
-			return err
-		}
-		log.Print(err)
-		return utils.ErrInternal
+		return err
 	}
 	return nil
 }
@@ -139,11 +131,7 @@ func (r *baseRepository) FindByID(ctx context.Context, id uint, data interface{}
 	// Получить первую совпавшую запись
 	err := query.First(data, id).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return utils.ErrRecordNotFound
-		}
-		log.Print(err)
-		return utils.ErrInternal
+		return err
 	}
 	return nil
 }
@@ -157,27 +145,11 @@ func (r *baseRepository) Update(ctx context.Context, data interface{}, preloads 
 
 	if err := query.Updates(data).
 		Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Print(err)
-			return utils.ErrRecordNotFound
-		}
-		if err := utils.HandleDuplicateKeyError(err); err != nil {
-			log.Print(err)
-			return err
-		}
-		log.Print(err)
-		return utils.ErrInternal
+		return err
 	}
 
-	if err := r.db.WithContext(ctx).
-		First(data).
-		Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Print(err)
-			return utils.ErrRecordNotFound
-		}
-		log.Print(err)
-		return utils.ErrInternal
+	if err := r.db.WithContext(ctx).First(data).Error; err != nil {
+		return err
 	}
 
 	return nil
@@ -190,20 +162,10 @@ func (r *baseRepository) UpdateField(ctx context.Context, id uint, field string,
 		Where("id = ?", id).
 		Update(field, value).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Print(err)
-			return utils.ErrRecordNotFound
-		}
-		log.Print(err)
-		return utils.ErrInternal
+		return err
 	}
 	if err := r.db.WithContext(ctx).First(data, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Print(err)
-			return utils.ErrRecordNotFound
-		}
-		log.Print(err)
-		return utils.ErrInternal
+		return err
 	}
 	return nil
 }
@@ -212,12 +174,7 @@ func (r *baseRepository) UpdateField(ctx context.Context, id uint, field string,
 func (r *baseRepository) Delete(ctx context.Context, data interface{}) error {
 	err := r.db.WithContext(ctx).Delete(data).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Print(err)
-			return utils.ErrRecordNotFound
-		}
-		log.Print(err)
-		return utils.ErrInternal
+		return err
 	}
 	return nil
 }
@@ -228,12 +185,7 @@ func (r *baseRepository) SoftDelete(ctx context.Context, data interface{}) error
 		Model(data).
 		Update("deleted_at", gorm.DeletedAt{}).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Print(err)
-			return utils.ErrRecordNotFound
-		}
-		log.Print(err)
-		return utils.ErrInternal
+		return err
 	}
 	return nil
 }
@@ -246,8 +198,7 @@ func (r *baseRepository) Filter(ctx context.Context, filters map[string]interfac
 	}
 
 	if err := query.Find(entities).Error; err != nil {
-		log.Print(err)
-		return utils.ErrInternal
+		return err
 	}
 	return nil
 }
@@ -292,5 +243,5 @@ func extractFieldFromError(err error) error {
 		return utils.ErrInternal
 	}
 
-	return fmt.Errorf(utils.ErrFieldNotSupported, matches[1])
+	return fmt.Errorf("фильтрация по полю '%s' не поддерживается", matches[1])
 }

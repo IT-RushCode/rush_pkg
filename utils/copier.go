@@ -12,7 +12,7 @@ import (
 // res - принимает структуру, в которую нужно поместить данные
 func CopyAndRespond(ctx *fiber.Ctx, data interface{}, res interface{}) error {
 	if err := copier.Copy(res, data); err != nil {
-		return ErrorResponse(ctx, err.Error(), nil)
+		return err
 	}
 	return SuccessResponse(ctx, Success, res)
 }

@@ -22,21 +22,21 @@ func NewYooKassaSettingController(repo *repositories.Repositories) *Yookassasett
 func (h *YookassasettingController) CreateYooKassaSetting(ctx *fiber.Ctx) error {
 	input := &dto.YooKassaSettingDTO{}
 	if err := ctx.BodyParser(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 	if err := utils.ValidateStruct(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	data := &models.YooKassaSetting{}
 	if err := copier.Copy(data, input); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return err
 	}
 	data.ID = 0
 
 	// TODO: ДОБАВИТЬ ХЕШ ШИФРОВАНИЕ ДЛЯ SECRET KEY
 	if err := h.repo.YooKassaSetting.Create(ctx.Context(), data); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	res := &dto.YooKassaSettingDTO{}
@@ -47,15 +47,15 @@ func (h *YookassasettingController) CreateYooKassaSetting(ctx *fiber.Ctx) error 
 func (h *YookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error {
 	input := &dto.YooKassaSettingDTO{}
 	if err := ctx.BodyParser(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 	if err := utils.ValidateStruct(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	data := &models.YooKassaSetting{}
 	if err := copier.Copy(data, input); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	id, err := utils.GetID(ctx)
@@ -65,7 +65,7 @@ func (h *YookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error 
 	data.ID = id
 
 	if err := h.repo.YooKassaSetting.Update(ctx.Context(), data); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	res := &dto.YooKassaSettingDTO{}
@@ -76,20 +76,20 @@ func (h *YookassasettingController) UpdateYooKassaSetting(ctx *fiber.Ctx) error 
 func (h *YookassasettingController) UpdateYooKassaSettingByPointID(ctx *fiber.Ctx) error {
 	input := &dto.YooKassaSettingDTO{}
 	if err := ctx.BodyParser(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 	if err := utils.ValidateStruct(input); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	data := &models.YooKassaSetting{}
 	if err := copier.Copy(data, input); err != nil {
-		return utils.ErrorResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	resRepo, err := h.repo.YooKassaSetting.UpdateByPointID(ctx.Context(), data)
 	if err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	fmt.Println(resRepo)
@@ -107,7 +107,7 @@ func (h *YookassasettingController) DeleteYooKassaSetting(ctx *fiber.Ctx) error 
 
 	data := &models.YooKassaSetting{ID: id}
 	if err := h.repo.YooKassaSetting.Delete(ctx.Context(), data); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	return utils.NoContentResponse(ctx)
@@ -122,7 +122,7 @@ func (h *YookassasettingController) FindYooKassaSettingByID(ctx *fiber.Ctx) erro
 
 	data := &models.YooKassaSetting{}
 	if err := h.repo.YooKassaSetting.FindByID(ctx.Context(), id, data); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	res := &dto.YooKassaSettingDTO{}
@@ -142,7 +142,7 @@ func (h *YookassasettingController) FindYooKassaSettingByPointID(ctx *fiber.Ctx)
 		map[string]interface{}{"point_id": pointID},
 		data,
 	); err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	res := &dto.YooKassaSettingDTO{}

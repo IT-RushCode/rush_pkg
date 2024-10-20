@@ -10,7 +10,7 @@ func GetAllQueries(ctx *fiber.Ctx) (*dto.GetAllRequest, error) {
 
 	// Парсинг основных параметров
 	if err := ctx.QueryParser(&req); err != nil {
-		return nil, ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return nil, err
 	}
 
 	// Установка значений по умолчанию

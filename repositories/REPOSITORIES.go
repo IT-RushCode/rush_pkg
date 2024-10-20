@@ -2,9 +2,11 @@ package repositories
 
 import (
 	rpBase "github.com/IT-RushCode/rush_pkg/repositories/base"
+	rpChat "github.com/IT-RushCode/rush_pkg/repositories/chat"
 	rpNtf "github.com/IT-RushCode/rush_pkg/repositories/notification"
 	rpYKassa "github.com/IT-RushCode/rush_pkg/repositories/yookassa"
 	"github.com/IT-RushCode/rush_pkg/storage"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -12,6 +14,7 @@ import (
 type RepoFlags struct {
 	InitYKassaRepo       bool // Инициализировать ли YKassa репозиторий
 	InitNotificationRepo bool // Инициализировать ли Notification репозиторий
+	InitChatRepo         bool // Инициализировать ли Chat репозиторий
 	InitCacheRepo        bool // Инициализировать ли кэш-репозиторий Redis
 	InitMongoRepo        bool // Инициализировать ли MongoDB репозиторий
 }
@@ -20,6 +23,7 @@ type RepoFlags struct {
 type Repositories struct {
 	YooKassaSetting rpYKassa.YooKassaSettingRepository
 	Notification    rpNtf.NotificationRepository
+	Chat            rpChat.ChatRepository
 
 	Redis *redis.Client
 
@@ -44,6 +48,11 @@ func NewRepositories(
 	// Инициализация репозиториев для Notification
 	if flags.InitNotificationRepo {
 		repos.Notification = rpNtf.NewNotificationRepository(DB)
+	}
+
+	// Инициализация репозиториев для Chat
+	if flags.InitChatRepo {
+		repos.Chat = rpChat.NewChatRepository(DB)
 	}
 
 	// Инициализация кэш-репозитория Redis

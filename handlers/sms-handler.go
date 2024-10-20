@@ -36,17 +36,17 @@ func NewSMSHandler(
 func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
 	var req dto.SMSRequestDTO
 	if err := ctx.BodyParser(&req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 	req.Messages[0].Phone = strings.TrimSpace(req.Messages[0].Phone)
 
 	if err := utils.ValidateStruct(req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, err.Error(), nil)
+		return err
 	}
 
 	res, err := h.srv.Sms.SendSMS(h.cfg, req)
 	if err != nil {
-		return utils.CheckErr(ctx, err)
+		return err
 	}
 
 	if res.Message.Status == "error" {
@@ -59,11 +59,11 @@ func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
 		if err != nil {
 			return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при сохранении OTP кода в кеш: "+err.Error(), nil)
 		}
-		return utils.SuccessResponse(ctx, utils.Success, fmt.Sprintf("Код подтверждения отправлен на номер %s", res.Phone))
+		return utils.SuccessResponse(ctx, "", fmt.Sprintf("Код подтверждения отправлен на номер %s", res.Phone))
 	}
 
 	if len(req.Messages) == 1 {
-		return utils.SuccessResponse(ctx, utils.Success, fmt.Sprintf("Сообщение отправлено на номер %s", res.Phone))
+		return utils.SuccessResponse(ctx, "", fmt.Sprintf("Сообщение отправлено на номер %s", res.Phone))
 	}
 
 	return utils.SuccessResponse(ctx, "Сообщения отправлены", nil)

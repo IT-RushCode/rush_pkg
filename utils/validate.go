@@ -62,7 +62,7 @@ func ValidateStruct(data interface{}) error {
 			}
 		}
 
-		return fmt.Errorf("%s", errMsg.String())
+		return fmt.Errorf("VALIDATE: %s", errMsg.String())
 	}
 
 	return nil

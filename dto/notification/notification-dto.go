@@ -38,7 +38,7 @@ type ToggleNotificationDTO struct {
 }
 
 type GetToggleNotificationDTO struct {
-	UserID      uint   `json:"userId"`                          // ID пользователя (может быть пустым для анонимных)
+	// UserID      uint   `json:"userId"`                          // ID пользователя (может быть пустым для анонимных)
 	DeviceToken string `json:"deviceToken" validate:"required"` // Токен устройства
 }
 

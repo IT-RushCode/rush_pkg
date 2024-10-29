@@ -112,13 +112,17 @@ func (h *NotificationHandler) ToggleNotificationHandler(ctx *fiber.Ctx) error {
 // GetToggleNotificationHandler получает текущий статус уведомлений для указанного токена устройства
 func (h *NotificationHandler) GetToggleNotificationHandler(ctx *fiber.Ctx) error {
 	var req dto.GetToggleNotificationDTO
-
 	if err := ctx.BodyParser(&req); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
 	}
 
+	userId, err := utils.CheckIsMobile(ctx)
+	if err != nil {
+		return err
+	}
+
 	// Вызов сервиса для получения статуса уведомлений
-	status, err := h.srv.Firebase.GetNotificationStatus(ctx.Context(), req.UserID, req.DeviceToken)
+	status, err := h.srv.Firebase.GetNotificationStatus(ctx.Context(), userId, req.DeviceToken)
 	if err != nil {
 		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при получении статуса уведомлений: "+err.Error(), nil)
 	}

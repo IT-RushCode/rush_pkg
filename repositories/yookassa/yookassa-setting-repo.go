@@ -11,7 +11,7 @@ import (
 
 type YooKassaSettingRepository interface {
 	rp.BaseRepository
-	UpdateByPointID(ctx context.Context, data *models.YooKassaSetting) (*models.YooKassaSetting, error)
+	SaveByPointID(ctx context.Context, data *models.YooKassaSetting) (*models.YooKassaSetting, error)
 }
 
 type yookassasettingRepository struct {
@@ -27,10 +27,10 @@ func NewYooKassaSettingRepository(db *gorm.DB) YooKassaSettingRepository {
 }
 
 // Полное обновление
-func (r *yookassasettingRepository) UpdateByPointID(ctx context.Context, data *models.YooKassaSetting) (*models.YooKassaSetting, error) {
+func (r *yookassasettingRepository) SaveByPointID(ctx context.Context, data *models.YooKassaSetting) (*models.YooKassaSetting, error) {
 	if err := r.db.WithContext(ctx).
 		Where("point_id = ?", data.PointID).
-		Updates(&data).
+		Save(&data).
 		Error; err != nil {
 		return nil, err
 	}

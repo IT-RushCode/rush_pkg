@@ -87,7 +87,7 @@ func (h *YookassasettingController) UpdateYooKassaSettingByPointID(ctx *fiber.Ct
 		return err
 	}
 
-	resRepo, err := h.repo.YooKassaSetting.UpdateByPointID(ctx.Context(), data)
+	resRepo, err := h.repo.YooKassaSetting.SaveByPointID(ctx.Context(), data)
 	if err != nil {
 		return err
 	}

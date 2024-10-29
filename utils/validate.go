@@ -15,8 +15,8 @@ var (
 	once     sync.Once // Используем для того, чтобы регистрация произошла только один раз
 )
 
+// Обновленная функция ValidateStruct для более детализированных сообщений
 func ValidateStruct(data interface{}) error {
-	// Используем sync.Once, чтобы гарантировать однократную регистрацию кастомных валидаторов
 	once.Do(func() {
 		err := registerCustomValidators(validate)
 		if err != nil {
@@ -34,7 +34,6 @@ func ValidateStruct(data interface{}) error {
 
 		errors := err.(validator.ValidationErrors)
 		for i, err := range errors {
-			// Получаем имя поля из тега json
 			fieldName := getJSONTag(data, err.StructField())
 
 			// Формирование детализированного сообщения об ошибке
@@ -50,7 +49,11 @@ func ValidateStruct(data interface{}) error {
 			case "phone":
 				errMsg.WriteString(fmt.Sprintf("Поле '%s' должно быть валидным номером телефона (+7XXXXXXXXXX)", fieldName))
 			case "required_if_false":
-				errMsg.WriteString(fmt.Sprintf("Поле '%s' обязательно, если поле '%s' имеет значение false", fieldName, err.Param()))
+				dependentField := getJSONTag(data, err.Param())
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' обязательно, если поле '%s' имеет значение false", fieldName, dependentField))
+			case "required_if_true":
+				dependentField := getJSONTag(data, err.Param())
+				errMsg.WriteString(fmt.Sprintf("Поле '%s' обязательно, если поле '%s' имеет значение true", fieldName, dependentField))
 			default:
 				errMsg.WriteString(fmt.Sprintf("Поле '%s' не прошло валидацию: %s", fieldName, err.Tag()))
 			}
@@ -111,15 +114,20 @@ func registerCustomValidators(validate *validator.Validate) error {
 		return err
 	}
 
+	// Регистрируем кастомный валидатор для логики зависимости полей
+	if err := validate.RegisterValidation("required_if_true", validateRequiredIfTrue); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // validateRequiredIfFalse проверяет, что одно поле обязательно, если другое имеет значение false
 func validateRequiredIfFalse(fl validator.FieldLevel) bool {
-	param := fl.Param() // Получаем имя зависимого поля
-	field := fl.Field() // Текущее поле
+	param := fl.Param() // Имя зависимого поля
+	field := fl.Field() // Значение текущего поля
 
-	// Проверяем значение зависимого поля
+	// Проверка зависимого поля
 	otherField := fl.Parent().FieldByName(param)
 	if !otherField.IsValid() {
 		return false
@@ -127,7 +135,25 @@ func validateRequiredIfFalse(fl validator.FieldLevel) bool {
 
 	// Если зависимое поле имеет значение false, текущее поле должно быть заполнено
 	if otherField.Kind() == reflect.Bool && !otherField.Bool() {
-		return field.Uint() != 0
+		return field.String() != ""
+	}
+
+	return true
+}
+
+// validateRequiredIfTrue проверяет, что одно поле обязательно, если другое имеет значение true
+func validateRequiredIfTrue(fl validator.FieldLevel) bool {
+	param := fl.Param()
+	field := fl.Field()
+
+	otherField := fl.Parent().FieldByName(param)
+	if !otherField.IsValid() {
+		return false
+	}
+
+	// Если зависимое поле имеет значение true, текущее поле должно быть заполнено
+	if otherField.Kind() == reflect.Bool && otherField.Bool() {
+		return field.String() != ""
 	}
 
 	return true

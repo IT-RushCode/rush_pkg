@@ -181,7 +181,7 @@ var clientErrorMessages = map[error]string{
 	ErrUserIdNotFound:  "Не удалось найти идентификатор пользователя.",
 	ErrorEmptyAuth:     "Пустое тело запроса. Пожалуйста, отправьте корректные данные.",
 	ErrForbidden:       "У вас нет прав для выполнения этого действия.",
-	ErrUnauthenticated: "Вы не авторизованы для выполнения этого действия.",
+	ErrUnauthenticated: "Не авторизован.",
 
 	// JWT token errors
 	ErrorGenAccessToken:   "Ошибка при создании токена доступа.",

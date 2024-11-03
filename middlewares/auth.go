@@ -11,7 +11,6 @@ import (
 
 // AuthMiddleware представляет собой middleware для аутентификации пользователя.
 type AuthMiddleware struct {
-	jwtTTL       time.Duration
 	jwt          utils.JWTService
 	publicRoutes map[string][]string
 }
@@ -23,11 +22,8 @@ func NewAuthMiddleware(
 ) *AuthMiddleware {
 	jwtTTL := time.Duration(cfg.JWT.JWT_TTL) * time.Second
 	jwtRTTL := time.Duration(cfg.JWT.REFRESH_TTL) * time.Second
-	jwtService := utils.NewJWTService(cfg.JWT.JWT_SECRET, jwtTTL, jwtRTTL)
-
 	return &AuthMiddleware{
-		jwtTTL:       jwtTTL,
-		jwt:          jwtService,
+		jwt:          utils.NewJWTService(cfg.JWT.JWT_SECRET, jwtTTL, jwtRTTL),
 		publicRoutes: routes,
 	}
 }

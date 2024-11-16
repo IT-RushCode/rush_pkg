@@ -8,16 +8,6 @@ import (
 	"github.com/IT-RushCode/rush_pkg/models"
 )
 
-// Миграция связанных таблиц Iiko
-func MigrateIikoIntegration(conn *gorm.DB) {
-	err := conn.Debug().AutoMigrate(
-		models.IikoIntegration{},
-	)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 // Миграция связанных таблиц Юкассы
 func MigrateYooKassaSetting(conn *gorm.DB) {
 	err := conn.Debug().AutoMigrate(

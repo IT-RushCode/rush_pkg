@@ -9,7 +9,6 @@ import (
 
 type Services struct {
 	Firebase *FirebaseService
-	Iiko     *IikoService
 	Payment  *PaymentService
 	Sms      *SmsService
 }
@@ -22,7 +21,6 @@ func NewServices(cfg *config.Config, repo *repositories.Repositories) *Services 
 
 	return &Services{
 		Firebase: fbSrv,
-		Iiko:     NewIikoService("", "", "", ""),
 		Payment:  NewPaymentService(repo),
 		Sms:      NewSmsService(&cfg.SMS),
 	}

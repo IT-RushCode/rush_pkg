@@ -30,35 +30,25 @@ func NewYooKassaSettingRepository(db *gorm.DB) YooKassaSettingRepository {
 func (r *yookassasettingRepository) SaveByPointID(ctx context.Context, data *models.YooKassaSetting) (*models.YooKassaSetting, error) {
 	var existingRecord models.YooKassaSetting
 
-	// Проверяем, существует ли запись с данным point_id
-	err := r.db.WithContext(ctx).
+	// Используем FirstOrCreate для поиска или создания записи
+	if err := r.db.WithContext(ctx).
 		Where("point_id = ?", data.PointID).
-		First(&existingRecord).
-		Error
-
-	if err != nil && err != gorm.ErrRecordNotFound {
+		Attrs(models.YooKassaSetting{
+			StoreID:   data.StoreID,
+			SecretKey: data.SecretKey,
+			IsTest:    data.IsTest,
+			Status:    data.Status,
+		}).
+		FirstOrCreate(&existingRecord).Error; err != nil {
 		return nil, err
 	}
 
-	// Если запись существует, обновляем её
-	if err == nil {
-		if err := r.db.WithContext(ctx).
-			Model(&existingRecord).
-			Updates(data).
-			Error; err != nil {
-			return nil, err
-		}
-		return &existingRecord, nil
-	}
-
-	// Если запись не найдена, создаем новую
-	if err == gorm.ErrRecordNotFound {
-		if err := r.db.WithContext(ctx).
-			Create(data).
-			Error; err != nil {
+	// Если запись существовала, обновляем поля
+	if existingRecord.ID != 0 {
+		if err := r.db.WithContext(ctx).Model(&existingRecord).Updates(data).Error; err != nil {
 			return nil, err
 		}
 	}
 
-	return data, nil
+	return &existingRecord, nil
 }

@@ -12,11 +12,11 @@ import (
 // filename - имя файла, содержащего JSON данные.
 // entities - ссылка на срез сущностей, куда будут записаны данные.
 //
-// Пример использования:
+// // Пример использования:
 //
-// var entities []Entity
+//	var entities []Entity
 //
-// LoadEntitiesFromFile("entities.json", &entities)
+//	LoadEntitiesFromFile("entities.json", &entities)
 func LoadEntitiesFromJsonFile[T any](filename string, entities *[]T) {
 	file, err := os.Open(filename)
 	if err != nil {

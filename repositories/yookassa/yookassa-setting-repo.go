@@ -14,20 +14,20 @@ type YooKassaSettingRepository interface {
 	SaveByPointID(ctx context.Context, data *models.YooKassaSetting) (*models.YooKassaSetting, error)
 }
 
-type yookassasettingRepository struct {
+type yooKassaSettingRepository struct {
 	rp.BaseRepository
 	db *gorm.DB
 }
 
 func NewYooKassaSettingRepository(db *gorm.DB) YooKassaSettingRepository {
-	return &yookassasettingRepository{
+	return &yooKassaSettingRepository{
 		BaseRepository: rp.NewBaseRepository(db),
 		db:             db,
 	}
 }
 
 // Полное обновление по point_id
-func (r *yookassasettingRepository) SaveByPointID(ctx context.Context, data *models.YooKassaSetting) (*models.YooKassaSetting, error) {
+func (r *yooKassaSettingRepository) SaveByPointID(ctx context.Context, data *models.YooKassaSetting) (*models.YooKassaSetting, error) {
 	var existingRecord models.YooKassaSetting
 
 	// Используем FirstOrCreate для поиска или создания записи

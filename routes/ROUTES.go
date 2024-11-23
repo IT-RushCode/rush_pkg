@@ -7,6 +7,7 @@ import (
 
 	chat "github.com/IT-RushCode/rush_pkg/routes/chat"
 	ntf "github.com/IT-RushCode/rush_pkg/routes/notification"
+	policy "github.com/IT-RushCode/rush_pkg/routes/policy"
 	sms "github.com/IT-RushCode/rush_pkg/routes/sms"
 	yookassa "github.com/IT-RushCode/rush_pkg/routes/yookassa"
 
@@ -51,4 +52,14 @@ func RUN_WEBSOCKET_ROUTES(
 ) {
 	chat.RUN_CHAT_API(api, h, m)
 	chat.RUN_WEBSOCKET_API(api, h, m)
+}
+
+// РОУТЫ NOTIFICATION
+func RUN_POLICY_ROUTES(
+	api fiber.Router,
+	ctrl *controllers.Controllers,
+	h *handlers.Handlers,
+	m *middlewares.Middlewares,
+) {
+	policy.RUN_POLICY_ROUTES(api, h, m)
 }

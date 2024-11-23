@@ -19,8 +19,8 @@ func (YooKassaSetting) TableName() string {
 	return "YooKassaSettings"
 }
 
-func (a *YooKassaSetting) BeforeCreate(tx *gorm.DB) (err error) {
-	if err := CheckSequence("YooKassaSettings", tx); err != nil {
+func (m *YooKassaSetting) BeforeCreate(db *gorm.DB) (err error) {
+	if err := CheckSequence(m.TableName(), db); err != nil {
 		return err
 	}
 	return nil

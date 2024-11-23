@@ -21,8 +21,11 @@ type SoftDelete struct {
 // tableName - принимает название таблицы в базе
 //
 // Таблица должна иметь поле ID (primary key)
-func CheckSequence(tableName string, tx *gorm.DB) error {
-	err := tx.Exec(fmt.Sprintf("SELECT setval('\"%s_id_seq\"', (SELECT MAX(id) FROM \"%s\"));", tableName, tableName)).Error
+func CheckSequence(tableName string, db *gorm.DB) error {
+	err := db.Exec(fmt.Sprintf(
+		"SELECT setval('\"%s_id_seq\"', (SELECT MAX(id) FROM \"%s\"));",
+		tableName, tableName,
+	)).Error
 	if err != nil {
 		return err
 	}

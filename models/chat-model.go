@@ -23,8 +23,8 @@ func (ChatSession) TableName() string {
 	return "ChatSessions"
 }
 
-func (a *ChatSession) BeforeCreate(tx *gorm.DB) (err error) {
-	if err := CheckSequence("ChatSessions", tx); err != nil {
+func (m *ChatSession) BeforeCreate(db *gorm.DB) (err error) {
+	if err := CheckSequence(m.TableName(), db); err != nil {
 		return err
 	}
 	return nil
@@ -49,8 +49,8 @@ func (ChatMessage) TableName() string {
 	return "ChatMessages"
 }
 
-func (a *ChatMessage) BeforeCreate(tx *gorm.DB) (err error) {
-	if err := CheckSequence("ChatMessages", tx); err != nil {
+func (m *ChatMessage) BeforeCreate(db *gorm.DB) (err error) {
+	if err := CheckSequence(m.TableName(), db); err != nil {
 		return err
 	}
 	return nil

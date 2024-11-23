@@ -4,6 +4,7 @@ import (
 	rpBase "github.com/IT-RushCode/rush_pkg/repositories/base"
 	rpChat "github.com/IT-RushCode/rush_pkg/repositories/chat"
 	rpNtf "github.com/IT-RushCode/rush_pkg/repositories/notification"
+	rpPolicy "github.com/IT-RushCode/rush_pkg/repositories/policy"
 	rpYKassa "github.com/IT-RushCode/rush_pkg/repositories/yookassa"
 	"github.com/IT-RushCode/rush_pkg/storage"
 
@@ -13,6 +14,7 @@ import (
 // Флаги для определения, какие репозитории инициализировать
 type RepoFlags struct {
 	InitYKassaRepo       bool // Инициализировать ли YKassa репозиторий
+	InitPolicyRepo       bool // Инициализировать ли Policy репозиторий
 	InitNotificationRepo bool // Инициализировать ли Notification репозиторий
 	InitChatRepo         bool // Инициализировать ли Chat репозиторий
 	InitCacheRepo        bool // Инициализировать ли кэш-репозиторий Redis
@@ -24,6 +26,7 @@ type Repositories struct {
 	YooKassaSetting rpYKassa.YooKassaSettingRepository
 	Notification    rpNtf.NotificationRepository
 	Chat            rpChat.ChatRepository
+	Policy          rpPolicy.PolicyRepository
 
 	Redis *redis.Client
 
@@ -53,6 +56,11 @@ func NewRepositories(
 	// Инициализация репозиториев для Chat
 	if flags.InitChatRepo {
 		repos.Chat = rpChat.NewChatRepository(DB)
+	}
+
+	// Инициализация репозиториев для Policy
+	if flags.InitPolicyRepo {
+		repos.Policy = rpPolicy.NewPolicyRepository(DB)
 	}
 
 	// Инициализация кэш-репозитория Redis

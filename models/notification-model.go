@@ -24,8 +24,8 @@ func (Notification) TableName() string {
 	return "Notifications"
 }
 
-func (a *Notification) BeforeCreate(tx *gorm.DB) (err error) {
-	if err := CheckSequence("Notifications", tx); err != nil {
+func (m *Notification) BeforeCreate(db *gorm.DB) (err error) {
+	if err := CheckSequence(m.TableName(), db); err != nil {
 		return err
 	}
 	return nil

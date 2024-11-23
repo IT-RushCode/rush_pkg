@@ -39,3 +39,18 @@ func MigrateChat(conn *gorm.DB) {
 		log.Println(err)
 	}
 }
+
+// Миграция связанных таблиц чата
+func MigratePolicy(db *gorm.DB) {
+	policy := models.Policy{}
+	err := db.Debug().AutoMigrate(
+		policy,
+	)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if err := policy.CreateDefault(db); err != nil {
+		log.Println(err)
+	}
+}

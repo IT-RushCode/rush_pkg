@@ -13,6 +13,7 @@ type Handlers struct {
 	Notification *NotificationHandler
 	WebSocket    *chat.WebSocketHandler
 	Chat         *chat.ChatHandler
+	Policy       *PolicyHandler
 }
 
 func NewHandlers(
@@ -25,5 +26,7 @@ func NewHandlers(
 		Sms:          NewSMSHandler(cfg, srv, repo.Redis),
 		Notification: NewNotificationHandler(cfg, srv, repo.Redis),
 		WebSocket:    chat.NewWebSocketHandler(ctrl.Chat),
+		Chat:         chat.NewChatHandler(srv, repo),
+		Policy:       NewPolicyHandler(repo),
 	}
 }

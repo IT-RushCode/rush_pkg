@@ -5,6 +5,7 @@ import (
 	"github.com/IT-RushCode/rush_pkg/handlers"
 	"github.com/IT-RushCode/rush_pkg/middlewares"
 
+	appVersion "github.com/IT-RushCode/rush_pkg/routes/app-version"
 	chat "github.com/IT-RushCode/rush_pkg/routes/chat"
 	ntf "github.com/IT-RushCode/rush_pkg/routes/notification"
 	policy "github.com/IT-RushCode/rush_pkg/routes/policy"
@@ -62,4 +63,13 @@ func RUN_POLICY_ROUTES(
 	m *middlewares.Middlewares,
 ) {
 	policy.RUN_POLICY_ROUTES(api, h, m)
+}
+
+// РОУТЫ APP VERSION
+func RUN_APP_VERSION_ROUTE(
+	api fiber.Router,
+	h *handlers.Handlers,
+	m *middlewares.Middlewares,
+) {
+	appVersion.RUN_APP_VERSION_ROUTE(api, h, m)
 }

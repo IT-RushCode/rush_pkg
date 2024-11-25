@@ -23,21 +23,20 @@ var (
 	ErrInvalidTransaction = errors.New("RP1007: некорректная транзакция")
 
 	// Auth errors A2000-A2999
-	ErrCopierData      = errors.New("AU2000: ошибка copier")
-	ErrRefreshToken    = errors.New("AU2001: неверный токен обновления")
-	ErrNotRefreshToken = errors.New("AU2002: полученный токен не является refresh токеном")
-	ErrUserIdNotFound  = errors.New("AU2003: user id не найден в context")
-	ErrorEmptyAuth     = errors.New("AU2004: пустое тело токена")
-	ErrForbidden       = errors.New("AU2005: нет прав")
-	ErrUnauthenticated = errors.New("AU2006: не авторизован")
-
-	// JWT token errors J3000-3999
-	ErrorGenAccessToken   = errors.New("JWT3000: не удалось сгенерировать токен доступа")
-	ErrorGenRefreshToken  = errors.New("JWT3001: не удалось создать токен обновления")
-	ErrorSigningMethod    = errors.New("JWT3002: неверный метод подписи токена")
-	ErrorInvalidToken     = errors.New("JWT3003: неверный токен")
-	ErrorTokenExpired     = errors.New("JWT3004: токен истёк")
-	ErrorTokenNotYetValid = errors.New("JWT3005: токен больше не валидный")
+	ErrCopierData           = errors.New("AU2000: ошибка copier")
+	ErrRefreshToken         = errors.New("AU2001: неверный токен обновления")
+	ErrNotRefreshToken      = errors.New("AU2002: полученный токен не является refresh токеном")
+	ErrUserIdNotFound       = errors.New("AU2003: user id не найден в context")
+	ErrorEmptyAuth          = errors.New("AU2004: пустое тело токена")
+	ErrForbidden            = errors.New("AU2005: нет прав")
+	ErrUnauthenticated      = errors.New("AU2006: не авторизован")
+	ErrorGenAccessToken     = errors.New("AU2007: не удалось сгенерировать токен доступа")
+	ErrorGenRefreshToken    = errors.New("AU2008: не удалось создать токен обновления")
+	ErrorSigningMethod      = errors.New("AU2009: неверный метод подписи токена")
+	ErrorInvalidToken       = errors.New("AU2010: неверный токен")
+	ErrorInvalidFormatToken = errors.New("AU2011: неверный токен")
+	ErrorTokenExpired       = errors.New("AU2012: токен истёк")
+	ErrorTokenNotYetValid   = errors.New("AU2013: токен больше не валидный")
 
 	// BadRequestErrors 4000-4999
 	ErrInvalidData  = errors.New("BR4000: некорректные данные")
@@ -65,7 +64,8 @@ var (
 	ErrCancelContext    = errors.New("CTX6001: операция была отменена")
 
 	// Internal errors
-	ErrInternal = errors.New("внутренняя ошибка сервера")
+	ErrInternal       = errors.New("внутренняя ошибка сервера")
+	ErrClientInternal = "Что-то пошло не так. Пожалуйста, повторите попытку позже."
 )
 
 // Функция для проверки возвращаемой ошибки из репозитория
@@ -153,6 +153,27 @@ func MapErrorToStatus(err error) (int, error) {
 		return http.StatusBadRequest, errors.New(strings.TrimPrefix(err.Error(), "VALIDATE: "))
 	}
 
+	if errors.Is(err, ErrorEmptyAuth) {
+		return http.StatusUnauthorized, ErrorEmptyAuth
+	}
+
+	// Обработка ошибок декодирования токена
+	if errors.Is(err, ErrorInvalidFormatToken) || strings.Contains(err.Error(), "token contains an invalid number of segments") ||
+		strings.Contains(err.Error(), "could not base64 decode") ||
+		strings.Contains(err.Error(), "could not JSON decode") {
+		return http.StatusBadRequest, ErrorInvalidFormatToken
+	}
+
+	// Обработка ошибки подписи токена
+	if strings.Contains(err.Error(), "signature is invalid") {
+		return http.StatusUnauthorized, ErrorSigningMethod
+	}
+
+	// Проверка на ошибки истечения срока действия токена
+	if strings.Contains(err.Error(), "token is expired") {
+		return http.StatusUnauthorized, ErrorTokenExpired
+	}
+
 	// Если ошибка неизвестного типа или internal, возвращаем внутреннюю ошибку
 	if strings.Contains(err.Error(), "internal error") {
 		return http.StatusInternalServerError, ErrInternal
@@ -188,7 +209,7 @@ var clientErrorMessages = map[error]string{
 	ErrorGenRefreshToken:  "Ошибка при создании токена обновления.",
 	ErrorSigningMethod:    "Неверный метод подписи токена.",
 	ErrorInvalidToken:     "Неверный токен.",
-	ErrorTokenExpired:     "Срок действия токена истек. Пожалуйста, авторизуйтесь заново.",
+	ErrorTokenExpired:     "Время сессии истекло. Пожалуйста, авторизуйтесь заново.",
 	ErrorTokenNotYetValid: "Токен больше не действителен.",
 
 	// BadRequest errors
@@ -217,7 +238,7 @@ var clientErrorMessages = map[error]string{
 	ErrCancelContext:    "Операция была отменена.",
 
 	// Internal errors
-	ErrInternal: "Внутренняя ошибка сервера. Пожалуйста, повторите попытку позже.",
+	ErrInternal: ErrClientInternal,
 }
 
 // GetClientErrorMessage возвращает клиентский текст ошибки для Production режима
@@ -226,5 +247,5 @@ func GetClientErrorMessage(err error) string {
 		return message
 	}
 	// Если ошибка не найдена в списке, возвращаем обобщённое сообщение
-	return "Произошла ошибка. Пожалуйста, повторите попытку позже."
+	return ErrClientInternal
 }

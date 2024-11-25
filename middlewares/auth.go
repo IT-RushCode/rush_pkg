@@ -83,19 +83,19 @@ func (m *AuthMiddleware) isPublicRoute(ctx *fiber.Ctx) bool {
 func (m *AuthMiddleware) extractTokenClaims(ctx *fiber.Ctx) (*utils.JwtCustomClaim, error) {
 	authHeader := ctx.Get("Authorization")
 	if authHeader == "" {
-		return nil, utils.ErrorUnauthorizedResponse(ctx, "отсутствует токен авторизации", nil)
+		return nil, utils.ErrorEmptyAuth
 	}
 
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		return nil, utils.ErrorUnauthorizedResponse(ctx, "неверный формат токена", nil)
+		return nil, utils.ErrorInvalidFormatToken
 	}
 
 	token := parts[1]
 	// Проверка токена через сервис JWT
 	claims, err := m.jwt.ValidateToken(token)
 	if err != nil {
-		return nil, utils.ErrorUnauthorizedResponse(ctx, "неверный токен авторизации", nil)
+		return nil, err
 	}
 
 	return claims, nil

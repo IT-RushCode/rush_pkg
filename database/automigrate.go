@@ -40,6 +40,16 @@ func MigrateChat(conn *gorm.DB) {
 	}
 }
 
+// Миграция связанных таблиц app versions
+func MigrateAppVersion(conn *gorm.DB) {
+	err := conn.Debug().AutoMigrate(
+		models.AppVersion{},
+	)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 // Миграция связанных таблиц чата
 func MigratePolicy(db *gorm.DB) {
 	policy := models.Policy{}

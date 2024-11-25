@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/IT-RushCode/rush_pkg/config"
 	"github.com/IT-RushCode/rush_pkg/utils"
@@ -10,12 +11,14 @@ import (
 
 type ErrorMiddleware struct {
 	dbg bool
+	env string
 }
 
 // NewErrorMiddleware создает новый экземпляр ErrorMiddleware.
 func NewErrorMiddleware(cfg *config.AppConfig) *ErrorMiddleware {
 	return &ErrorMiddleware{
 		dbg: cfg.DEBUG,
+		env: cfg.ENV,
 	}
 }
 
@@ -55,8 +58,14 @@ func (m *ErrorMiddleware) ErrorHandlingMiddleware(ctx *fiber.Ctx) error {
 	// В Production режиме скрываем детали ошибки и используем клиентские сообщения
 	clientMessage := utils.GetClientErrorMessage(cleanedError)
 
-	// Логируем внутреннюю ошибку для мониторинга в Production
-	log.Printf("%s(PROD)%s Внутренняя ошибка > %s %v", utils.Green, utils.Red, cleanedError, utils.Reset)
+	if m.env == "prod" {
+		// Логируем внутреннюю ошибку для мониторинга в Production
+		log.Printf("%s(PROD)%s Внутренняя ошибка > %s %v", utils.Green, utils.Red, cleanedError, utils.Reset)
+	}
+
+	if clientMessage == utils.ErrClientInternal {
+		statusCode = http.StatusInternalServerError
+	}
 
 	// Возвращаем клиенту обобщённое или специфическое сообщение об ошибке
 	return utils.SendResponse(ctx, false, clientMessage, nil, statusCode)

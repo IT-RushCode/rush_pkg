@@ -24,10 +24,13 @@ type BaseRepository interface {
 	UpdateField(ctx context.Context, id uint, field string, value interface{}, data interface{}) error
 	SoftDelete(ctx context.Context, data interface{}) error
 	Filter(ctx context.Context, filters map[string]interface{}, entities interface{}) error
+
+	BaseTxRepository
 }
 
 // BaseRepository представляет базовую структуру для репозиториев
 type baseRepository struct {
+	BaseTxRepository
 	db *gorm.DB
 }
 

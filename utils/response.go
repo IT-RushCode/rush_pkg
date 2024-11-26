@@ -126,7 +126,7 @@ func ErrorForbiddenResponse(ctx *fiber.Ctx, message string, body interface{}) er
 // ErrorRefreshTokenResponse отправляет ответ об ошибке "Токен обновления истек".
 func ErrorRefreshTokenResponse(ctx *fiber.Ctx) error {
 	ctx.Locals(customCode, true)
-	return SendResponse(ctx, false, ErrorTokenExpired.Error(), nil, 419)
+	return SendResponse(ctx, false, GetClientErrorMessage(ErrorRefreshTokenExpired), nil, 419)
 }
 
 // ErrorConflictResponse отправляет ответ об ошибке "Конфликт" с указанным сообщением и телом данных.

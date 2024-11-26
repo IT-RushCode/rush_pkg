@@ -26,7 +26,7 @@ func (s *PaymentService) CreatePayment(ctx context.Context, store *models.YooKas
 
 	var payment *yoopayment.Payment
 	payment, err := paymentKassa.CreatePayment(&yoopayment.Payment{
-		Metadata:    map[string]interface{}{"orderNumber": req.OrderNumber},
+		Metadata:    req.Metadata,
 		Description: req.Description,
 		Capture:     true,
 		Amount: &yoocommon.Amount{

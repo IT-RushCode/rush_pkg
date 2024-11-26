@@ -23,20 +23,22 @@ var (
 	ErrInvalidTransaction = errors.New("RP1007: некорректная транзакция")
 
 	// Auth errors A2000-A2999
-	ErrCopierData           = errors.New("AU2000: ошибка copier")
-	ErrRefreshToken         = errors.New("AU2001: неверный токен обновления")
-	ErrNotRefreshToken      = errors.New("AU2002: полученный токен не является refresh токеном")
-	ErrUserIdNotFound       = errors.New("AU2003: user id не найден в context")
-	ErrorEmptyAuth          = errors.New("AU2004: пустое тело токена")
-	ErrForbidden            = errors.New("AU2005: нет прав")
-	ErrUnauthenticated      = errors.New("AU2006: не авторизован")
-	ErrorGenAccessToken     = errors.New("AU2007: не удалось сгенерировать токен доступа")
-	ErrorGenRefreshToken    = errors.New("AU2008: не удалось создать токен обновления")
-	ErrorSigningMethod      = errors.New("AU2009: неверный метод подписи токена")
-	ErrorInvalidToken       = errors.New("AU2010: неверный токен")
-	ErrorInvalidFormatToken = errors.New("AU2011: неверный токен")
-	ErrorTokenExpired       = errors.New("AU2012: токен истёк")
-	ErrorTokenNotYetValid   = errors.New("AU2013: токен больше не валидный")
+	ErrCopierData                = errors.New("AU2000: ошибка copier")
+	ErrRefreshToken              = errors.New("AU2001: неверный токен обновления")
+	ErrNotRefreshToken           = errors.New("AU2002: полученный токен не является refresh токеном")
+	ErrUserIdNotFound            = errors.New("AU2003: user id не найден в context")
+	ErrorEmptyAuth               = errors.New("AU2004: пустое тело токена")
+	ErrForbidden                 = errors.New("AU2005: нет прав")
+	ErrUnauthenticated           = errors.New("AU2006: не авторизован")
+	ErrorGenAccessToken          = errors.New("AU2007: не удалось сгенерировать токен доступа")
+	ErrorGenRefreshToken         = errors.New("AU2008: не удалось создать токен обновления")
+	ErrorSigningMethod           = errors.New("AU2009: неверный метод подписи токена")
+	ErrorInvalidToken            = errors.New("AU2010: неверный токен")
+	ErrorInvalidFormatToken      = errors.New("AU2011: неверный токен")
+	ErrorTokenExpired            = errors.New("AU2012: время действия токена истекло")
+	ErrorTokenNotYetValid        = errors.New("AU2013: токен недействителен")
+	ErrorRefreshTokenExpired     = errors.New("AU2014: время действия токена обновления истекло")
+	ErrorRefreshTokenNotYetValid = errors.New("AU2015: токен обновления недействителен")
 
 	// BadRequestErrors 4000-4999
 	ErrInvalidData  = errors.New("BR4000: некорректные данные")
@@ -196,21 +198,21 @@ var clientErrorMessages = map[error]string{
 	ErrInvalidTransaction: "Неверная транзакция. Пожалуйста, попробуйте снова.",
 
 	// Auth errors
-	ErrCopierData:      "Ошибка обработки данных.",
-	ErrRefreshToken:    "Неверный токен обновления. Пожалуйста, авторизуйтесь заново.",
-	ErrNotRefreshToken: "Полученный токен не является токеном обновления.",
-	ErrUserIdNotFound:  "Не удалось найти идентификатор пользователя.",
-	ErrorEmptyAuth:     "Пустое тело запроса. Пожалуйста, отправьте корректные данные.",
-	ErrForbidden:       "У вас нет прав для выполнения этого действия.",
-	ErrUnauthenticated: "Не авторизован.",
-
-	// JWT token errors
-	ErrorGenAccessToken:   "Ошибка при создании токена доступа.",
-	ErrorGenRefreshToken:  "Ошибка при создании токена обновления.",
-	ErrorSigningMethod:    "Неверный метод подписи токена.",
-	ErrorInvalidToken:     "Неверный токен.",
-	ErrorTokenExpired:     "Время сессии истекло. Пожалуйста, авторизуйтесь заново.",
-	ErrorTokenNotYetValid: "Токен больше не действителен.",
+	ErrCopierData:                "Ошибка обработки данных.",
+	ErrRefreshToken:              "Неверный токен обновления. Пожалуйста, авторизуйтесь заново.",
+	ErrNotRefreshToken:           "Полученный токен не является токеном обновления.",
+	ErrUserIdNotFound:            "Не удалось найти идентификатор пользователя.",
+	ErrorEmptyAuth:               "Пустое тело запроса. Пожалуйста, отправьте корректные данные.",
+	ErrForbidden:                 "У вас нет прав для выполнения этого действия.",
+	ErrUnauthenticated:           "Не авторизован.",
+	ErrorGenAccessToken:          "Ошибка при создании токена доступа.",
+	ErrorGenRefreshToken:         "Ошибка при создании токена обновления.",
+	ErrorSigningMethod:           "Неверный метод подписи токена.",
+	ErrorInvalidToken:            "Неверный токен.",
+	ErrorTokenExpired:            "Срок действия сессии истёк. Войдите снова.",
+	ErrorTokenNotYetValid:        "Доступ невозможен. Попробуйте ещё раз.",
+	ErrorRefreshTokenExpired:     "Сессия завершена. Пожалуйста, войдите снова.",
+	ErrorRefreshTokenNotYetValid: "Сессия недействительна. Пожалуйста, войдите снова.",
 
 	// BadRequest errors
 	ErrInvalidData:  "Некорректные данные. Проверьте правильность ввода.",

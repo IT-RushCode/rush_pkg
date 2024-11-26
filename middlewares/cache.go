@@ -29,6 +29,8 @@ func NewCacheMiddleware(redisClient *redis.Client, activeCache bool, cacheTime i
 
 // RouteCache создает кэширование на уровне маршрутов.
 //
+//	cacheTime := 60 // cacheTime принимает только минуты
+//
 // Если на уровне роута cacheTime > 0, то указанное время будет приоритетом, иначе будет используется глобальный cacheTime мидлвейра.
 func (f *CacheMiddleware) RouteCache(cacheTime int64) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
@@ -40,12 +42,16 @@ func (f *CacheMiddleware) RouteCache(cacheTime int64) fiber.Handler {
 		// Создаем ключ кэша на основе URL запроса
 		cacheKey := fmt.Sprintf("route_cache_%s", ctx.OriginalURL())
 
-		// Попытка получения кэшированных данных по ключу
-		cached, err := f.cache.Get(ctx.Context(), cacheKey).Result()
-		if err == nil && cached != "" {
-			// Возвращаем кэшированный ответ
-			ctx.Set("Content-Type", "application/json")
-			return ctx.SendString(cached)
+		cached, err := f.cache.Get(ctx.Context(), cacheKey).Bytes() // Извлекаем как байты
+		if err == nil && len(cached) > 0 {
+			contentType := ctx.Get("Content-Type")
+			if strings.HasPrefix(contentType, "image/") {
+				ctx.Set("Content-Type", contentType)
+				return ctx.Send(cached) // Отправляем байты изображения
+			} else {
+				ctx.Set("Content-Type", "application/json")
+				return ctx.SendString(string(cached)) // Отправляем как строку для JSON
+			}
 		} else if err != redis.Nil {
 			// Если произошла ошибка, отличная от "ключ не найден"
 			return err

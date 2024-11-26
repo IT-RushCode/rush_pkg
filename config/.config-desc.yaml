@@ -1,27 +1,25 @@
 APP:
-  APP_ENV: "local"
-  APP_DEBUG: true
-  APP_NAME: ""
-  APP_HOST: "localhost"
-  APP_PORT: ":8000"
-  APP_MAX_CONNECTION: 100
-  DATETIME: ""
-  DATE: ""
-  TIME: ""
+  ENV: "dev" # dev/test/prod
+  DEBUG: true
+  NAME: ""
+  HOST: "localhost"
+  PORT: ":8000"
+  CACHE_ACTIVE: true
+  CACHE_TIMEOUT: 43800 # в минутах  (43800 - 1 мес)
 
 DB:
-  DBHOST: "localhost"
-  DBPORT: 5432
-  DBUSER: "postgres"
-  DBPASS: "postgres"
-  DBNAME: "postgres"
+  HOST: "localhost"
+  PORT: 5432
+  USER: "postgres"
+  PASS: "postgres"
+  NAME: "postgres"
   CHARSET: ""
 
 REDIS:
-  RD_HOST: "localhost"
-  RD_PORT: ":6379"
-  RD_PASS: ""
-  RD_DB: 0
+  HOST: "localhost"
+  PORT: ":6379"
+  PASS: ""
+  DB: 0
 
 JWT:
   JWT_SECRET: ""

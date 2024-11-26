@@ -30,12 +30,12 @@ func RUN_NOTIFICATION_ROUTES(api fiber.Router, h *handlers.Handlers, ctrl *contr
 	notifications.Post("/get-toggle-status", m.Permission.CheckPermission("view:notification_toggle_status"), h.Notification.GetToggleNotificationHandler)
 
 	// Роут для получения только общих уведомлений (без авторизации)
-	notifications.Get("/general", h.Notification.GetGeneralNotificationsHandler)
+	notifications.Get("/general", m.Cache.RouteCache(0), h.Notification.GetGeneralNotificationsHandler)
 
 	// ----------- CRUD ----------->
 
-	notifications.Get("/", m.Permission.CheckPermission("view:general_notifications"), m.Cache.RouteCache(60), ctrl.Notification.GetGeneralNotifications)
-	notifications.Get("/:id", m.Permission.CheckPermission("view:general_notification_by_id"), m.Cache.RouteCache(60), ctrl.Notification.FindNotificationByID)
+	notifications.Get("/", m.Permission.CheckPermission("view:general_notifications"), m.Cache.RouteCache(0), ctrl.Notification.GetGeneralNotifications)
+	notifications.Get("/:id", m.Permission.CheckPermission("view:general_notification_by_id"), m.Cache.RouteCache(0), ctrl.Notification.FindNotificationByID)
 	notifications.Post("/", m.Permission.CheckPermission("create:general_notification"), ctrl.Notification.CreateGeneralNotification)
 	notifications.Put("/:id", m.Permission.CheckPermission("update:general_notification"), ctrl.Notification.UpdateGeneralNotification)
 	notifications.Delete("/:id", m.Permission.CheckPermission("delete:notification"), ctrl.Notification.DeleteNotification)

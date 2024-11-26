@@ -75,7 +75,6 @@ func (h *PolicyHandler) GetPolicyHTML(ctx *fiber.Ctx) error {
 		"Title": policy.Title,
 		"Text":  convertToHTML(policy.Text),
 	})
-
 }
 
 func convertToHTML(text string) string {

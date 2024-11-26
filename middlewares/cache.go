@@ -42,16 +42,12 @@ func (f *CacheMiddleware) RouteCache(cacheTime int64) fiber.Handler {
 		// Создаем ключ кэша на основе URL запроса
 		cacheKey := fmt.Sprintf("route_cache_%s", ctx.OriginalURL())
 
-		cached, err := f.cache.Get(ctx.Context(), cacheKey).Bytes() // Извлекаем как байты
-		if err == nil && len(cached) > 0 {
-			contentType := ctx.Get("Content-Type")
-			if strings.HasPrefix(contentType, "image/") {
-				ctx.Set("Content-Type", contentType)
-				return ctx.Send(cached) // Отправляем байты изображения
-			} else {
-				ctx.Set("Content-Type", "application/json")
-				return ctx.SendString(string(cached)) // Отправляем как строку для JSON
-			}
+		// Попытка получения кэшированных данных по ключу
+		cached, err := f.cache.Get(ctx.Context(), cacheKey).Result()
+		if err == nil && cached != "" {
+			// Возвращаем кэшированный ответ
+			ctx.Set("Content-Type", "application/json")
+			return ctx.SendString(cached)
 		} else if err != redis.Nil {
 			// Если произошла ошибка, отличная от "ключ не найден"
 			return err

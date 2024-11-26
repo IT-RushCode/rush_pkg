@@ -10,7 +10,7 @@ func RUN_APP_VERSION_ROUTE(app fiber.Router, h *handlers.Handlers, m *middleware
 	route := app.Group("app-versions")
 
 	// Получить последнюю версию
-	route.Get("/latest", m.Permission.CheckPermission("view:latest_app_vesion"), m.Cache.RouteCache(60), h.AppVersion.GetLatest)
+	route.Get("/latest", m.Permission.CheckPermission("view:latest_app_vesion"), m.Cache.RouteCache(0), h.AppVersion.GetLatest)
 
 	// Создать новую запись
 	route.Post("/", m.Permission.CheckPermission("create:app_vesion"), h.AppVersion.Create)

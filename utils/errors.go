@@ -13,60 +13,59 @@ import (
 
 var (
 	// Repositoriy errors R1000-R1999
-	ErrCreate             = errors.New("RP1000: ошибка создания записи")
-	ErrUpdate             = errors.New("RP1001: ошибка обновления записи")
-	ErrDelete             = errors.New("RP1002: ошибка удаления записи")
-	ErrExists             = errors.New("RP1003: запись с такими же параметрами уже существует")
-	ErrRecordNotFound     = errors.New("RP1004: запись не найдена")
-	ErrRecordsNotFound    = errors.New("RP1005: записи не найдены")
-	ErrDuplicate          = errors.New("RP1006: дубликат записи")
-	ErrInvalidTransaction = errors.New("RP1007: некорректная транзакция")
+	ErrCreate             = errors.New("RP1000: Ошибка создания записи")
+	ErrUpdate             = errors.New("RP1001: Ошибка обновления записи")
+	ErrDelete             = errors.New("RP1002: Ошибка удаления записи")
+	ErrExists             = errors.New("RP1003: Запись с такими же параметрами уже существует")
+	ErrRecordNotFound     = errors.New("RP1004: Запись не найдена")
+	ErrRecordsNotFound    = errors.New("RP1005: Записи не найдены")
+	ErrInvalidTransaction = errors.New("RP1006: Некорректная транзакция")
 
 	// Auth errors A2000-A2999
-	ErrCopierData                = errors.New("AU2000: ошибка copier")
-	ErrRefreshToken              = errors.New("AU2001: неверный токен обновления")
-	ErrNotRefreshToken           = errors.New("AU2002: полученный токен не является refresh токеном")
-	ErrUserIdNotFound            = errors.New("AU2003: user id не найден в context")
-	ErrorEmptyAuth               = errors.New("AU2004: пустое тело токена")
-	ErrForbidden                 = errors.New("AU2005: нет прав")
-	ErrUnauthenticated           = errors.New("AU2006: не авторизован")
-	ErrorGenAccessToken          = errors.New("AU2007: не удалось сгенерировать токен доступа")
-	ErrorGenRefreshToken         = errors.New("AU2008: не удалось создать токен обновления")
-	ErrorSigningMethod           = errors.New("AU2009: неверный метод подписи токена")
-	ErrorInvalidToken            = errors.New("AU2010: неверный токен")
-	ErrorInvalidFormatToken      = errors.New("AU2011: неверный токен")
-	ErrorTokenExpired            = errors.New("AU2012: время действия токена истекло")
-	ErrorTokenNotYetValid        = errors.New("AU2013: токен недействителен")
-	ErrorRefreshTokenExpired     = errors.New("AU2014: время действия токена обновления истекло")
-	ErrorRefreshTokenNotYetValid = errors.New("AU2015: токен обновления недействителен")
+	ErrCopierData                = errors.New("AU2000: Ошибка copier")
+	ErrRefreshToken              = errors.New("AU2001: Неверный токен обновления")
+	ErrNotRefreshToken           = errors.New("AU2002: Полученный токен не является refresh токеном")
+	ErrUserIdNotFound            = errors.New("AU2003: User id не найден в context")
+	ErrorEmptyAuth               = errors.New("AU2004: Отсутствует токен в запросе")
+	ErrForbidden                 = errors.New("AU2005: Нет прав")
+	ErrUnauthenticated           = errors.New("AU2006: Не авторизован")
+	ErrorGenAccessToken          = errors.New("AU2007: Не удалось сгенерировать токен доступа")
+	ErrorGenRefreshToken         = errors.New("AU2008: Не удалось создать токен обновления")
+	ErrorSigningMethod           = errors.New("AU2009: Неверный метод подписи токена")
+	ErrorInvalidToken            = errors.New("AU2010: Неверный токен")
+	ErrorInvalidFormatToken      = errors.New("AU2011: Неверный токен")
+	ErrorTokenExpired            = errors.New("AU2012: Время действия токена истекло")
+	ErrorTokenNotYetValid        = errors.New("AU2013: Токен недействителен")
+	ErrorRefreshTokenExpired     = errors.New("AU2014: Время действия токена обновления истекло")
+	ErrorRefreshTokenNotYetValid = errors.New("AU2015: Токен обновления недействителен")
 
 	// BadRequestErrors 4000-4999
-	ErrInvalidData  = errors.New("BR4000: некорректные данные")
-	ErrInvalidBody  = errors.New("BR4001: неверный формат тела запроса")
-	ErrInvalidField = errors.New("BR4002: некорректное поле в запросе")
-	ErrGetUUID      = errors.New("BR4003: не указан uuid")
-	ErrInvalidUUID  = errors.New("BR4004: неверный формат UUID")
+	ErrInvalidData  = errors.New("BR4000: Некорректные данные")
+	ErrInvalidBody  = errors.New("BR4001: Неверный формат тела запроса")
+	ErrInvalidField = errors.New("BR4002: Некорректное поле в запросе")
+	ErrGetUUID      = errors.New("BR4003: Не указан uuid")
+	ErrInvalidUUID  = errors.New("BR4004: Неверный формат UUID")
 
 	// File handler errors 5000-5999
-	ErrUploadFile     = errors.New("FL5000: ошибка загрузки файла")
-	ErrUpdateFile     = errors.New("FL5001: ошибка обновления файла")
-	ErrDeleteFile     = errors.New("FL5002: ошибка удаления файла")
-	ErrDeleteOldFile  = errors.New("FL5003: ошибка удаления старого файла")
-	ErrSaveFile       = errors.New("FL5004: ошибка сохранения файла")
-	ErrFileNotFound   = errors.New("FL5005: файл не найден")
-	ErrFilesNotFound  = errors.New("FL5006: файлы не найдены")
-	ErrCreateDir      = errors.New("FL5007: ошибка создания директории")
-	ErrRecordImageble = errors.New("FL5008: запись с указанным imagebleID не существует")
-	ErrSaveMetaData   = errors.New("FL5009:ошибка сохранения метаданных файла")
-	ErrUpdateMetaData = errors.New("FL5010:ошибка обновления метаданных файла")
-	ErrDeleteMetaData = errors.New("FL5011:ошибка удаления метаданных файла")
+	ErrUploadFile     = errors.New("FL5000: Ошибка загрузки файла")
+	ErrUpdateFile     = errors.New("FL5001: Ошибка обновления файла")
+	ErrDeleteFile     = errors.New("FL5002: Ошибка удаления файла")
+	ErrDeleteOldFile  = errors.New("FL5003: Ошибка удаления старого файла")
+	ErrSaveFile       = errors.New("FL5004: Ошибка сохранения файла")
+	ErrFileNotFound   = errors.New("FL5005: Файл не найден")
+	ErrFilesNotFound  = errors.New("FL5006: Файлы не найдены")
+	ErrCreateDir      = errors.New("FL5007: Ошибка создания директории")
+	ErrRecordImageble = errors.New("FL5008: Запись с указанным imagebleID не существует")
+	ErrSaveMetaData   = errors.New("FL5009: Ошибка сохранения метаданных файла")
+	ErrUpdateMetaData = errors.New("FL5010: Ошибка обновления метаданных файла")
+	ErrDeleteMetaData = errors.New("FL5011: Ошибка удаления метаданных файла")
 
 	// Context errors 6000-6999
-	ErrDeadlineExceeded = errors.New("CTX6000: превышен тайм-аут операции")
-	ErrCancelContext    = errors.New("CTX6001: операция была отменена")
+	ErrDeadlineExceeded = errors.New("CTX6000: Превышен тайм-аут операции")
+	ErrCancelContext    = errors.New("CTX6001: Операция была отменена")
 
-	// Internal errors
-	ErrInternal       = errors.New("внутренняя ошибка сервера")
+	// Internal errors ST500
+	ErrInternal       = errors.New("ST500: Внутренняя ошибка сервера")
 	ErrClientInternal = "Что-то пошло не так. Пожалуйста, повторите попытку позже."
 )
 
@@ -194,7 +193,6 @@ var clientErrorMessages = map[error]string{
 	ErrExists:             "Запись с такими параметрами уже существует.",
 	ErrRecordNotFound:     "Запись не найдена.",
 	ErrRecordsNotFound:    "Записи не найдены.",
-	ErrDuplicate:          "Дубликат записи найден.",
 	ErrInvalidTransaction: "Неверная транзакция. Пожалуйста, попробуйте снова.",
 
 	// Auth errors
@@ -202,7 +200,7 @@ var clientErrorMessages = map[error]string{
 	ErrRefreshToken:              "Неверный токен обновления. Пожалуйста, авторизуйтесь заново.",
 	ErrNotRefreshToken:           "Полученный токен не является токеном обновления.",
 	ErrUserIdNotFound:            "Не удалось найти идентификатор пользователя.",
-	ErrorEmptyAuth:               "Пустое тело запроса. Пожалуйста, отправьте корректные данные.",
+	ErrorEmptyAuth:               "Запрос не содержит данных для авторизации.",
 	ErrForbidden:                 "У вас нет прав для выполнения этого действия.",
 	ErrUnauthenticated:           "Не авторизован.",
 	ErrorGenAccessToken:          "Ошибка при создании токена доступа.",
@@ -211,8 +209,8 @@ var clientErrorMessages = map[error]string{
 	ErrorInvalidToken:            "Неверный токен.",
 	ErrorTokenExpired:            "Срок действия сессии истёк. Войдите снова.",
 	ErrorTokenNotYetValid:        "Доступ невозможен. Попробуйте ещё раз.",
-	ErrorRefreshTokenExpired:     "Сессия завершена. Пожалуйста, войдите снова.",
-	ErrorRefreshTokenNotYetValid: "Сессия недействительна. Пожалуйста, войдите снова.",
+	ErrorRefreshTokenExpired:     "Сессия завершена. Войдите снова.",
+	ErrorRefreshTokenNotYetValid: "Сессия недействительна. Войдите снова.",
 
 	// BadRequest errors
 	ErrInvalidData:  "Некорректные данные. Проверьте правильность ввода.",

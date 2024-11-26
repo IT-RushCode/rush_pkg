@@ -13,5 +13,5 @@ func RUN_PUBLIC_ROUTES(app *fiber.App, h *handlers.Handlers, m *middlewares.Midd
 	public := app.Group("/public")
 
 	// Публичный маршрут для политики
-	public.Get("/policy/:policyType", m.Cache.RouteCache(60), h.Policy.GetPolicyHTML)
+	public.Get("/policy/:policyType", h.Policy.GetPolicyHTML)
 }

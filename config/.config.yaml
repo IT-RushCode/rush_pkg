@@ -4,7 +4,7 @@ APP:
   NAME: ""
   HOST: "localhost"
   PORT: ":8000"
-  CACHE_ACTIVE: true
+  CACHE_ACTIVE: true # включаем кэширование
   CACHE_TIMEOUT: 43800 # в минутах  (43800 - 1 мес)
 
 DB:
@@ -35,7 +35,7 @@ RABBITMQ:
   URI: "amqp://guest:guest@localhost:5672/"
 
 MONGODB:
-  DB: "HOTS"
+  DB: "RUSH"
   URI: "mongodb://localhost:27017"
 
 SMS:

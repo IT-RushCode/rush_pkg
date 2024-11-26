@@ -36,5 +36,13 @@ func InitConfig(path string) *Config {
 		panic("failed to unmarshal config")
 	}
 
+	if cfg.APP.ENV != "dev" && cfg.APP.ENV != "test" && cfg.APP.ENV != "prod" {
+		log.Fatal("APP_ENV should be one of type: dev/test/prod")
+	}
+
+	if cfg.JWT.JWT_SECRET == "" {
+		log.Fatal("JWT_SECRET обязателен к заполнению")
+	}
+
 	return &cfg
 }

@@ -30,23 +30,30 @@ func NewAuthMiddleware(
 
 // VerifyToken выполняет основную проверку токена.
 func (m *AuthMiddleware) Auth(ctx *fiber.Ctx) error {
-	// Проверка на публичный список маршрутов
+	// Проверка на публичный маршрут
 	if m.isPublicRoute(ctx) {
 		ctx.Locals("IsPublic", true)
+
+		// Если заголовок Authorization есть, пытаемся извлечь токен
+		claims, _ := m.extractTokenClaims(ctx)
+		if claims != nil {
+			ctx.Locals("UserID", claims.UserID)
+			ctx.Locals("IsMob", claims.IsMob)
+		}
+
 		return ctx.Next()
 	}
 
-	// Проверка и извлечение данных из токена
+	// Обычная авторизация для приватных маршрутов
 	claims, err := m.extractTokenClaims(ctx)
-	if claims == nil {
+	if err != nil {
 		return err
 	}
 
-	// Сохранение данных пользователя в контексте
+	// Сохраняем данные пользователя в контексте
 	ctx.Locals("UserID", claims.UserID)
 	ctx.Locals("IsMob", claims.IsMob)
 
-	// Если привилегии проверены, выполняем следующего обработчика
 	return ctx.Next()
 }
 

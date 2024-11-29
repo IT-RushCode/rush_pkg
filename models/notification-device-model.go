@@ -5,10 +5,11 @@ import (
 )
 
 type NotificationDevice struct {
-	ID                   uint   `gorm:"primaryKey;autoIncrement"`
-	UserID               *uint  `gorm:"default:null"`      // ID пользователя, если пользователь авторизован
-	DeviceToken          string `gorm:"type:varchar(255)"` // Токен устройства
-	NotificationsEnabled *bool  `gorm:"default:true"`      // Статус активности получения уведомления пользователем
+	ID                   uint   `gorm:"primaryKey"`
+	UserID               *uint  `gorm:"index"`
+	DeviceToken          string `gorm:"unique"`
+	NotificationsEnabled *bool  `gorm:"default:true"`
+	IsAuthenticated      *bool  `gorm:"default:false"`
 
 	BaseModel
 }

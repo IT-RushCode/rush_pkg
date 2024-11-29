@@ -50,33 +50,42 @@ func (r *notificationRepository) SaveNotification(ctx context.Context, userID ui
 
 // ToggleNotificationStatus обновляет статус уведомлений для указанного устройства
 func (r *notificationRepository) ToggleNotificationStatus(ctx context.Context, userID uint, deviceToken string, enable bool) error {
-	var notification models.NotificationDevice
-	err := r.db.WithContext(ctx).Where("device_token = ?", deviceToken).First(&notification).Error
-	if err != nil {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var existingDevice models.NotificationDevice
+
+		// Ищем существующее устройство по токену
+		err := tx.Where("device_token = ?", deviceToken).First(&existingDevice).Error
+
+		// Указатель на userID, если userID == 0, то записываем nil
+		var userPointer *uint
+		if userID != 0 {
+			userPointer = &userID
+		}
+
+		isAuth := userPointer != nil // Устанавливаем флаг аутентификации
+
 		if err == gorm.ErrRecordNotFound {
-			// Создаем новую запись, если не нашли
-			notification = models.NotificationDevice{
-				UserID:               &userID,
+			// Создаем новую запись
+			newDevice := models.NotificationDevice{
+				UserID:               userPointer,
 				DeviceToken:          deviceToken,
 				NotificationsEnabled: &enable,
+				IsAuthenticated:      &isAuth,
 			}
-			return r.db.Create(&notification).Error
+			return tx.Create(&newDevice).Error
 		}
-		return err
-	}
 
-	// Если запись найдена, проверяем, нужно ли обновить userID
-	if notification.UserID == nil || *notification.UserID == 0 {
-		// Если userID не установлен, обновляем его
-		if userID != 0 {
-			notification.UserID = &userID
+		if err != nil {
+			return err
 		}
-	}
 
-	// Обновляем статус уведомлений
-	notification.NotificationsEnabled = &enable
+		// Обновляем существующую запись
+		existingDevice.UserID = userPointer
+		existingDevice.NotificationsEnabled = &enable
+		existingDevice.IsAuthenticated = &isAuth
 
-	return r.db.Save(&notification).Error
+		return tx.Save(&existingDevice).Error
+	})
 }
 
 // GetNotificationStatus получает текущий статус уведомлений для указанного устройства

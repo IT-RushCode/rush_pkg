@@ -73,11 +73,11 @@ func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
 func (h *SmsHandler) VerifySMSCode(ctx *fiber.Ctx) error {
 	var req dto.VerifyRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, "Ошибка парсинга тела запроса: "+err.Error(), nil)
+		return err
 	}
 	req.PhoneNumber = strings.TrimSpace(req.PhoneNumber)
 	if err := utils.ValidateStruct(req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, "Ошибка валидации данных запроса: "+err.Error(), nil)
+		return err
 	}
 
 	// Проверка OTP кода в Redis

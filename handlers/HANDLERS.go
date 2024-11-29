@@ -14,7 +14,7 @@ type Handlers struct {
 	WebSocket    *chat.WebSocketHandler
 	Chat         *chat.ChatHandler
 	Policy       *PolicyHandler
-	AppVersion   AppVersionHandler
+	AppVersion   *AppVersionHandler
 }
 
 func NewHandlers(
@@ -29,6 +29,6 @@ func NewHandlers(
 		WebSocket:    chat.NewWebSocketHandler(ctrl.Chat),
 		Chat:         chat.NewChatHandler(srv, repo),
 		Policy:       NewPolicyHandler(repo),
-		AppVersion:   *NewAppVersionHandler(repo),
+		AppVersion:   NewAppVersionHandler(repo),
 	}
 }

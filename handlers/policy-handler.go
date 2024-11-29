@@ -67,7 +67,7 @@ func (h *PolicyHandler) GetPolicyHTML(ctx *fiber.Ctx) error {
 
 	policy, err := h.repo.Policy.FindByKey(ctx.Context(), policyType)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).SendString("Internal server error")
+		return ctx.Status(fiber.StatusInternalServerError).SendString(utils.ErrClientInternal)
 	}
 
 	// Рендеринг HTML-шаблона

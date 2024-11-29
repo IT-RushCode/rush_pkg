@@ -50,7 +50,7 @@ func (h *NotificationHandler) SendNotificationsHandler(ctx *fiber.Ctx) error {
 	var req dto.SendGeneralNotificationDTO
 
 	if err := ctx.BodyParser(&req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
+		return err
 	}
 
 	// Вызов сервиса для отправки общих уведомлений с указанным типом
@@ -66,7 +66,7 @@ func (h *NotificationHandler) SendNotificationsHandler(ctx *fiber.Ctx) error {
 func (h *NotificationHandler) SendNotificationToUserHandler(ctx *fiber.Ctx) error {
 	req := dto.SendUserNotificationDTO{}
 	if err := ctx.BodyParser(&req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
+		return err
 	}
 
 	if req.Type == "general" {
@@ -97,7 +97,7 @@ func (h *NotificationHandler) ToggleNotificationHandler(ctx *fiber.Ctx) error {
 
 	req := dto.ToggleNotificationDTO{}
 	if err := ctx.BodyParser(&req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
+		return err
 	}
 
 	// Вызов сервиса для обновления статуса уведомлений или добавления токена
@@ -113,7 +113,7 @@ func (h *NotificationHandler) ToggleNotificationHandler(ctx *fiber.Ctx) error {
 func (h *NotificationHandler) GetToggleNotificationHandler(ctx *fiber.Ctx) error {
 	var req dto.GetToggleNotificationDTO
 	if err := ctx.BodyParser(&req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
+		return err
 	}
 
 	userId, err := utils.CheckIsMobile(ctx)
@@ -156,7 +156,7 @@ func (h *NotificationHandler) GetUserNotificationsHandler(ctx *fiber.Ctx) error 
 	// Прочитываем фильтр из запроса
 	var req dto.GetNotificationsDTO
 	if err := ctx.QueryParser(&req); err != nil {
-		return utils.ErrorBadRequestResponse(ctx, "Ошибка при обработке запроса: "+err.Error(), nil)
+		return err
 	}
 
 	// Преобразуем числовой фильтр в тип NotificationFilter

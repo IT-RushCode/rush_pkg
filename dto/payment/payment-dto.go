@@ -1,12 +1,15 @@
 package payment
 
 type PaymentRequest struct {
-	PointID     uint                   `json:"pointId" validate:"required"`
-	Amount      string                 `json:"amount" validate:"required"`
-	Currency    string                 `json:"currency" validate:"required"`
-	Metadata    map[string]interface{} `json:"metadata"`
-	ReturnURL   string                 `json:"returnUrl" validate:"required"`
-	Description string                 `json:"description" validate:"required"`
+	PointID            uint   `json:"pointId" validate:"required"`
+	Amount             string `json:"amount" validate:"required"`
+	Currency           string `json:"currency" validate:"required"`
+	ReturnURL          string `json:"returnUrl" validate:"required"`
+	Description        string `json:"description" validate:"required"`
+	MerchantCustomerID string `json:"merchantCustomerID"` // email или номер телефона
+
+	// Метаданные должны быть уникальными для каждого платежа
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 type WebhookRequest struct {

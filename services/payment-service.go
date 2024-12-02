@@ -20,24 +20,29 @@ func NewPaymentService(repo *repositories.Repositories) *PaymentService {
 	return &PaymentService{repo: repo}
 }
 
-func (s *PaymentService) CreatePayment(ctx context.Context, store *models.YooKassaSetting, req *dto.PaymentRequest) (*yoopayment.Payment, error) {
+func (s *PaymentService) CreatePayment(
+	ctx context.Context,
+	store *models.YooKassaSetting,
+	req *dto.PaymentRequest,
+) (*yoopayment.Payment, error) {
 	client := yookassa.NewClient(store.StoreID, store.SecretKey)
 	paymentKassa := yookassa.NewPaymentHandler(client)
 
 	var payment *yoopayment.Payment
 	payment, err := paymentKassa.CreatePayment(&yoopayment.Payment{
-		Metadata:    req.Metadata,
-		Description: req.Description,
-		Capture:     true,
+		Metadata:           req.Metadata,
+		Description:        req.Description,
+		MerchantCustomerID: req.MerchantCustomerID,
+		Capture:            true,
+		Test:               *store.IsTest,
 		Amount: &yoocommon.Amount{
 			Value:    req.Amount,
 			Currency: req.Currency,
 		},
 		Confirmation: yoopayment.Redirect{
-			Type:      "redirect",
+			Type:      yoopayment.TypeRedirect,
 			ReturnURL: req.ReturnURL,
 		},
-		Test: *store.IsTest,
 	})
 	if err != nil {
 		return nil, err

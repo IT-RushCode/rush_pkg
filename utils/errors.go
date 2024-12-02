@@ -175,6 +175,11 @@ func MapErrorToStatus(err error) (int, error) {
 		return http.StatusUnauthorized, ErrorTokenExpired
 	}
 
+	// Проверка на ошибки истечения срока действия токена
+	if strings.Contains(err.Error(), "Необходимо указать ?userId в QueryParams") {
+		return http.StatusBadRequest, err
+	}
+
 	// Если ошибка неизвестного типа или internal, возвращаем внутреннюю ошибку
 	if strings.Contains(err.Error(), "internal error") {
 		return http.StatusInternalServerError, ErrInternal

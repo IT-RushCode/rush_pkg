@@ -17,7 +17,7 @@ DB:
 
 REDIS:
   HOST: "localhost"
-  PORT: ":6379"
+  PORT: "6379"
   PASS: ""
   DB: 0
 
@@ -39,8 +39,22 @@ MONGODB:
   URI: "mongodb://localhost:27017"
 
 SMS:
-  API: ""
-  SENDER: ""
+  URL: "https://admin.p1sms.ru/apiSms/create" # test
+  METHOD: "POST" # test
+
+  # REAL DATAs
+  TOKEN: "EQB40a1PbaHEv7aCIvLPNzCiO1oMwhOJiatWEIG2nRwOiC43tOW6dHlMavPm"
+  SENDER: "DOM."
+  TEMPLATE: "Ваш код подтверждения в приложении DOM: %s"
+  ACTIVE_SEND: false
+  IGNORING_NUMBERS: "+79099099999,+71099099999"
+  IGNORING_OTP: "5432"
+
+  # TEST DATAs
+  # TOKEN: "94qgmw1B1h4hpGtfngRUm02vOM6CZNGuibKwLGyGMNW2nLcZDkA0ElR8vkNV" # test
+  # SENDER: "VIRTA"
+  # TEMPLATE: "Ваш код подтверждения в приложении VIRTA: %s"
+
 
 MAIL:
   SMTP_HOST: "smtp.example.com" # хост smtp сервера
@@ -190,13 +204,13 @@ FIBER:
   EnableTrustedProxyCheck: true
 
   # Список доверенных прокси.
-  TrustedProxies: ["192.168.0.0/16", "127.0.0.1"]
+  TrustedProxies: ["192.168.0.0/16", "172.16.0.0/12", "127.0.0.1"]
 
   # Если установлено в true, c.IP() и c.IPs() будут проверять IP-адреса перед их возвратом.
   EnableIPValidation: true
 
   # Если установлено в true, будет выводить все маршруты с их методом, путем и обработчиком.
-  EnablePrintRoutes: true
+  EnablePrintRoutes: false
 
   # Используемый заголовок для получения IP-адреса, если вы находитесь за прокси.
   ProxyHeader: "X-Forwarded-For"
@@ -205,7 +219,7 @@ FIBER:
   GETOnly: false
 
   # Пользовательские HTTP методы. Вы можете добавлять/удалять методы по мере необходимости.
-  RequestMethods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"]
+  RequestMethods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
   # Включает разбиение параметров запроса/тела/заголовков по запятой.
   EnableSplittingOnParsers: false

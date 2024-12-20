@@ -21,10 +21,10 @@ type intermediateResponse struct {
 }
 
 type SmsService struct {
-	cfg *config.SMS
+	cfg *config.SmsConfig
 }
 
-func NewSmsService(cfg *config.SMS) *SmsService {
+func NewSmsService(cfg *config.SmsConfig) *SmsService {
 	return &SmsService{cfg: cfg}
 }
 

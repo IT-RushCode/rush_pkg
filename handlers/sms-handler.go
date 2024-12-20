@@ -34,39 +34,67 @@ func NewSMSHandler(
 
 // SendSMS обрабатывает запрос на отправку SMS
 func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
+	// Проверка флага отправки SMS
+	if !h.cfg.SMS.ACTIVE_SEND {
+		return utils.SuccessResponse(ctx, "Пропуск отправки SMS кода", nil)
+	}
+
+	// Разбор входящего запроса
 	var req dto.SMSRequestDTO
 	if err := ctx.BodyParser(&req); err != nil {
 		return err
 	}
 	req.Messages[0].Phone = strings.TrimSpace(req.Messages[0].Phone)
 
+	// Получение списка игнорируемых номеров
+	ignoringNumbers := strings.Split(h.cfg.SMS.IGNORING_NUMBERS, ",")
+
+	// Проверка игнорируемых номеров
+	if h.shouldIgnore(req.Messages[0].Phone, req.IsOTP, ignoringNumbers) {
+		return utils.SuccessResponse(ctx, fmt.Sprintf("Пропуск отправки для номера %s", req.Messages[0].Phone), nil)
+	}
+
+	// Валидация запроса
 	if err := utils.ValidateStruct(req); err != nil {
 		return err
 	}
 
+	// Отправка SMS
 	res, err := h.srv.Sms.SendSMS(h.cfg, req)
 	if err != nil {
 		return err
 	}
 
+	// Проверка статуса отправки
 	if res.Message.Status == "error" {
-		return utils.ErrorInternalServerErrorResponse(ctx, utils.ErrInternal.Error(), nil)
+		return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка отправки SMS на стороне сервера", nil)
 	}
 
-	// Если OTP код успешно отправлен то сохраняем его в кеше для дальнейшей верификации
+	// Сохранение OTP в Redis (если это OTP-код)
 	if req.IsOTP && res.Message.Data[0].Status == "sent" {
-		err = h.cache.Set(ctx.Context(), res.Phone, res.OTPCode, 5*time.Minute).Err() // Установка времени истечения в 5 минут
-		if err != nil {
-			return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при сохранении OTP кода в кеш: "+err.Error(), nil)
+		if err := h.cache.Set(ctx.Context(), res.Phone, res.OTPCode, 5*time.Minute).Err(); err != nil {
+			return utils.ErrorInternalServerErrorResponse(ctx, "Ошибка при сохранении OTP кода в кеш", err)
 		}
-		return utils.SuccessResponse(ctx, "", fmt.Sprintf("Код подтверждения отправлен на номер %s", res.Phone))
+		return utils.SuccessResponse(ctx, fmt.Sprintf("Код подтверждения отправлен на номер %s", res.Phone), nil)
 	}
 
+	// Обработка одиночного сообщения
 	if len(req.Messages) == 1 {
-		return utils.SuccessResponse(ctx, "", fmt.Sprintf("Сообщение отправлено на номер %s", res.Phone))
+		return utils.SuccessResponse(ctx, fmt.Sprintf("Сообщение отправлено на номер %s", res.Phone), nil)
 	}
 
+	// Ответ для множественных сообщений
 	return utils.SuccessResponse(ctx, "Сообщения отправлены", nil)
+}
+
+// shouldIgnore проверяет, нужно ли игнорировать отправку SMS для указанного номера
+func (h *SmsHandler) shouldIgnore(phone string, isOTP bool, ignoringNumbers []string) bool {
+	for _, ignoringPhone := range ignoringNumbers {
+		if phone == ignoringPhone && isOTP {
+			return true
+		}
+	}
+	return false
 }
 
 // VerifySMSCode подтверждает SMS код который был отправлен на номер телефона и удаляет из кеша

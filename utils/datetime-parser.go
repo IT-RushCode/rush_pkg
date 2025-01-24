@@ -1,22 +1,77 @@
 package utils
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 func ParseDateTime(dateTimeStr string) (*time.Time, error) {
 	if dateTimeStr == "" {
 		return nil, nil
 	}
 
-	// Определяем формат времени ISO 8601 с миллисекундами и Z
-	const layout = "2006-01-02T15:04:05.999Z"
-	t, err := time.Parse(layout, dateTimeStr)
-	if err != nil {
-		return nil, err
+	// Часто используемые форматы дат и времени
+	formats := []string{
+		time.DateTime,          // "2006-01-02 15:04:05"
+		time.RFC3339,           // "2006-01-02T15:04:05Z07:00"
+		time.DateOnly,          // "2006-01-02"
+		"2006-01-02T15:04:05",  // ISO-8601 без зоны
+		"02-01-2006 15:04:05",  // Европейский формат с временем
+		"02-01-2006",           // Европейский формат без времени
+		"02.01.2006 15:04:05",  // Формат с временем с точкой
+		"02.01.2006",           // Формат без времени с точкой
+		"02/01/2006 15:04:05",  // Формат с временем с точкой
+		"02/01/2006",           // Формат без времени с точкой
+		"2006/01/02 15:04:05",  // Год/месяц/день с временем через слеш
+		"2006/01/02",           // Год/месяц/день без времени
+		"02 Jan 2006 15:04:05", // День месяц год, текстовый месяц
+		"02 Jan 2006",          // День месяц год, без времени
+		time.RFC1123,           // RFC1123 с временной зоной
 	}
 
-	// Применяем временную зону "+0500"
-	loc, _ := time.LoadLocation("")  // Создаем локацию для UTC+5
-	t = t.In(loc).Add(5 * time.Hour) // Прибавляем 5 часов к UTC
+	var t time.Time
+	var err error
+	for _, format := range formats {
+		if t, err = time.Parse(format, dateTimeStr); err == nil {
+			loc := time.FixedZone("UTC+5", 5*60*60)
+			tInLoc := t.In(loc)
+			return &tInLoc, nil
+		}
+	}
+	return nil, err
+}
 
-	return &t, nil
+// Вспомогательная функция для безопасного форматирования даты и времени
+func CheckDateTimeToNil(date *time.Time, format string) string {
+	if date == nil || date.IsZero() {
+		return "" // Возвращаем пустую строку, если дата отсутствует
+	}
+
+	if format == "" {
+		format = time.RFC3339
+	}
+
+	return date.Format(format) // Форматируем только дату
+}
+
+// SetLocalTimezone устанавливает локальную временную зону на основе переданного имени зоны
+func SetLocalTimezone(timezone string) error {
+	if timezone == "" {
+		return fmt.Errorf("временная зона не указана")
+	}
+
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		return fmt.Errorf("ошибка при загрузке временной зоны: %v", err)
+	}
+
+	// Устанавливаем локальную временную зону для всего приложения
+	time.Local = loc
+	return nil
+}
+
+// SetFixedTimezone устанавливает временную зону с фиксированным смещением от UTC
+func SetFixedTimezone() {
+	loc := time.FixedZone("UTC+5", 5*3600)
+	time.Local = loc
 }

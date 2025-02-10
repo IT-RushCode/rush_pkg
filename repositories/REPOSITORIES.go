@@ -66,14 +66,14 @@ func NewRepositories(
 		repos.Policy = rpPolicy.NewPolicyRepository(DB)
 	}
 
-	// Инициализация репозиториев для Policy
+	// Инициализация репозиториев для AppVersion
 	if flags.InitAppVersion {
-		repos.AppVersion = *rpAppVersion.NewAppVersionRepository(DB)
+		repos.AppVersion = rpAppVersion.NewAppVersionRepository(DB)
 	}
 
 	// Инициализация кэш-репозитория Redis
 	if flags.InitCacheRepo {
-		repos.Redis = redis.NewClient(db.REDIS.Options())
+		repos.Redis = db.REDIS
 	}
 
 	// Инициализация MongoDB репозитория

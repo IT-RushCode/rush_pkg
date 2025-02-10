@@ -14,7 +14,6 @@ require (
 	github.com/mowshon/moviego v1.0.1
 	github.com/prometheus/client_golang v1.19.1
 	github.com/redis/go-redis/v9 v9.6.1
-	github.com/rvinnie/yookassa-sdk-go v0.0.0-20240629113713-dfd7cc31b343
 	github.com/spf13/viper v1.19.0
 	go.mongodb.org/mongo-driver v1.16.0
 	go.opentelemetry.io/otel v1.28.0

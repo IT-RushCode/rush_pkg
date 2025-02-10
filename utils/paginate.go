@@ -28,6 +28,7 @@ func calculatePagination(offset, limit uint) (int, int) {
 		pageSize = 100
 	case pageSize <= 0:
 		pageSize = 20
+	default:
 	}
 
 	sqlOffset := (page - 1) * pageSize

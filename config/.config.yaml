@@ -1,6 +1,7 @@
 APP:
   ENV: "dev" # dev/test/prod
   DEBUG: true
+  DB_DEBUG: true # активация дебага sql запросов
   NAME: ""
   HOST: "localhost"
   PORT: ":8000"

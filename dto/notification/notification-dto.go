@@ -7,9 +7,10 @@ import (
 )
 
 type NotificationAdminDTO struct {
-	Id      uint   `json:"id"`
-	Title   string `json:"title,omitempty"`
-	Message string `json:"message,omitempty"`
+	Id      uint       `json:"id"`
+	Title   string     `json:"title,omitempty"`
+	Message string     `json:"message,omitempty"`
+	SentAt  *time.Time `json:"sentAt,omitempty"`
 }
 
 type NotificationResponseDTO struct {

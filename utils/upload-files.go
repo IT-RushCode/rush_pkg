@@ -208,11 +208,12 @@ func DefaultVideoOptions() *FileUploadOptions {
 			".mkv": true,
 		},
 		AllowedMimeTypes: map[string]bool{
-			"video/mp4":        true,
-			"video/quicktime":  true,
-			"video/x-msvideo":  true,
-			"video/x-matroska": true,
-			"video/webm":       true,
+			"video/mp4":                true,
+			"video/quicktime":          true,
+			"video/x-msvideo":          true,
+			"video/x-matroska":         true,
+			"video/webm":               true,
+			"application/octet-stream": true,
 		},
 	}
 }

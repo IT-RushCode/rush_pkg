@@ -1,5 +1,12 @@
 package utils
 
+import (
+	"mime"
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
 // Функция для получения расширения файла по MIME-типу
 func GetExtensionFromMimeType(mimeType string) string {
 	switch mimeType {
@@ -40,4 +47,34 @@ func GetExtensionFromMimeType(mimeType string) string {
 	default:
 		return "" // Если MIME-тип не распознан, возвращаем пустую строку
 	}
+}
+
+// GetMimeType определяет MIME-тип файла
+func GetMimeType(filePath string) string {
+	// Открываем файл
+	f, err := os.Open(filePath)
+	if err != nil {
+		return "application/octet-stream" // Дефолтный тип
+	}
+	defer f.Close()
+
+	// Читаем первые 512 байт файла
+	buffer := make([]byte, 512)
+	_, err = f.Read(buffer)
+	if err != nil {
+		return "application/octet-stream"
+	}
+
+	// Определяем MIME-типа через стандартную библиотеку
+	mimeType := http.DetectContentType(buffer)
+
+	// Если MIME-тип неизвестен, пробуем получить по расширению
+	if mimeType == "application/octet-stream" {
+		ext := filepath.Ext(filePath)
+		if ext != "" {
+			mimeType = mime.TypeByExtension(ext)
+		}
+	}
+
+	return mimeType
 }

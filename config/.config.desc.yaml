@@ -23,9 +23,42 @@ REDIS:
   DB: 0
 
 JWT:
-  JWT_SECRET: ""
+  JWT_SECRET: "978wsfhiuanckljcnqaiuPbaHEwkuhwjkfntWEIG2nRwOiC43tOW6dHlMavPm"
   JWT_TTL: 3600
   REFRESH_TTL: 604800
+
+LOGGER:
+  # Уровень логирования (info, debug, error, warn)
+  LEVEL: "info"
+  # Включить запись логов в файлы
+  FILE_LOG: true
+  # Логировать тело запроса
+  LOG_REQUEST_BODY: true
+  # Включить форматирования в json
+  FILE_JSON_FORMAT: true
+  # Включить трассировку стека вызовов
+  ENABLE_STACK_TRACE: true
+
+  # Настройки ротации логов
+  ACCESS_LOG:
+    # Имя файла лога
+    FILENAME: "access.log"
+    # Максимальный размер в МБ до ротации
+    MAX_SIZE: 100
+    # Максимальное количество файлов
+    MAX_BACKUPS: 5
+    # Максимальный возраст файлов в днях
+    MAX_AGE: 30
+    # Сжимать ротированные файлы
+    COMPRESS: true
+
+  # Настройки ротации логов
+  ERROR_LOG:
+    FILENAME: "error.log"
+    MAX_SIZE: 100
+    MAX_BACKUPS: 5
+    MAX_AGE: 30
+    COMPRESS: true
 
 KAFKA:
   HOST1: ""
@@ -40,22 +73,14 @@ MONGODB:
   URI: "mongodb://localhost:27017"
 
 SMS:
-  URL: "https://admin.p1sms.ru/apiSms/create" # test
-  METHOD: "POST" # test
-
-  # REAL DATAs
-  TOKEN: "EQB40a1PbaHEv7aCIvLPNzCiO1oMwhOJiatWEIG2nRwOiC43tOW6dHlMavPm"
-  SENDER: "DOM."
-  TEMPLATE: "Ваш код подтверждения в приложении DOM: %s"
+  URL: "https://admin.p1sms.ru/apiSms/create"
+  METHOD: "POST"
+  TOKEN: "EQB40a1PbaHEv7sdfwerwerwer1oMwhOJiatWEIG2nRwOiC43tOW6dHlMavPm"
+  SENDER: "VIRTA"
+  TEMPLATE: "Ваш код подтверждения в приложении VIRTA: %s"
   ACTIVE_SEND: false
   IGNORING_NUMBERS: "+79099099999,+71099099999"
-  IGNORING_OTP: "5432"
-
-  # TEST DATAs
-  # TOKEN: "94qgmw1B1h4hpGtfngRUm02vOM6CZNGuibKwLGyGMNW2nLcZDkA0ElR8vkNV" # test
-  # SENDER: "VIRTA"
-  # TEMPLATE: "Ваш код подтверждения в приложении VIRTA: %s"
-
+  IGNORING_OTP: "1234"
 
 MAIL:
   SMTP_HOST: "smtp.example.com" # хост smtp сервера

@@ -11,6 +11,7 @@ type Config struct {
 	APP      AppConfig      `mapstructure:"APP"`
 	DB       DatabaseConfig `mapstructure:"DB"`
 	JWT      JwtConfig      `mapstructure:"JWT"`
+	LOGGER   LogConfig      `mapstructure:"LOGGER"`
 	REDIS    RedisConfig    `mapstructure:"REDIS"`
 	KAFKA    KafKaConfig    `mapstructure:"KAFKA"`
 	RABBITMQ RabbitMQConfig `mapstructure:"RABBITMQ"`

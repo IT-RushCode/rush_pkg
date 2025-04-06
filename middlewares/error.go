@@ -1,24 +1,24 @@
 package middlewares
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/IT-RushCode/rush_pkg/config"
 	"github.com/IT-RushCode/rush_pkg/utils"
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type ErrorMiddleware struct {
-	dbg bool
 	env string
+	log *zap.Logger
 }
 
 // NewErrorMiddleware создает новый экземпляр ErrorMiddleware.
-func NewErrorMiddleware(cfg *config.AppConfig) *ErrorMiddleware {
+func NewErrorMiddleware(cfg *config.AppConfig, log *zap.Logger) *ErrorMiddleware {
 	return &ErrorMiddleware{
-		dbg: cfg.DEBUG,
 		env: cfg.ENV,
+		log: log,
 	}
 }
 
@@ -47,9 +47,9 @@ func (m *ErrorMiddleware) ErrorHandlingMiddleware(ctx *fiber.Ctx) error {
 	statusCode, cleanedError := utils.MapErrorToStatus(err)
 
 	// В режиме Debug возвращаем детализированную ошибку
-	if m.dbg {
+	if m.env == "dev" {
 		// Логируем детализированную ошибку для отладки
-		log.Printf("%s(DEBUG)%s Error > %s %v", utils.Green, utils.Red, cleanedError, utils.Reset)
+		m.log.Debug("Ошибка в запросе", utils.WithRID(ctx), zap.Error(cleanedError))
 
 		// Возвращаем детализированное сообщение клиенту с правильным HTTP статусом
 		return utils.SendResponse(ctx, false, cleanedError.Error(), nil, statusCode)
@@ -58,9 +58,10 @@ func (m *ErrorMiddleware) ErrorHandlingMiddleware(ctx *fiber.Ctx) error {
 	// В Production режиме скрываем детали ошибки и используем клиентские сообщения
 	clientMessage := utils.GetClientErrorMessage(cleanedError)
 
+	// Если в режиме production, логируем ошибку
 	if m.env == "prod" {
-		// Логируем внутреннюю ошибку для мониторинга в Production
-		log.Printf("%s(PROD)%s Внутренняя ошибка > %s %v", utils.Green, utils.Red, cleanedError, utils.Reset)
+		// Логируем ошибку с подробностями в режиме production
+		m.log.Error("Внутренняя ошибка", utils.WithRID(ctx), zap.Error(cleanedError))
 	}
 
 	if clientMessage == utils.ErrClientInternal {

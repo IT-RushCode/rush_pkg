@@ -10,6 +10,11 @@ import (
 
 func ZapLoggerMiddleware(logger *zap.Logger, cfg *config.LogConfig) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		if c.Path() == "/metrics" {
+			// Пропускаем логирование метрик
+			return c.Next()
+		}
+
 		// Создаем логгер для запроса без caller
 		reqLogger := logger.With(
 			zap.String("request_id", c.GetRespHeader(fiber.HeaderXRequestID)),

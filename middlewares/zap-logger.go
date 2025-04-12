@@ -15,6 +15,7 @@ func ZapLoggerMiddleware(logger *zap.Logger, cfg *config.LogConfig) fiber.Handle
 			zap.String("request_id", c.GetRespHeader(fiber.HeaderXRequestID)),
 			zap.String("method", c.Method()),
 			zap.String("path", c.Path()),
+			zap.String("client_ip", c.IP()),
 		)
 
 		// Логируем начало запроса

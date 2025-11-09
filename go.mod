@@ -1,6 +1,6 @@
 module github.com/IT-RushCode/rush_pkg
 
-go 1.23.1
+go 1.24.1
 
 require (
 	firebase.google.com/go v3.13.0+incompatible

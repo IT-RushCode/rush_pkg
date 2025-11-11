@@ -55,7 +55,7 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 	// Применить фильтры, используя более оптимизированный подход
 	for field, value := range dto.Filters {
 		if field != "" && value != "" {
-			query = r.applyFilter(query, field, value)
+			query = r.applyFilter(query, field, utils.ToSnakeCase(value))
 		}
 	}
 
@@ -65,7 +65,8 @@ func (r *baseRepository) GetAll(ctx context.Context, data interface{}, dto *dto.
 		if dto.OrderBy == "desc" {
 			order = "desc"
 		}
-		query = query.Order(fmt.Sprintf("%s %s", dto.SortBy, order))
+
+		query = query.Order(fmt.Sprintf("%s %s", utils.ToSnakeCase(dto.SortBy), order))
 	}
 
 	// Получить общее количество записей

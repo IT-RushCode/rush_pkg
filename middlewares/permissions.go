@@ -36,36 +36,35 @@ func NewPermissionMiddleware(checker PermissionChecker) *PermissionMiddleware {
 }
 
 // CheckPermission возвращает обработчик middleware, который проверяет наличие у пользователя требуемой привилегии.
-func (p *PermissionMiddleware) CheckPermission(requiredPermission string) fiber.Handler {
+func (p *PermissionMiddleware) CheckPermission(requiredPermissions ...string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		// Проверяем, является ли маршрут публичным.
 		isPublic, _ := ctx.Locals("IsPublic").(bool)
 		if isPublic {
 			return ctx.Next()
 		}
 
-		// Получаем UserID из локальных данных контекста.
 		userID, ok := ctx.Locals("UserID").(uint)
 		if !ok {
 			return utils.ErrorForbiddenResponse(ctx, "неверный формат UserID", nil)
 		}
 
-		// Проверка статуса пользователя
 		if !p.checker.IsUserActive(ctx.Context(), userID) {
 			return utils.ErrorUnauthorizedResponse(ctx, utils.ErrUnauthenticated.Error(), nil)
 		}
 
-		// Проверяем привилегии пользователя
-		if !p.checker.HasPermission(ctx.Context(), userID, requiredPermission) && requiredPermission != "me" {
-			return utils.ErrorForbiddenResponse(ctx, utils.ErrForbidden.Error(), nil)
+		// Проверяем, есть ли хотя бы одно совпадение разрешений
+		for _, perm := range requiredPermissions {
+			if p.checker.HasPermission(ctx.Context(), userID, perm) {
+				return ctx.Next()
+			}
 		}
 
-		return ctx.Next()
+		return utils.ErrorForbiddenResponse(ctx, utils.ErrForbidden.Error(), nil)
 	}
 }
 
 // CheckObjectPermission проверяет доступ к объекту, если метод HasAccessToObject реализован.
-func (p *PermissionMiddleware) CheckObjectPermission(objectType string) fiber.Handler {
+func (p *PermissionMiddleware) CheckObjectPermission(objectTypes ...string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		// Проверяем, является ли маршрут публичным.
 		isPublic, _ := ctx.Locals("IsPublic").(bool)
@@ -83,15 +82,15 @@ func (p *PermissionMiddleware) CheckObjectPermission(objectType string) fiber.Ha
 			return utils.ErrorBadRequestResponse(ctx, "неверный ID объекта", nil)
 		}
 
-		// Проверка на реализацию расширенного интерфейса.
 		if checkerWithAccess, ok := p.checker.(OptionalPermissionChecker); ok {
-			// Выполняем проверку доступа к объекту только если метод реализован.
-			hasAccess, err := checkerWithAccess.HasAccessToObject(ctx.Context(), userID, uint(objectID), objectType)
-			if err != nil || !hasAccess {
-				return utils.ErrorForbiddenResponse(ctx, "доступ к объекту запрещен", nil)
+			for _, ot := range objectTypes {
+				hasAccess, err := checkerWithAccess.HasAccessToObject(ctx.Context(), userID, uint(objectID), ot)
+				if err == nil && hasAccess {
+					return ctx.Next()
+				}
 			}
 		}
 
-		return ctx.Next()
+		return utils.ErrorForbiddenResponse(ctx, "доступ к объекту запрещен", nil)
 	}
 }

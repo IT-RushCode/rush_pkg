@@ -36,7 +36,6 @@ type Repositories struct {
 func NewRepositories(
 	db *storage.Storage,
 	flags RepoFlags,
-	mongoDB string,
 ) *Repositories {
 	DB := db.PSQL
 

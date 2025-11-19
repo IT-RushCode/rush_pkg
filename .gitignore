@@ -1,2 +1,28 @@
+# Vendor dependencies (managed via go mod vendor)
 vendor
-tmp
+
+# Temporary / build artifacts
+tmp/
+bin/
+build/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Coverage / profiling files
+coverage.*
+*.out
+*.prof
+
+# Local environment files
+.env
+.env.*
+
+# Editor / OS files
+.idea/
+.vscode/
+.DS_Store

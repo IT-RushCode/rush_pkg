@@ -2,7 +2,7 @@ APP:
   ENV: "dev" # dev/test/prod
   DEBUG: true
   DB_DEBUG: true # активация дебага sql запросов
-  NAME: ""
+  NAME: "RushApp"
   HOST: "localhost"
   PORT: ":8000"
   CACHE_ACTIVE: true # включаем кэширование
@@ -14,7 +14,6 @@ DB:
   USER: "postgres"
   PASS: "postgres"
   NAME: "postgres"
-  CHARSET: ""
 
 REDIS:
   HOST: "localhost"
@@ -67,10 +66,6 @@ KAFKA:
 
 RABBITMQ:
   URI: "amqp://guest:guest@localhost:5672/"
-
-MONGODB:
-  DB: "RUSH"
-  URI: "mongodb://localhost:27017"
 
 SMS:
   URL: "https://admin.p1sms.ru/apiSms/create"

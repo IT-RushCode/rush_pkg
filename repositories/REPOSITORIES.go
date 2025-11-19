@@ -2,7 +2,6 @@ package repositories
 
 import (
 	rpAppVersion "github.com/IT-RushCode/rush_pkg/repositories/app-version"
-	rpBase "github.com/IT-RushCode/rush_pkg/repositories/base"
 	rpChat "github.com/IT-RushCode/rush_pkg/repositories/chat"
 	rpNtf "github.com/IT-RushCode/rush_pkg/repositories/notification"
 	rpPolicy "github.com/IT-RushCode/rush_pkg/repositories/policy"
@@ -19,7 +18,6 @@ type RepoFlags struct {
 	InitNotificationRepo bool // Инициализировать ли Notification репозиторий
 	InitChatRepo         bool // Инициализировать ли Chat репозиторий
 	InitCacheRepo        bool // Инициализировать ли кэш-репозиторий Redis
-	InitMongoRepo        bool // Инициализировать ли MongoDB репозиторий
 	InitAppVersion       bool // Инициализировать ли AppVersion репозиторий
 }
 
@@ -32,8 +30,6 @@ type Repositories struct {
 	AppVersion      rpAppVersion.AppVersionRepository
 
 	Redis *redis.Client
-
-	Mongo rpBase.MongoBaseRepository
 }
 
 // Инициализация всех репозиториев с учетом переданных флагов
@@ -74,12 +70,6 @@ func NewRepositories(
 	// Инициализация кэш-репозитория Redis
 	if flags.InitCacheRepo {
 		repos.Redis = db.REDIS
-	}
-
-	// Инициализация MongoDB репозитория
-	if flags.InitMongoRepo {
-		MONGO := db.MONGO.Database(mongoDB)
-		repos.Mongo = rpBase.NewMongoBaseRepository(MONGO)
 	}
 
 	return repos

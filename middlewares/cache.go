@@ -1,6 +1,8 @@
 package middlewares
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"strings"
@@ -13,199 +15,191 @@ import (
 // CacheMiddleware содержит все middleware для кэширования и их конфигурации.
 type CacheMiddleware struct{ *CacheConfig }
 
+// CacheConfig описывает минимальный набор параметров для работы кэша.
 type CacheConfig struct {
-	cache                *redis.Client
-	ActiveCache          bool     // Активно ли кэширование
-	CacheTime            int64    // Глобальное время кэширования в минутах
-	CacheFiles           bool     // Кэшировать ли файлы
-	MaxFileSize          uint     // Максимальный размер файла (возможный максимум 10 MB)
-	ExcludedContentTypes []string // Исключить видео
-	AllowedContentTypes  []string // Кэшировать только изображения
+	cache       *redis.Client
+	ServiceName string // имя сервиса, которое добавляется в начало каждого ключа
+	ActiveCache bool   // включено ли кэширование
+	CacheTime   int64  // глобальное время кэширования (минуты)
+	// TagDependencies позволяет описать связи между тегами.
+	TagDependencies map[string][]string
 }
 
 var (
 	DefaultCacheConfig = &CacheConfig{
-		ActiveCache:          true,
-		CacheTime:            60,
-		CacheFiles:           true,
-		MaxFileSize:          2 * 1024 * 1024,
-		ExcludedContentTypes: DefaultExcludedContentTypes,
-		AllowedContentTypes:  DefaultAllowedContentTypes,
-	}
-
-	DefaultExcludedContentTypes = []string{
-		"video/mp4",             // MP4 видео
-		"video/mkv",             // Matroska видео
-		"video/webm",            // WebM видео
-		"video/avi",             // AVI видео
-		"video/mpeg",            // MPEG видео
-		"video/ogg",             // Ogg видео
-		"video/quicktime",       // QuickTime видео (MOV)
-		"video/x-msvideo",       // Windows AVI
-		"video/x-flv",           // Flash видео
-		"video/x-ms-wmv",        // Windows Media видео (WMV)
-		"application/x-mpegURL", // HLS список воспроизведения
-		"video/3gpp",            // 3GPP видео
-		"video/3gpp2",           // 3GPP2 видео
-		"video/x-matroska",      // Matroska (MKV) видео
-		"video/x-ms-asf",        // ASF (Advanced Systems Format)
-		"video/x-ogm+ogg",       // OGM видео
-	}
-
-	DefaultAllowedContentTypes = []string{
-		// Изображения
-		"image/png",     // PNG
-		"image/jpeg",    // JPEG
-		"image/jpg",     // JPG (альтернативный заголовок)
-		"image/gif",     // GIF
-		"image/bmp",     // BMP
-		"image/webp",    // WebP
-		"image/svg+xml", // SVG
-		"image/tiff",    // TIFF
-
-		// Документы
-		"application/pdf",    // PDF
-		"application/msword", // Microsoft Word (DOC)
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document", // Microsoft Word (DOCX)
-		"application/vnd.ms-excel", // Microsoft Excel (XLS)
-		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",         // Microsoft Excel (XLSX)
-		"application/vnd.ms-powerpoint",                                             // Microsoft PowerPoint (PPT)
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation", // Microsoft PowerPoint (PPTX)
-		"text/plain",       // Текстовый файл (TXT)
-		"text/csv",         // CSV
-		"application/json", // JSON
-		"application/xml",  // XML
-
-		// Аудио
-		"audio/mpeg", // MP3
-		"audio/ogg",  // Ogg Audio
-		"audio/wav",  // WAV
-		"audio/flac", // FLAC
-
-		// Прочее
-		"application/zip",              // ZIP архивы
-		"application/x-7z-compressed",  // 7z архивы
-		"application/x-tar",            // TAR архивы
-		"application/gzip",             // GZIP архивы
-		"application/x-rar-compressed", // RAR архивы
+		ServiceName:     "RushApp",
+		ActiveCache:     true,
+		CacheTime:       60,
+		TagDependencies: map[string][]string{},
 	}
 )
 
+// Пример комплексной настройки:
+//
+//	func InitMiddlewares(...) *rpm.Middlewares {
+//		cacheCfg := *rpm.DefaultCacheConfig
+//		cacheCfg.ServiceName = "RushApp"
+//		cacheCfg.ActiveCache = cfg.APP.CACHE_ACTIVE
+//
+//		cacheMd := rpm.NewCacheMiddleware(redisClient, &cacheCfg)
+//
+//		cacheMd.RegisterTagDependencies(map[string][]string{
+//			"products":        {"restaurants:list", "restaurants:details"},
+//			"restaurants":     {"restaurants:list", "restaurants:menu"},
+//			"restaurants:list": {"restaurants:menu"},
+//			"categories":      {"courses", "lessons"},
+//		})
+//
+//		return &rpm.Middlewares{
+//			Cache: cacheMd,
+//		}
+//	}
+//
+//	func registerCategoryRoutes(router fiber.Router, m *rpm.Middlewares, ctrl *controllers.Controllers) {
+//		category := router.Group("/categories")
+//
+//		category.Get("/",
+//			m.Permission.CheckPermission("view:categories"),
+//			m.Cache.RouteCache(10, "categories:list"),
+//			ctrl.Category.GetAllCategories,
+//		)
+//
+//		category.Get("/:id",
+//			m.Permission.CheckPermission("view:category_by_id"),
+//			m.Cache.RouteCache(10, "categories:details"),
+//			ctrl.Category.FindCategoryByID,
+//		)
+//
+//		category.Post("/",
+//			m.Permission.CheckPermission("create:category"),
+//			m.Cache.InvalidateTags("categories:list"),
+//			ctrl.Category.CreateCategory,
+//		)
+//
+//		category.Put("/:id",
+//			m.Permission.CheckPermission("update:category"),
+//			m.Cache.InvalidateTags("categories:list", "categories:details"),
+//			ctrl.Category.UpdateCategory,
+//		)
+//	}
+//
+//	func registerCourseRoutes(router fiber.Router, m *rpm.Middlewares, ctrl *controllers.Controllers) {
+//		course := router.Group("/courses")
+//
+//		course.Get("/",
+//			m.Permission.CheckPermission("view:courses"),
+//			m.Cache.RouteCache(15, "courses:list"),
+//			ctrl.Course.GetAllCourses,
+//		)
+//
+//		course.Get("/:id",
+//			m.Permission.CheckPermission("view:course_by_id"),
+//			m.Cache.RouteCache(15, "courses:details"),
+//			ctrl.Course.FindCourseByID,
+//		)
+//
+//		course.Post("/",
+//			m.Permission.CheckPermission("create:course"),
+//			m.Cache.InvalidateTags("courses", "categories"),
+//			ctrl.Course.CreateCourse,
+//		)
+//
+//		course.Patch("/:id",
+//			m.Permission.CheckPermission("change:course_status"),
+//			m.Cache.InvalidateTags("courses:details", "courses:list"),
+//			ctrl.Course.ChangeStatusCourse,
+//		)
+//	}
+//
 // NewCacheMiddleware создаёт новый экземпляр CacheMiddleware с Redis клиентом.
 //
-// activeCache - определяет кэшировать запросы или вызвать следующий обработчик (пропустить).
-//
-// Шаблон конифга:
-//
-//	var CacheConfig = &CacheConfig{
-//		activeCache:          true,
-//		cacheTime:            60,
-//		cacheFiles:           true,
-//		maxFileSize:          2 * 1024 * 1024,
-//		excludedContentTypes: rpm.DefaultExcludedContentTypes,
-//		allowedContentTypes:  rpm.DefaultAllowedContentTypes,
-//	}
+// Если передан nil конфиг, то будет использоваться DefaultCacheConfig.
 func NewCacheMiddleware(cacheStorage *redis.Client, cacheConfig *CacheConfig) *CacheMiddleware {
-	if cacheConfig.MaxFileSize > 10*1024*1024 {
-		log.Fatal("Максимальный размер кешируемого файла слишком велик")
+	if cacheStorage == nil {
+		log.Fatal("redis cache storage is required")
 	}
-	cacheConfig.cache = cacheStorage
-	return &CacheMiddleware{CacheConfig: cacheConfig}
+
+	cfg := cacheConfig
+	if cfg == nil {
+		def := *DefaultCacheConfig
+		cfg = &def
+	}
+
+	if cfg.CacheTime <= 0 {
+		cfg.CacheTime = DefaultCacheConfig.CacheTime
+	}
+
+	if cfg.TagDependencies == nil {
+		cfg.TagDependencies = map[string][]string{}
+	}
+
+	cfg.ServiceName = sanitizeSegment(cfg.ServiceName)
+	if cfg.ServiceName == "" {
+		cfg.ServiceName = sanitizeSegment(DefaultCacheConfig.ServiceName)
+	}
+
+	cfg.cache = cacheStorage
+
+	return &CacheMiddleware{CacheConfig: cfg}
 }
 
 // RouteCache создает кэширование на уровне маршрутов.
 //
 //	cacheTime := 60 // cacheTime принимает только минуты
+//	tags := []string{"products", "products:list"} // теги для последующей инвалидации
 //
-//	Если на уровне роута (т.е. m.RouteCache(60)) cacheTime > 0, то указанное время будет приоритетом, иначе используется глобальный cacheTime мидлвейра.
-func (f *CacheMiddleware) RouteCache(cacheTime int64) fiber.Handler {
+//	Если cacheTime на уровне роута > 0, то он перекрывает глобальное значение.
+//	Теги используются для точечного сброса кэшей. Если они не переданы, в качестве тега используется путь роута.
+//
+//	// Пример использования в роутере:
+//	api.Get("/restaurants",
+//		m.Cache.RouteCache(5, "restaurants:list"),
+//		ctrl.Restaurant.List,
+//	)
+func (f *CacheMiddleware) RouteCache(cacheTime int64, tags ...string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		// Если кэширование не активно, пропускаем обработку
 		if !f.ActiveCache {
 			return ctx.Next()
 		}
 
-		// Создаем ключ кэша
-		cacheKey := fmt.Sprintf("route_cache_%s", ctx.OriginalURL())
-		metaKey := fmt.Sprintf("%s_meta", cacheKey)
+		cacheKey := f.buildCacheKey(ctx)
+		metaKey := f.metaKey(cacheKey)
+		normalizedTags := f.normalizeTags(ctx, tags)
 
 		// Попытка получить данные из кэша
 		cached, err := f.cache.Get(ctx.Context(), cacheKey).Bytes()
 		if err == nil && len(cached) > 0 {
-			// Попытка получить мета-информацию о Content-Type
-			contentType, _ := f.cache.Get(ctx.Context(), metaKey).Result()
-			if contentType != "" {
-				// Если Content-Type найден, возвращаем кэшированные данные
-				ctx.Set("Content-Type", contentType)
+			contentType, metaErr := f.cache.Get(ctx.Context(), metaKey).Result()
+			if metaErr == nil && contentType != "" {
+				ctx.Set(fiber.HeaderContentType, contentType)
 				return ctx.Send(cached)
 			}
 
-			// Если Content-Type отсутствует, удаляем запись из кэша
-			_ = f.cache.Del(ctx.Context(), cacheKey).Err() // Удаляем данные
-			_ = f.cache.Del(ctx.Context(), metaKey).Err()  // Удаляем мета-информацию
-
-			// Перенаправляем запрос на обработчик
-			return ctx.Next()
-		} else if err != redis.Nil {
-			// Если ошибка не связана с отсутствием ключа
+			// Если мета отсутствует или произошла ошибка - очищаем ключ и продолжаем вниз по цепочке.
+			_ = f.cache.Del(ctx.Context(), cacheKey, metaKey).Err()
+		} else if err != nil && err != redis.Nil {
 			return err
 		}
 
-		// Выполняем обработчик
-		err = ctx.Next()
-		if err != nil {
+		if err := ctx.Next(); err != nil {
 			return err
 		}
 
-		// Проверяем статус ответа
-		resStatus := ctx.Response().StatusCode()
-		if resStatus < 200 || resStatus >= 300 {
-			return nil // Не кэшируем ошибки
-		}
-
-		// Получаем Content-Type и тело ответа
-		contentType := string(ctx.Response().Header.ContentType())
-		if contentType == "" {
-			fmt.Printf("Skipping cache: %s (Content-Type is empty)\n", ctx.OriginalURL())
+		if !f.shouldCacheResponse(ctx) {
 			return nil
 		}
+
+		expiration := f.resolveExpiration(cacheTime)
 		body := ctx.Response().Body()
+		contentType := string(ctx.Response().Header.ContentType())
 
-		// Проверяем Content-Type на исключенные
-		for _, excludedType := range f.ExcludedContentTypes {
-			if strings.HasPrefix(contentType, excludedType) {
-				return nil // Не кэшируем запрещенные типы
-			}
-		}
-
-		// Проверяем размер файла
-		if f.CacheFiles && uint(len(body)) > f.MaxFileSize {
-			return nil // Не кэшируем слишком большие файлы
-		}
-
-		// Проверяем, допустим ли тип файла
-		isAllowed := false
-		for _, allowedType := range f.AllowedContentTypes {
-			if strings.HasPrefix(contentType, allowedType) {
-				isAllowed = true
-				break
-			}
-		}
-		if !isAllowed {
-			return nil // Не кэшируем недопустимые типы
-		}
-
-		// Устанавливаем время кэширования
-		if cacheTime == 0 {
-			cacheTime = f.CacheTime
-		}
-		expiration := time.Duration(cacheTime) * time.Minute
-
-		// Сохраняем Content-Type и данные в кэше
 		if err := f.cache.Set(ctx.Context(), metaKey, contentType, expiration).Err(); err != nil {
 			return err
 		}
 		if err := f.cache.Set(ctx.Context(), cacheKey, body, expiration).Err(); err != nil {
+			return err
+		}
+		if err := f.bindTags(ctx, normalizedTags, cacheKey, expiration); err != nil {
 			return err
 		}
 
@@ -213,65 +207,231 @@ func (f *CacheMiddleware) RouteCache(cacheTime int64) fiber.Handler {
 	}
 }
 
-// CacheInvalidation удаляет все кэши определенного роута при выполнении запросов, изменяющих данные (POST, PUT, PATCH, DELETE).
-//
-// Пример передачи роутов кэши которых надо сбрасывать:
-//
-//	package middlewares
-//
-//	// Роуты кэши которых нужно очищать
-//	var (
-//		CachedRoutes = []string{
-//			"/api/v1/examples",
-//			"/public",
-//			"и т.д.",
-//		}
-//	)
+// CacheInvalidation оставлена для обратной совместимости и теперь работает через теги.
+// Эквивалентно InvalidateTags(cacheablePaths...).
 func (f *CacheMiddleware) CacheInvalidation(cacheablePaths []string) fiber.Handler {
+	return f.InvalidateTags(cacheablePaths...)
+}
+
+// InvalidateTags очищает кэши по тегам после успешного изменения данных (POST/PUT/PATCH/DELETE).
+// Теги можно переиспользовать между разными маршрутами.
+//
+//	// Пример: при изменении ресторана очищаем список и карточку.
+//	api.Put("/restaurants/:id",
+//		m.Cache.InvalidateTags("restaurants:list", "restaurants:details"),
+//		ctrl.Restaurant.Update,
+//	)
+func (f *CacheMiddleware) InvalidateTags(tags ...string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		// Определяем методы, которые изменяют данные и требуют очистки кэша
-		invalidatingMethods := map[string]struct{}{
-			"POST":   {},
-			"PUT":    {},
-			"PATCH":  {},
-			"DELETE": {},
+		if !f.ActiveCache {
+			return ctx.Next()
 		}
 
-		// Проверяем, если метод является изменяющим данные
-		if _, shouldInvalidate := invalidatingMethods[ctx.Method()]; shouldInvalidate {
-			// Проходим по списку кэшируемых путей и проверяем совпадение с текущим путем
-			for _, path := range cacheablePaths {
-				// Проверяем, начинается ли текущий путь с кэшируемого пути
-				if strings.HasPrefix(ctx.Path(), path) {
-					// Создаем префикс для поиска ключей в Redis
-					prefix := fmt.Sprintf("route_cache_%s", path)
+		if err := ctx.Next(); err != nil {
+			return err
+		}
 
-					// Используем SCAN для поиска всех ключей, начинающихся с указанного префикса
-					var cursor uint64
-					for {
-						keys, nextCursor, err := f.cache.Scan(ctx.Context(), cursor, prefix+"*", 10).Result()
-						if err != nil {
-							return err
-						}
+		if !isMutatingMethod(ctx.Method()) || ctx.Response().StatusCode() >= 400 {
+			return nil
+		}
 
-						// Удаляем найденные ключи
-						if len(keys) > 0 {
-							if err := f.cache.Del(ctx.Context(), keys...).Err(); err != nil {
-								return err
-							}
-						}
+		normalizedTags := f.normalizeTags(ctx, tags)
+		return f.dropTags(ctx, normalizedTags)
+	}
+}
 
-						// Если дошли до конца, выходим из цикла
-						if nextCursor == 0 {
-							break
-						}
-						cursor = nextCursor
-					}
-				}
+// RegisterTagDependencies позволяет передать карту всех зависимостей единым блоком.
+// Удобно объявить её отдельно (например, в routes/cache_tags.go) и применять при инициализации middleware.
+//
+//	// Пример:
+//	var CacheTagDependencies = map[string][]string{
+//		"products":    {"restaurants:list", "restaurants:details"},
+//		"restaurants": {"restaurants:list", "restaurants:menu"},
+//	}
+//
+//	cacheMd.RegisterTagDependencies(CacheTagDependencies)
+func (f *CacheMiddleware) RegisterTagDependencies(deps map[string][]string) {
+	if len(deps) == 0 {
+		return
+	}
+	for tag, chained := range deps {
+		tag = strings.TrimSpace(tag)
+		if tag == "" {
+			continue
+		}
+		if f.TagDependencies == nil {
+			f.TagDependencies = map[string][]string{}
+		}
+		f.TagDependencies[tag] = append(f.TagDependencies[tag], chained...)
+	}
+}
+
+func (f *CacheMiddleware) shouldCacheResponse(ctx *fiber.Ctx) bool {
+	status := ctx.Response().StatusCode()
+	if status < 200 || status >= 300 {
+		return false
+	}
+
+	return len(ctx.Response().Body()) > 0
+}
+
+func (f *CacheMiddleware) resolveExpiration(cacheTime int64) time.Duration {
+	if cacheTime <= 0 {
+		cacheTime = f.CacheTime
+	}
+	if cacheTime <= 0 {
+		cacheTime = 1
+	}
+	return time.Duration(cacheTime) * time.Minute
+}
+
+func (f *CacheMiddleware) buildCacheKey(ctx *fiber.Ctx) string {
+	pathSegment := sanitizeSegment(ctx.Path())
+	hash := hashURL(ctx.OriginalURL())
+	return fmt.Sprintf("%s:%s:%s", f.ServiceName, pathSegment, hash)
+}
+
+func (f *CacheMiddleware) metaKey(cacheKey string) string {
+	return fmt.Sprintf("%s:meta", cacheKey)
+}
+
+func (f *CacheMiddleware) tagKey(tag string) string {
+	return fmt.Sprintf("%s:tag:%s", f.ServiceName, sanitizeSegment(tag))
+}
+
+func (f *CacheMiddleware) normalizeTags(ctx *fiber.Ctx, tags []string) []string {
+	var normalized []string
+	for _, tag := range tags {
+		tag = strings.TrimSpace(tag)
+		if tag == "" {
+			continue
+		}
+		normalized = append(normalized, tag)
+	}
+
+	if len(normalized) == 0 {
+		normalized = append(normalized, ctx.Path())
+	}
+
+	return normalized
+}
+
+func (f *CacheMiddleware) bindTags(ctx *fiber.Ctx, tags []string, cacheKey string, expiration time.Duration) error {
+	for _, tag := range tags {
+		tagKey := f.tagKey(tag)
+		if err := f.cache.SAdd(ctx.Context(), tagKey, cacheKey).Err(); err != nil {
+			return err
+		}
+		if expiration > 0 {
+			if err := f.cache.Expire(ctx.Context(), tagKey, expiration).Err(); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (f *CacheMiddleware) dropTags(ctx *fiber.Ctx, tags []string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	cascadeTags := f.expandTagCascade(tags)
+	for _, tag := range cascadeTags {
+		tagKey := f.tagKey(tag)
+		cacheKeys, err := f.cache.SMembers(ctx.Context(), tagKey).Result()
+		if err != nil && err != redis.Nil {
+			return err
+		}
+
+		if len(cacheKeys) > 0 {
+			var keysToDelete []string
+			for _, key := range cacheKeys {
+				keysToDelete = append(keysToDelete, key, f.metaKey(key))
+			}
+			if err := f.cache.Del(ctx.Context(), keysToDelete...).Err(); err != nil {
+				return err
 			}
 		}
 
-		// Выполняем основной обработчик (контроллер)
-		return ctx.Next()
+		if err := f.cache.Del(ctx.Context(), tagKey).Err(); err != nil {
+			return err
+		}
 	}
+
+	return nil
+}
+
+func hashURL(raw string) string {
+	sum := sha256.Sum256([]byte(raw))
+	// Берем первые 8 байт, чтобы ключи оставались короткими и читаемыми.
+	return hex.EncodeToString(sum[:8])
+}
+
+func sanitizeSegment(value string) string {
+	value = strings.TrimSpace(strings.ToLower(value))
+	if value == "" {
+		return ""
+	}
+
+	var b strings.Builder
+	b.Grow(len(value))
+	lastUnderscore := false
+
+	for _, r := range value {
+		if (r >= '0' && r <= '9') || (r >= 'a' && r <= 'z') {
+			b.WriteRune(r)
+			lastUnderscore = false
+			continue
+		}
+
+		if !lastUnderscore {
+			b.WriteByte('_')
+			lastUnderscore = true
+		}
+	}
+
+	res := strings.Trim(b.String(), "_")
+	if res == "" {
+		return ""
+	}
+
+	return res
+}
+
+func isMutatingMethod(method string) bool {
+	switch method {
+	case fiber.MethodPost, fiber.MethodPut, fiber.MethodPatch, fiber.MethodDelete:
+		return true
+	default:
+		return false
+	}
+}
+
+func (f *CacheMiddleware) expandTagCascade(tags []string) []string {
+	visited := make(map[string]struct{})
+	var ordered []string
+
+	var visit func(string)
+	visit = func(tag string) {
+		tag = strings.TrimSpace(tag)
+		if tag == "" {
+			return
+		}
+		if _, ok := visited[tag]; ok {
+			return
+		}
+		visited[tag] = struct{}{}
+		ordered = append(ordered, tag)
+		for _, dependant := range f.TagDependencies[tag] {
+			visit(dependant)
+		}
+	}
+
+	for _, tag := range tags {
+		visit(tag)
+	}
+
+	return ordered
 }

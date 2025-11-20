@@ -3,6 +3,7 @@ package middlewares
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -23,6 +24,9 @@ type CacheConfig struct {
 	CacheTime   int64  // глобальное время кэширования (минуты)
 	// TagDependencies позволяет описать связи между тегами.
 	TagDependencies map[string][]string
+	// UserScopedPaths - список путей, к которым нужно привязывать кэш к UserID.
+	// По умолчанию содержит /auth/me; можно переопределить при инициализации.
+	UserScopedPaths []string
 }
 
 var (
@@ -31,6 +35,7 @@ var (
 		ActiveCache:     true,
 		CacheTime:       60,
 		TagDependencies: map[string][]string{},
+		UserScopedPaths: []string{"/auth/me"},
 	}
 )
 
@@ -132,6 +137,9 @@ func NewCacheMiddleware(cacheStorage *redis.Client, cacheConfig *CacheConfig) *C
 	if cfg.TagDependencies == nil {
 		cfg.TagDependencies = map[string][]string{}
 	}
+	if len(cfg.UserScopedPaths) == 0 {
+		cfg.UserScopedPaths = append([]string{}, DefaultCacheConfig.UserScopedPaths...)
+	}
 
 	cfg.ServiceName = sanitizeSegment(cfg.ServiceName)
 	if cfg.ServiceName == "" {
@@ -163,20 +171,24 @@ func (f *CacheMiddleware) RouteCache(cacheTime int64, tags ...string) fiber.Hand
 		}
 
 		cacheKey := f.buildCacheKey(ctx)
-		metaKey := f.metaKey(cacheKey)
 		normalizedTags := f.normalizeTags(ctx, tags)
 
 		// Попытка получить данные из кэша
 		cached, err := f.cache.Get(ctx.Context(), cacheKey).Bytes()
 		if err == nil && len(cached) > 0 {
-			contentType, metaErr := f.cache.Get(ctx.Context(), metaKey).Result()
-			if metaErr == nil && contentType != "" {
-				ctx.Set(fiber.HeaderContentType, contentType)
-				return ctx.Send(cached)
+			var payload struct {
+				ContentType string `json:"ct,omitempty"`
+				Body        []byte `json:"b"`
+			}
+			if unmarshalErr := json.Unmarshal(cached, &payload); unmarshalErr == nil && len(payload.Body) > 0 {
+				if payload.ContentType != "" {
+					ctx.Set(fiber.HeaderContentType, payload.ContentType)
+				}
+				return ctx.Send(payload.Body)
 			}
 
-			// Если мета отсутствует или произошла ошибка - очищаем ключ и продолжаем вниз по цепочке.
-			_ = f.cache.Del(ctx.Context(), cacheKey, metaKey).Err()
+			// Старые записи без упаковки просто отдаем как есть.
+			return ctx.Send(cached)
 		} else if err != nil && err != redis.Nil {
 			return err
 		}
@@ -190,13 +202,18 @@ func (f *CacheMiddleware) RouteCache(cacheTime int64, tags ...string) fiber.Hand
 		}
 
 		expiration := f.resolveExpiration(cacheTime)
-		body := ctx.Response().Body()
-		contentType := string(ctx.Response().Header.ContentType())
-
-		if err := f.cache.Set(ctx.Context(), metaKey, contentType, expiration).Err(); err != nil {
-			return err
+		payload := struct {
+			ContentType string `json:"ct,omitempty"`
+			Body        []byte `json:"b"`
+		}{
+			ContentType: string(ctx.Response().Header.ContentType()),
+			Body:        append([]byte(nil), ctx.Response().Body()...),
 		}
-		if err := f.cache.Set(ctx.Context(), cacheKey, body, expiration).Err(); err != nil {
+		data, marshalErr := json.Marshal(payload)
+		if marshalErr != nil {
+			return marshalErr
+		}
+		if err := f.cache.Set(ctx.Context(), cacheKey, data, expiration).Err(); err != nil {
 			return err
 		}
 		if err := f.bindTags(ctx, normalizedTags, cacheKey, expiration); err != nil {
@@ -285,18 +302,45 @@ func (f *CacheMiddleware) resolveExpiration(cacheTime int64) time.Duration {
 	return time.Duration(cacheTime) * time.Minute
 }
 
+// buildCacheKey формирует ключ кэша.
+// Публичные и одинаковые для всех ответы получают единый ключ,
+// но user-specific ручки (например, auth/me) персонализируются по UserID,
+// чтобы не было утечек между пользователями при кэшировании.
 func (f *CacheMiddleware) buildCacheKey(ctx *fiber.Ctx) string {
 	pathSegment := sanitizeSegment(ctx.Path())
 	hash := hashURL(ctx.OriginalURL())
-	return fmt.Sprintf("%s:%s:%s", f.ServiceName, pathSegment, hash)
-}
-
-func (f *CacheMiddleware) metaKey(cacheKey string) string {
-	return fmt.Sprintf("%s:meta", cacheKey)
+	userSegment := ""
+	if isPublic, _ := ctx.Locals("IsPublic").(bool); !isPublic {
+		// Персонализируем кэш только для user-specific ручек.
+		if f.isUserScopedPath(ctx.Path()) {
+			if userID, ok := ctx.Locals("UserID").(uint); ok && userID > 0 {
+				userSegment = fmt.Sprintf("user_%d:", userID)
+			}
+		}
+	}
+	if userSegment == "" {
+		return fmt.Sprintf("%s:%s:%s", f.ServiceName, pathSegment, hash)
+	}
+	return fmt.Sprintf("%s:%s%s:%s", f.ServiceName, userSegment, pathSegment, hash)
 }
 
 func (f *CacheMiddleware) tagKey(tag string) string {
 	return fmt.Sprintf("%s:tag:%s", f.ServiceName, sanitizeSegment(tag))
+}
+
+func (f *CacheMiddleware) isUserScopedPath(path string) bool {
+	path = strings.TrimRight(path, "/")
+	for _, scoped := range f.UserScopedPaths {
+		scoped = strings.TrimRight(strings.TrimSpace(scoped), "/")
+		if scoped == "" {
+			continue
+		}
+
+		if path == scoped || strings.HasSuffix(path, scoped) {
+			return true
+		}
+	}
+	return false
 }
 
 func (f *CacheMiddleware) normalizeTags(ctx *fiber.Ctx, tags []string) []string {
@@ -346,11 +390,7 @@ func (f *CacheMiddleware) dropTags(ctx *fiber.Ctx, tags []string) error {
 		}
 
 		if len(cacheKeys) > 0 {
-			var keysToDelete []string
-			for _, key := range cacheKeys {
-				keysToDelete = append(keysToDelete, key, f.metaKey(key))
-			}
-			if err := f.cache.Del(ctx.Context(), keysToDelete...).Err(); err != nil {
+			if err := f.cache.Del(ctx.Context(), cacheKeys...).Err(); err != nil {
 				return err
 			}
 		}

@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	Success    = "успешно"
+	Success    = "Успешно"
 	customCode = "CustomCode"
 	customErr  = "CustomError"
 )

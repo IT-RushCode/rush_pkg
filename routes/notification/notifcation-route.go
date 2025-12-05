@@ -1,14 +1,13 @@
 package routes
 
 import (
-	"github.com/IT-RushCode/rush_pkg/controllers"
 	"github.com/IT-RushCode/rush_pkg/handlers"
 	"github.com/IT-RushCode/rush_pkg/middlewares"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func RUN_NOTIFICATION_ROUTES(api fiber.Router, h *handlers.Handlers, ctrl *controllers.Controllers, m *middlewares.Middlewares) {
+func RUN_NOTIFICATION_ROUTES(api fiber.Router, h *handlers.Handlers, m *middlewares.Middlewares) {
 	notifications := api.Group("notifications")
 
 	// Отправка общих уведомлений
@@ -34,10 +33,10 @@ func RUN_NOTIFICATION_ROUTES(api fiber.Router, h *handlers.Handlers, ctrl *contr
 
 	// ----------- CRUD ----------->
 
-	notifications.Get("/", m.Permission.CheckPermission("view:general_notifications"), m.Cache.RouteCache(0), ctrl.Notification.GetGeneralNotifications)
-	notifications.Get("/:id", m.Permission.CheckPermission("view:general_notification_by_id"), m.Cache.RouteCache(0), ctrl.Notification.FindNotificationByID)
-	notifications.Post("/", m.Permission.CheckPermission("create:general_notification"), ctrl.Notification.CreateGeneralNotification)
-	notifications.Put("/:id", m.Permission.CheckPermission("update:general_notification"), ctrl.Notification.UpdateGeneralNotification)
-	notifications.Delete("/:id", m.Permission.CheckPermission("delete:notification"), ctrl.Notification.DeleteNotification)
+	notifications.Get("/", m.Permission.CheckPermission("view:general_notifications"), m.Cache.RouteCache(0), h.Notification.GetGeneralNotificationsAdmin)
+	notifications.Get("/:id", m.Permission.CheckPermission("view:general_notification_by_id"), m.Cache.RouteCache(0), h.Notification.FindNotificationByID)
+	notifications.Post("/", m.Permission.CheckPermission("create:general_notification"), h.Notification.CreateGeneralNotification)
+	notifications.Put("/:id", m.Permission.CheckPermission("update:general_notification"), h.Notification.UpdateGeneralNotification)
+	notifications.Delete("/:id", m.Permission.CheckPermission("delete:notification"), h.Notification.DeleteNotification)
 
 }

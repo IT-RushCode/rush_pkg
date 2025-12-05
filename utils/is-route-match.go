@@ -16,13 +16,23 @@ func IsRouteMatch(path, route string) bool {
 	routeParts := strings.Split(route, "/")
 	pathParts := strings.Split(path, "/")
 
-	// Если количество частей не совпадает, маршруты не соответствуют
-	if len(routeParts) != len(pathParts) {
-		return false
-	}
+	// // Если количество частей не совпадает, маршруты не соответствуют
+	// if len(routeParts) != len(pathParts) {
+	// 	return false
+	// }
 
 	// Сравниваем каждую часть маршрута
 	for i := range routeParts {
+		// Если маршрут содержит wildcard "*", он матчит всё, что идёт дальше.
+		if routeParts[i] == "*" {
+			return true
+		}
+
+		// Если путь закончился раньше, значит не совпадает
+		if i >= len(pathParts) {
+			return false
+		}
+
 		// Если это динамическая часть, пропускаем проверку
 		if strings.HasPrefix(routeParts[i], ":") {
 			continue
@@ -33,6 +43,7 @@ func IsRouteMatch(path, route string) bool {
 		}
 	}
 
-	// Если все части совпали, возвращаем true
-	return true
+	// Если маршрут короче или длиннее пути, он не соответствует,
+	// потому что до этого момента все части совпали.
+	return len(routeParts) == len(pathParts)
 }

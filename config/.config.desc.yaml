@@ -96,6 +96,17 @@ FIREBASE:
   AUTH_PROVIDER_X509_CERT_URL: ""
   CLIENT_X509_CERT_URL: ""
 
+SWAGGER:
+  BASE_PATH: "/api/v1"
+  FILE_PATH: "./docs/swagger.yaml"
+  PATH: "docs"
+  TITLE: "APP API"
+  CACHE_AGE: 3600
+  BASIC_AUTH_ENABLED: false
+  AUTH_USER: ""
+  AUTH_PASSWORD: ""
+
+
 FIBER:
   # Если установлено в true, это приведет к запуску нескольких процессов Go,
   # прослушивающих один и тот же порт.

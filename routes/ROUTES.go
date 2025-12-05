@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"github.com/IT-RushCode/rush_pkg/controllers"
 	"github.com/IT-RushCode/rush_pkg/handlers"
 	"github.com/IT-RushCode/rush_pkg/middlewares"
 
@@ -18,11 +17,10 @@ import (
 // РОУТЫ ПРОВЕДЕНИЯ ПЛАТЕЖЕЙ ЮКАССЫ
 func RUN_YOOKASSA_PAYMENT_ROUTES(
 	api fiber.Router,
-	ctrl *controllers.Controllers,
 	h *handlers.Handlers,
 	m *middlewares.Middlewares,
 ) {
-	yookassa.RUN_YOOKASSA_SETTINGS_ROUTES(api, ctrl, m)
+	yookassa.RUN_YOOKASSA_SETTINGS_ROUTES(api, h, m)
 }
 
 // РОУТЫ SMS
@@ -37,17 +35,15 @@ func RUN_SMS_ROUTES(
 // РОУТЫ NOTIFICATION
 func RUN_NOTIFICATION_ROUTES(
 	api fiber.Router,
-	ctrl *controllers.Controllers,
 	h *handlers.Handlers,
 	m *middlewares.Middlewares,
 ) {
-	ntf.RUN_NOTIFICATION_ROUTES(api, h, ctrl, m)
+	ntf.RUN_NOTIFICATION_ROUTES(api, h, m)
 }
 
 // РОУТЫ CHAT
 func RUN_WEBSOCKET_ROUTES(
 	api fiber.Router,
-	ctrl *controllers.Controllers,
 	h *handlers.Handlers,
 	m *middlewares.Middlewares,
 ) {
@@ -58,7 +54,6 @@ func RUN_WEBSOCKET_ROUTES(
 // РОУТЫ NOTIFICATION
 func RUN_POLICY_ROUTES(
 	api fiber.Router,
-	ctrl *controllers.Controllers,
 	h *handlers.Handlers,
 	m *middlewares.Middlewares,
 ) {

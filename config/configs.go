@@ -18,6 +18,7 @@ type Config struct {
 	SMS      SmsConfig      `mapstructure:"SMS"`
 	MAIL     MailConfig     `mapstructure:"MAIL"`
 	FIREBASE FirebaseConfig `mapstructure:"FIREBASE"`
+	SWAGGER  SwaggerConfig  `mapstructure:"SWAGGER"`
 	FIBER    FiberConfig    `mapstructure:"FIBER"`
 }
 

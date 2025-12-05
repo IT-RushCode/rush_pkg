@@ -19,7 +19,15 @@ func NewChatHandler(srv *services.Services, repo *repositories.Repositories) *Ch
 	return &ChatHandler{srv: srv, repo: repo}
 }
 
-// POST /api/chat/session
+// CreateChatSession запускает новую сессию чата для клиента
+// @Summary Создание чат-сессии
+// @Description Создает новый чат и возвращает идентификатор сессии
+// @Tags Chat
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]uint "sessionID"
+// @Failure 500 {object} utils.Response "Ошибка создания сессии"
+// @Router /api/chat/session [post]
 func (h *ChatHandler) CreateChatSession(ctx *fiber.Ctx) error {
 	// Предполагаем, что мы получили идентификатор клиента через токен или параметры
 	clientID := ctx.Locals("UserID").(uint)
@@ -44,7 +52,16 @@ func (h *ChatHandler) CreateChatSession(ctx *fiber.Ctx) error {
 	})
 }
 
-// GET /api/chat/session
+// GetActiveChatSession возвращает активную сессию для пользователя
+// @Summary Получение активной сессии чата
+// @Description Возвращает идентификатор активной сессии чата по пользователю
+// @Tags Chat
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]uint "sessionID"
+// @Failure 404 {object} utils.Response "Сессия не найдена"
+// @Failure 500 {object} utils.Response "Ошибка сервиса чата"
+// @Router /api/chat/session [get]
 func (h *ChatHandler) GetActiveChatSession(ctx *fiber.Ctx) error {
 	clientID := ctx.Locals("UserID").(uint)
 

@@ -8,22 +8,22 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/IT-RushCode/rush_pkg/controllers"
 	dto "github.com/IT-RushCode/rush_pkg/dto/chat"
 	"github.com/IT-RushCode/rush_pkg/models"
+	"github.com/IT-RushCode/rush_pkg/repositories"
 
 	"github.com/gofiber/contrib/websocket"
 )
 
 type WebSocketHandler struct {
-	*controllers.ChatController
+	repo    *repositories.Repositories
 	clients map[string]*websocket.Conn // Хранение подключений клиентов
 }
 
-func NewWebSocketHandler(ctrl *controllers.ChatController) *WebSocketHandler {
+func NewWebSocketHandler(repo *repositories.Repositories) *WebSocketHandler {
 	return &WebSocketHandler{
-		ChatController: ctrl,
-		clients:        make(map[string]*websocket.Conn),
+		repo:    repo,
+		clients: make(map[string]*websocket.Conn),
 	}
 }
 
@@ -42,17 +42,13 @@ func (h *WebSocketHandler) WebSocketChat() func(c *websocket.Conn) {
 			c.Close()
 		}()
 
-		history := &[]models.ChatMessage{}
-
-		// Загрузка истории сообщений
-		err := h.ChatController.GetHistoryMessages(
+		history, err := h.repo.Chat.GetMessages(
 			ctx,
 			&dto.GetChatHistoryDTO{
 				SessionID: uint(sessionID),
-				Limit:     50, // Ограничим количество загружаемых сообщений
+				Limit:     50,
 				Offset:    0,
 			},
-			history,
 		)
 		if err != nil {
 			log.Println("Ошибка загрузки истории чата:", err)
@@ -60,7 +56,7 @@ func (h *WebSocketHandler) WebSocketChat() func(c *websocket.Conn) {
 		}
 
 		// Отправляем историю сообщений клиенту
-		for _, msg := range *history {
+		for _, msg := range history {
 			messageData := map[string]interface{}{
 				"id":        msg.ID,
 				"senderId":  msg.SenderID,
@@ -99,7 +95,7 @@ func (h *WebSocketHandler) WebSocketChat() func(c *websocket.Conn) {
 			}
 
 			// Сохранение сообщения в базе данных
-			err = h.ChatController.CreateMessage(ctx, message)
+			err = h.repo.Chat.CreateMessage(ctx, message)
 			if err != nil {
 				log.Println("Ошибка сохранения сообщения:", err)
 				break
@@ -149,7 +145,7 @@ func (h *WebSocketHandler) WebSocketSupport() func(c *websocket.Conn) {
 			}
 
 			// Сохранение сообщения в базе данных
-			err = h.ChatController.CreateMessage(ctx, message)
+			err = h.repo.Chat.CreateMessage(ctx, message)
 			if err != nil {
 				log.Println("Ошибка сохранения сообщения:", err)
 				break

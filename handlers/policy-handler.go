@@ -23,6 +23,23 @@ var (
 	ErrorTypePolicy = errors.New("необходимо указать один из типов политики: privacy, agreement")
 )
 
+type policyTextDTO struct {
+	Text string `json:"text"`
+}
+
+// UpdatePolicyText обновляет текст политики
+// @Summary Обновление текста политики
+// @Description Обновляет текст политики privacy или agreement
+// @Tags Политики
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param policyType path string true "Тип политики" Enums(privacy, agreement)
+// @Param data body policyTextDTO true "Новый текст политики"
+// @Success 200 {object} utils.Response "Политика обновлена"
+// @Failure 400 {object} utils.Response "Некорректные данные"
+// @Failure 500 {object} utils.Response "Ошибка сервиса"
+// @Router /policy/{policyType} [patch]
 func (h *PolicyHandler) UpdatePolicyText(ctx *fiber.Ctx) error {
 	policyType := ctx.Params("policyType")
 	if policyType != "privacy" && policyType != "agreement" {
@@ -30,9 +47,7 @@ func (h *PolicyHandler) UpdatePolicyText(ctx *fiber.Ctx) error {
 	}
 
 	// Получение нового текста политики из тела запроса
-	var body struct {
-		Text string `json:"text"`
-	}
+	body := policyTextDTO{}
 	if err := ctx.BodyParser(&body); err != nil {
 		return utils.ErrorBadRequestResponse(ctx, "Ошибка парсинга тела запроса: "+err.Error(), nil)
 	}
@@ -45,6 +60,17 @@ func (h *PolicyHandler) UpdatePolicyText(ctx *fiber.Ctx) error {
 	return utils.SuccessResponse(ctx, utils.Success, nil)
 }
 
+// GetPolicy возвращает JSON-представление политики
+// @Summary Получение политики
+// @Description Возвращает текст политики privacy или agreement в JSON
+// @Tags Политики
+// @Produce json
+// @Security BearerAuth
+// @Param policyType path string true "Тип политики" Enums(privacy, agreement)
+// @Success 200 {object} utils.Response "Текст политики"
+// @Failure 400 {object} utils.Response "Неверный тип политики"
+// @Failure 500 {object} utils.Response "Ошибка сервиса"
+// @Router /policy/{policyType} [get]
 func (h *PolicyHandler) GetPolicy(ctx *fiber.Ctx) error {
 	policyType := ctx.Params("policyType")
 	if policyType != "privacy" && policyType != "agreement" {
@@ -59,6 +85,16 @@ func (h *PolicyHandler) GetPolicy(ctx *fiber.Ctx) error {
 	return utils.SuccessResponse(ctx, utils.Success, policy)
 }
 
+// GetPolicyHTML возвращает HTML версию политики (публичная страница)
+// @Summary Публичная политика в HTML
+// @Description Возвращает HTML текст политики для web-страницы
+// @Tags Политики
+// @Produce html
+// @Param policyType path string true "Тип политики" Enums(privacy, agreement)
+// @Success 200 {string} string "HTML контент"
+// @Failure 400 {object} utils.Response "Неверный тип политики"
+// @Failure 500 {object} utils.Response "Ошибка сервиса"
+// @Router /public/policy/{policyType} [get]
 func (h *PolicyHandler) GetPolicyHTML(ctx *fiber.Ctx) error {
 	policyType := ctx.Params("policyType")
 	if policyType != "privacy" && policyType != "agreement" {

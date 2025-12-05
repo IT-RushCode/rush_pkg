@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+const (
+	RusDateTimeFormat = "02.01.2006 15:04:05"
+	RusTimeDateFormat = "15:04:05 02.01.2006"
+	RusDateFormat     = "02.01.2006"
+	RusTimeFormat     = "15:04:05"
+)
+
 func ParseDateTime(dateTimeStr string) (*time.Time, error) {
 	if dateTimeStr == "" {
 		return nil, nil
@@ -12,14 +19,16 @@ func ParseDateTime(dateTimeStr string) (*time.Time, error) {
 
 	// Часто используемые форматы дат и времени
 	formats := []string{
-		time.DateTime,          // "2006-01-02 15:04:05"
 		time.RFC3339,           // "2006-01-02T15:04:05Z07:00"
+		time.DateTime,          // "2006-01-02 15:04:05"
 		time.DateOnly,          // "2006-01-02"
+		RusDateTimeFormat,      // "02.01.2006 15:04:05"
+		RusTimeDateFormat,      // "15:04:05 02.01.2006"
+		RusDateFormat,          // "02.01.2006"
+		RusTimeFormat,          // "15:04:05"
 		"2006-01-02T15:04:05",  // ISO-8601 без зоны
 		"02-01-2006 15:04:05",  // Европейский формат с временем
 		"02-01-2006",           // Европейский формат без времени
-		"02.01.2006 15:04:05",  // Формат с временем с точкой
-		"02.01.2006",           // Формат без времени с точкой
 		"02/01/2006 15:04:05",  // Формат с временем с точкой
 		"02/01/2006",           // Формат без времени с точкой
 		"2006/01/02 15:04:05",  // Год/месяц/день с временем через слеш
@@ -33,9 +42,7 @@ func ParseDateTime(dateTimeStr string) (*time.Time, error) {
 	var err error
 	for _, format := range formats {
 		if t, err = time.Parse(format, dateTimeStr); err == nil {
-			loc := time.FixedZone("UTC+5", 5*60*60)
-			tInLoc := t.In(loc)
-			return &tInLoc, nil
+			return &t, nil
 		}
 	}
 	return nil, err
@@ -68,10 +75,4 @@ func SetLocalTimezone(timezone string) error {
 	// Устанавливаем локальную временную зону для всего приложения
 	time.Local = loc
 	return nil
-}
-
-// SetFixedTimezone устанавливает временную зону с фиксированным смещением от UTC
-func SetFixedTimezone() {
-	loc := time.FixedZone("UTC+5", 5*3600)
-	time.Local = loc
 }

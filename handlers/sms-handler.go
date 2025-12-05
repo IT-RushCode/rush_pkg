@@ -33,6 +33,16 @@ func NewSMSHandler(
 }
 
 // SendSMS обрабатывает запрос на отправку SMS
+// @Summary Отправка SMS
+// @Description Позволяет отправить SMS или OTP код на указанный номер, с пропуском для игнорируемых номеров
+// @Tags SMS
+// @Accept json
+// @Produce json
+// @Param data body dto.SMSRequestDTO true "Данные SMS"
+// @Success 200 {object} utils.Response "Текст исходного ответа в body"
+// @Failure 400 {object} utils.Response "Не удалось отправить SMS"
+// @Failure 500 {object} utils.Response "Ошибка сервиса SMS"
+// @Router /sms/send-sms [post]
 func (h *SmsHandler) SendSMS(ctx *fiber.Ctx) error {
 	// Проверка флага отправки SMS
 	if !h.cfg.SMS.ACTIVE_SEND {
@@ -98,6 +108,16 @@ func (h *SmsHandler) shouldIgnore(phone string, isOTP bool, ignoringNumbers []st
 }
 
 // VerifySMSCode подтверждает SMS код который был отправлен на номер телефона и удаляет из кеша
+// @Summary Подтверждение SMS кода
+// @Description Проверяет OTP код, сохраненный в кеш и удаляет его после успешной проверки
+// @Tags SMS
+// @Accept json
+// @Produce json
+// @Param data body dto.VerifyRequest true "Данные проверки кода"
+// @Success 200 {object} utils.Response "Код подтвержден"
+// @Failure 400 {object} utils.Response "Неверный или просроченный код"
+// @Failure 500 {object} utils.Response "Ошибка сервиса"
+// @Router /sms/verify-code [post]
 func (h *SmsHandler) VerifySMSCode(ctx *fiber.Ctx) error {
 	var req dto.VerifyRequest
 	if err := ctx.BodyParser(&req); err != nil {

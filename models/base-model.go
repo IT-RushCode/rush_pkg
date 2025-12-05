@@ -8,12 +8,12 @@ import (
 )
 
 type BaseModel struct {
-	CreatedAt *time.Time `gorm:"autoCreateTime"`
-	UpdatedAt *time.Time `gorm:"autoUpdateTime"`
+	CreatedAt time.Time `gorm:"autoCreateTime;comment:Время создания записи"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime;comment:Время последнего обновления записи"`
 }
 
 type SoftDelete struct {
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	DeletedAt gorm.DeletedAt `gorm:"index;comment:Время мягкого удаления"`
 }
 
 // Проверка последовательности id в таблице при автоинкременте

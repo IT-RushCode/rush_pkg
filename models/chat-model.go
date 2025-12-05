@@ -8,12 +8,12 @@ import (
 
 // ChatSession представляет собой сессию чата между пользователем и техподдержкой
 type ChatSession struct {
-	ID        uint       `gorm:"primaryKey;autoincrement"`
-	ClientID  uint       `gorm:"index"`            // Идентификатор клиента
-	SupportID *uint      `gorm:"index;null"`       // Идентификатор поддержки, может быть null до первого ответа
-	Status    string     `gorm:"type:varchar(20)"` // Статус сессии (активен, завершен)
-	StartedAt time.Time  `gorm:"autoCreateTime"`
-	ClosedAt  *time.Time `gorm:"default:null"`
+	ID        uint       `gorm:"primaryKey;autoincrement;comment:Первичный ключ с автоинкрементом"`
+	ClientID  uint       `gorm:"index;comment:Идентификатор клиента"`
+	SupportID *uint      `gorm:"index;null;comment:Идентификатор поддержки, null до первого ответа"`
+	Status    string     `gorm:"type:varchar(20);comment:Статус сессии (активна, завершена и т.п.)"`
+	StartedAt time.Time  `gorm:"autoCreateTime;comment:Время начала сессии"`
+	ClosedAt  *time.Time `gorm:"default:null;comment:Время закрытия сессии"`
 }
 
 // Настройки ChatSession
@@ -34,12 +34,12 @@ func (m *ChatSession) BeforeCreate(db *gorm.DB) (err error) {
 
 // ChatMessage представляет сообщение в чате
 type ChatMessage struct {
-	ID        uint      `json:"id"`
-	SessionID uint      `json:"sessionId"`
-	SenderID  uint      `json:"senderId"`  // ID отправителя (может быть клиент или поддержка)
-	IsSupport bool      `json:"isSupport"` // Флаг, который указывает, отправлено ли сообщение поддержкой
-	Body      string    `json:"body"`
-	Timestamp time.Time `json:"timestamp"`
+	ID        uint      `json:"id" gorm:"comment:Первичный ключ сообщения"`
+	SessionID uint      `json:"sessionId" gorm:"comment:Ссылка на сессию"`
+	SenderID  uint      `json:"senderId" gorm:"comment:ID отправителя"`
+	IsSupport bool      `json:"isSupport" gorm:"comment:Флаг сообщения от поддержки"`
+	Body      string    `json:"body" gorm:"type:text;comment:Текст сообщения"`
+	Timestamp time.Time `json:"timestamp" gorm:"comment:Время отправки сообщения"`
 }
 
 // Настройки ChatMessage

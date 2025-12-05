@@ -4,12 +4,12 @@ import "gorm.io/gorm"
 
 // Настройка Юкассы
 type YooKassaSetting struct {
-	ID        uint   `gorm:"primaryKey"`
-	PointID   uint   `gorm:"uniqueIndex;not null"` // Связь с любой моделью (магазин, салон и т.д.)
-	StoreID   string `gorm:"not null"`
-	SecretKey string `gorm:"not null"`
-	IsTest    *bool  `gorm:"deafult:true"`
-	Status    *bool  `gorm:"default:false"`
+	ID        uint   `gorm:"primaryKey;comment:Первичный ключ настройки"`
+	PointID   uint   `gorm:"uniqueIndex;not null;comment:Ссылка на точку (магазин, салон и т.п.)"`
+	StoreID   string `gorm:"not null;comment:Идентификатор магазина в ЮKassa"`
+	SecretKey string `gorm:"not null;comment:Секретный ключ ЮKassa"`
+	IsTest    *bool  `gorm:"default:true;comment:Флаг тестовой среды"`
+	Status    *bool  `gorm:"default:false;comment:Флаг активности настройки"`
 }
 
 // Настройки Юкассы

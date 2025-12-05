@@ -4,9 +4,9 @@ import "gorm.io/gorm"
 
 // Настройка Юкассы
 type Policy struct {
-	Key   string `gorm:"primaryKey;type:varchar(50);not null" json:"key"`
-	Title string `gorm:"type:text" json:"title"`
-	Text  string `gorm:"type:text" json:"text"`
+	Key   string `gorm:"primaryKey;type:varchar(50);not null;comment:Уникальный ключ политики" json:"key"`
+	Title string `gorm:"type:text;comment:Заголовок политики" json:"title"`
+	Text  string `gorm:"type:text;comment:Текст политики" json:"text"`
 
 	BaseModel
 }

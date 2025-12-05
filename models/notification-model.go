@@ -7,12 +7,12 @@ import (
 )
 
 type Notification struct {
-	ID      uint             `gorm:"primaryKey;autoIncrement"`
-	UserID  *uint            `gorm:"default:null"`      // ID пользователя
-	Title   string           `gorm:"type:varchar(255)"` // Заголовок уведомления
-	Message string           `gorm:"type:text"`         // Текст уведомления
-	Type    NotificationType `gorm:"type:varchar(50)"`  // Тип уведомления
-	SentAt  *time.Time       `gorm:"default:null"`      // Время отправки
+	ID      uint             `gorm:"primaryKey;autoIncrement;comment:Первичный ключ уведомления"`
+	UserID  *uint            `gorm:"default:null;comment:ID пользователя"`
+	Title   string           `gorm:"type:varchar(255);comment:Заголовок уведомления"`
+	Message string           `gorm:"type:text;comment:Текст уведомления"`
+	Type    NotificationType `gorm:"type:varchar(50);comment:Тип уведомления"`
+	SentAt  *time.Time       `gorm:"default:null;comment:Время отправки уведомления"`
 
 	BaseModel
 }

@@ -276,3 +276,11 @@ FIBER:
 
   # Включает разбиение параметров запроса/тела/заголовков по запятой.
   EnableSplittingOnParsers: false
+
+TUS:
+  ENABLED: true
+  BASE_PATH: "/api/v1/videos/upload/tus"
+  UPLOAD_DIR: "./uploads/tus"
+  FINAL_DIR: "./uploads/"
+  LOCK_DIR: "./uploads/tus-locks"
+  MAX_SIZE: 314572800

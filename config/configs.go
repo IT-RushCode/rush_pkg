@@ -20,6 +20,7 @@ type Config struct {
 	FIREBASE FirebaseConfig `mapstructure:"FIREBASE"`
 	SWAGGER  SwaggerConfig  `mapstructure:"SWAGGER"`
 	FIBER    FiberConfig    `mapstructure:"FIBER"`
+	TUS      TusConfig      `mapstructure:"TUS"`
 }
 
 func InitConfig(path string) *Config {

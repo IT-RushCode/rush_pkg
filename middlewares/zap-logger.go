@@ -32,7 +32,7 @@ func ZapLoggerMiddleware(logger *zap.Logger, cfg *config.LogConfig) fiber.Handle
 		reqLogger.Info("[ REQUEST ]")
 
 		// Логируем тело запроса, если нужно
-		if cfg.LogRequestBody && len(c.Body()) > 0 {
+		if cfg.LogRequestBody && len(c.Body()) > 0 && shouldLogBody(c) {
 			contentType := c.Get("Content-Type")
 			if strings.HasPrefix(contentType, "multipart/form-data") {
 				bodyStr := logMultipartForm(c)
@@ -112,4 +112,22 @@ func logMultipartForm(c *fiber.Ctx) string {
 	}
 	sb.WriteString("}")
 	return sb.String()
+}
+
+func shouldLogBody(c *fiber.Ctx) bool {
+	contentType := strings.ToLower(c.Get("Content-Type"))
+	if contentType == "" {
+		contentType = strings.ToLower(c.Get(fiber.HeaderContentType))
+	}
+
+	switch {
+	case strings.HasPrefix(contentType, "application/json"):
+		return true
+	case strings.HasPrefix(contentType, "application/x-www-form-urlencoded"):
+		return true
+	case strings.HasPrefix(contentType, "text/"):
+		return true
+	}
+
+	return false
 }

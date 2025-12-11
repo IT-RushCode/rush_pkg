@@ -16,8 +16,8 @@ type ChatRepository interface {
 	CloseSession(ctx context.Context, sessionID string) error
 	CreateMessage(ctx context.Context, message *models.ChatMessage) error
 	GetMessages(ctx context.Context, dto *dto.GetChatHistoryDTO) ([]models.ChatMessage, error)
-	GetActiveSession(ctx context.Context, clientID uint) (*models.ChatSession, error) // Новый метод
-	GetSessionByID(ctx context.Context, sessionID uint) (*models.ChatSession, error)  // Новый метод
+	GetActiveSession(ctx context.Context, clientID uint) (*models.ChatSession, error)
+	GetSessionByID(ctx context.Context, sessionID uint) (*models.ChatSession, error)
 }
 
 // chatRepository представляет собой реализацию репозитория для работы с чатом

@@ -7,4 +7,5 @@ update-mod:
 	go get -u ./...
 
 mod:
-	go mod tidy && go mod vendor
+# 	go mod tidy && go mod vendor
+	go mod tidy

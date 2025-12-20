@@ -8,8 +8,8 @@ import (
 )
 
 type BaseModel struct {
-	CreatedAt time.Time `gorm:"autoCreateTime;comment:Время создания записи"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime;comment:Время последнего обновления записи"`
+	CreatedAt time.Time `gorm:"autoCreateTime;comment:Время создания записи" json:"createdAt"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime;comment:Время последнего обновления записи" json:"updatedAt"`
 }
 
 type SoftDelete struct {
